@@ -1,0 +1,25 @@
+<h1>Procurement spending</h1>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2>Amounts per month</h2>
+    </div>
+    <div class="panel-body">
+        <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerMonth.length"></nvd3>
+        <table class="table table-striped">
+            <tr>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Total spending</th>
+            </tr>
+            <tr ng-show="!spendingPerMonth.length">
+                <td colspan="3">Loading...</td>
+            </tr>
+            <tr ng-repeat="spendGroup in spendingPerMonth">
+                <td>{{ spendGroup.group[0] }}</td>
+                <td>{{("00"+ spendGroup.group[1]).slice(-2) }}</td>
+                <td>&pound; {{spendGroup.reduction | number: 2}}
+                </td>
+            </tr>
+            </ul>
+    </div>
+</div>
