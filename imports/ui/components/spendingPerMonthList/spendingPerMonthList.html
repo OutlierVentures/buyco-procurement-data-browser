@@ -4,9 +4,32 @@
         <h2>Amounts per month</h2>
     </div>
     <div class="panel-body">
-        <select ng-model="selectedOrganisation">
-            <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
-            </select>
+        <div class="row">
+            <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                    <label for="selectedOrganisation">Organisation</label>
+                    <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
+                        <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select class="form-control" name="category" ng-model="category">
+                        <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                    <label for="service">Service</label>
+                    <select class="form-control" name="service" ng-model="service">
+                        <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
         <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerMonth.length"></nvd3>
         <table class="table table-striped">
             <tr>

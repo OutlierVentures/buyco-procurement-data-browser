@@ -7,6 +7,7 @@ import { Counts } from 'meteor/tmeasday:publish-counts';
 
 import { SpendingPerMonth } from '../../../api/spendingPerMonth';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
+import { SpendingServices } from '../../../api/spendingServices';
 
 
 import template from './spendingPerMonthList.html';
@@ -25,6 +26,9 @@ class SpendingPerMonthList {
             },
             spendingOrganisations: function () {
                 return SpendingOrganisations.find({});
+            },
+            spendingServices: function () {
+                return SpendingServices.find({});
             },
             chartData: function () {
                 var spendingPerMonth = SpendingPerMonth.find({}, {
@@ -61,25 +65,28 @@ class SpendingPerMonthList {
         $scope.selectedOrganisation = "Wakefield MDC";
 
         $scope.subscribe('spendingOrganisations');
+        $scope.subscribe('spendingServices', function () {
+            return [$scope.getReactively("selectedOrganisation")];
+        });
 
         $scope.subscribe('spendingPerMonth', function () {
             return [{
-                sort: $scope.getReactively('sort'),
-                limit: parseInt($scope.getReactively('perPage')),
-                skip: ((parseInt($scope.getReactively('page'))) - 1) * (parseInt($scope.getReactively('perPage')))
-            }, null, $scope.getReactively("selectedOrganisation")];
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+                procurement_classification_1: $scope.getReactively("category"),
+                sercop_service: $scope.getReactively("service")
+            }];
         });
 
 
         $scope.chartOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
-                height: 450,
+                height: 600,
                 margin: {
                     top: 20,
                     right: 20,
-                    bottom: 45,
-                    left: 120
+                    bottom: 80,
+                    left: 60
                 },
                 clipEdge: true,
                 //staggerLabels: true,
@@ -87,7 +94,8 @@ class SpendingPerMonthList {
                 stacked: false,
                 showControls: false,
                 xAxis: {
-                    axisLabel: 'Month',
+                    // axisLabel: 'Month',
+                    // axisLabelDistance: 50,
                     showMaxMin: false,
                     tickFormat: function (d) {
                         // return d3.format(',f')(d);
@@ -97,10 +105,15 @@ class SpendingPerMonthList {
                 },
                 yAxis: {
                     axisLabel: 'Amount',
-                    axisLabelDistance: 50,
+                    axisLabelDistance: 20,
                     tickFormat: function (d) {
-                        return d3.format(',.1f')(d);
+                        return d3.format(',.1f')(d / 1e6) + "M";
                     }
+                },
+                callback: function (chart) {
+                    chart.multibar.dispatch.on('elementClick', function (e) {
+                        console.log('The chart was clicked', e.data);
+                    });
                 }
             }
         };

@@ -14,25 +14,48 @@ const collectionName = "spendingPerMonth";
 // Because the RethinkDB connection lives only on the server, the modules to
 // query it are under /server and not /import or anywhere else.
 // Source for this approach: https://medium.com/@danphi/meteor-and-rethinkdb-db8864762139
-Meteor.publish(collectionName, function (options, searchString, organisationName) {
+Meteor.publish(collectionName, function (filters) {
     var self = this;
 
-    console.log(options);
-    console.log(searchString);
-    console.log(organisationName);
-    // TODO: select based on organisation name
+    console.log("spendingPerMonth");
+    console.log(filters);
 
     // Run the rethinkdb reactive query to get the data.
     var q = r.table('public_spending');
 
-    if(organisationName)
-        q = q.getAll(organisationName, { index: "organisation_name" });
+    let indexUsed = false;
+
+    // We can only use 1 index, and it has to be the first call (getAll()). We prefer the most specific
+    // fields to use by index because it will give us the smallest amount of results to process.
+    if (filters.procurement_classification_1)
+        if (!indexUsed) {
+            q = q.getAll(filters.procurement_classification_1, { index: "procurement_classification_1" });
+            indexUsed = true;
+        }
+        else
+            q = q.filter({ procurement_classification_1: filters.procurement_classification_1 });
+
+    if (filters.sercop_service)
+        if (!indexUsed) {
+            q = q.getAll(filters.sercop_service, { index: "sercop_service" });
+            indexUsed = true;
+        }
+        else
+            q = q.filter({ sercop_service: filters.sercop_service });
+
+    if (filters.organisation_name)
+        if (!indexUsed) {
+            q = q.getAll(filters.organisation_name, { index: "organisation_name" });
+            indexUsed = true;
+        }
+        else
+            q = q.filter({ organisation_name: filters.organisation_name });
 
     q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
         .sum('amount_net');
 
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        // console.log("Running RethinkDB query with search string: " + JSON.stringify(searchString));
+        console.log("spendingPerMonth: query has been run");
         if (error) {
             console.log("Error while fetching spending cursor");
             console.error(error);
@@ -43,7 +66,7 @@ Meteor.publish(collectionName, function (options, searchString, organisationName
         // Meteor "added", "removed" and "changed" functions so that the RethinkDB
         // data is progressed to the client.            
         cursor.each(function (error, row) {
-            if(error) {
+            if (error) {
                 console.error(error);
                 return;
             }
