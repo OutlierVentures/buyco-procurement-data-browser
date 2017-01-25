@@ -17,8 +17,10 @@ const collectionName = "spendingPerMonth";
 Meteor.publish(collectionName, function (options, searchString) {
     var self = this;
 
+    // TODO: select based on organisation name
+
     // Run the rethinkdb reactive query to get the data.
-    var q = r.table('wakefield_spending');
+    var q = r.table('public_spending');
 
     q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
         .sum('amount_net');
