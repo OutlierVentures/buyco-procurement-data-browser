@@ -1,5 +1,6 @@
 // Delete previous data
-r.db('bigchain').table('doncaster_import').delete();
+r.db('bigchain').tableDrop('doncaster_import');
+r.db('bigchain').tableCreate('doncaster_import');
 r.db('bigchain').table('public_spending').filter({organisation_name: "Doncaster Council"}).delete();
 
 // Show imported data
@@ -43,8 +44,8 @@ r.db('bigchain').table('doncaster_import').filter(r.row("effective_date").match(
 
 
 // Delete empty records
-r.db('bigchain').table('doncaster_import').filter({ amount_net: "Total" }).delete()
-r.db('bigchain').table('doncaster_import').filter({ effective_date: "Grand Total" }).delete()
+r.db('bigchain').table('doncaster_import').filter({ amount_net: "Total" }).delete();
+r.db('bigchain').table('doncaster_import').filter({ effective_date: "Grand Total" }).delete();
 
 r.db('bigchain').table('doncaster_import').filter(
     r.row.hasFields('amount_net').not()
@@ -76,3 +77,7 @@ r.db('bigchain').table('doncaster_import')
 r.db('bigchain').table('public_spending').filter({organisation_name: "Doncaster Council"}).count();
 
 r.db('bigchain').table('doncaster_import').count();
+
+
+// Any superfluous spaces?
+r.db('bigchain').table('doncaster_import').filter(r.row("sercop_service").match("  "));
