@@ -1,5 +1,4 @@
 #!/bin/sh
 
-./import_doncaster_dir /vagrant/scripts/fetch/doncaster/2014
-./import_doncaster_dir /vagrant/scripts/fetch/doncaster/2015
-./import_doncaster_dir /vagrant/scripts/fetch/doncaster/2016
+./import_doncaster_dir.sh ../../fetch/data/doncaster/2015_july_onwards/2015
+./import_doncaster_dir.sh ../../fetch/data/doncaster/2015_july_onwards/2016
