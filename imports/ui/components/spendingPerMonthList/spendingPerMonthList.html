@@ -4,6 +4,9 @@
         <h2>Amounts per month</h2>
     </div>
     <div class="panel-body">
+        <select ng-model="selectedOrganisation">
+            <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
+            </select>
         <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerMonth.length"></nvd3>
         <table class="table table-striped">
             <tr>

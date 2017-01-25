@@ -3,9 +3,7 @@ r = require('rethinkdb');
 import { Meteor } from 'meteor/meteor';
 import { Connection } from '../connection';
 
-console.log("spendingPerMonth publish.js");
-
-const collectionName = "spendingPerMonth";
+const collectionName = "spendingOrganisations";
 
 // On the server side, we publish the collection "blocks" in a custom way, by 
 // querying a rethinkdb table. On the client we publish it as a normal Mongo
@@ -14,27 +12,26 @@ const collectionName = "spendingPerMonth";
 // Because the RethinkDB connection lives only on the server, the modules to
 // query it are under /server and not /import or anywhere else.
 // Source for this approach: https://medium.com/@danphi/meteor-and-rethinkdb-db8864762139
-Meteor.publish(collectionName, function (options, searchString, organisationName) {
+Meteor.publish(collectionName, function (options, searchString) {
     var self = this;
-
-    console.log(options);
-    console.log(searchString);
-    console.log(organisationName);
-    // TODO: select based on organisation name
 
     // Run the rethinkdb reactive query to get the data.
     var q = r.table('public_spending');
 
-    if(organisationName)
-        q = q.getAll(organisationName, { index: "organisation_name" });
+    console.log("Spending organisations query");
 
-    q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
-        .sum('amount_net');
+    q = q.pluck("organisation_name").distinct()
+
+    // Filter by search string
+    if (searchString)
+        q = q.filter(
+            r.row("organisation_name").match("(?i)" + searchString)
+        );
 
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
         // console.log("Running RethinkDB query with search string: " + JSON.stringify(searchString));
         if (error) {
-            console.log("Error while fetching spending cursor");
+            console.log("Error while fetching organisations cursor");
             console.error(error);
             return;
         }
@@ -42,18 +39,27 @@ Meteor.publish(collectionName, function (options, searchString, organisationName
         // The RethinkDB cursor has been opened. For each of the items we call the 
         // Meteor "added", "removed" and "changed" functions so that the RethinkDB
         // data is progressed to the client.            
-        cursor.each(function (error, row) {
-            if(error) {
-                console.error(error);
-                return;
-            }
-            let yearMonth = row.group[0] + "-" + row.group[1];
-            // console.log("Processing spendingPerMonth row: " + yearMonth);
+        let count = 0;
+        cursor.each(function (error, row) {            
             if (error) {
                 console.error(error);
             } else {
+                // For changefeeds
+                // if (row.new_val && !row.old_val) {
+                //     self.added(collectionName, row.new_val._id, row.new_val);
+                // } else if (!row.new_val && row.old_val) {
+                //     self.removed(collectionName, row.old_val._id);
+                // } else if (row.new_val && row.old_val) {
+                //     self.changed(collectionName, row.new_val._id, row.new_val);
+                // }
+
                 // For non-changefeeds
-                self.added(collectionName, yearMonth, row);
+                // Add an "_id" field to make minimongo happy.
+                row._id = "org" + count;
+
+                console.log("Adding spending org row: " + JSON.stringify(row));
+                self.added(collectionName, row._id, row);
+                count++;
             }
         });
 

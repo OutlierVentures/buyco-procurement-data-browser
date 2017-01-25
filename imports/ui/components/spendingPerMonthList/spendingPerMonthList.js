@@ -6,6 +6,7 @@ import utilsPagination from 'angular-utils-pagination';
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
 import { SpendingPerMonth } from '../../../api/spendingPerMonth';
+import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 
 
 import template from './spendingPerMonthList.html';
@@ -21,6 +22,9 @@ class SpendingPerMonthList {
                 return SpendingPerMonth.find({}, {
                     sort: $scope.getReactively('sort')
                 });
+            },
+            spendingOrganisations: function () {
+                return SpendingOrganisations.find({});
             },
             chartData: function () {
                 var spendingPerMonth = SpendingPerMonth.find({}, {
@@ -54,7 +58,16 @@ class SpendingPerMonthList {
 
         });
 
-        $scope.subscribe('spendingPerMonth');
+        $scope.subscribe('spendingOrganisations');
+
+        $scope.subscribe('spendingPerMonth', function () {
+            return [{
+                sort: $scope.getReactively('sort'),
+                limit: parseInt($scope.getReactively('perPage')),
+                skip: ((parseInt($scope.getReactively('page'))) - 1) * (parseInt($scope.getReactively('perPage')))
+            }, null, $scope.getReactively("selectedOrganisation")];
+        });
+
 
         $scope.chartOptions = {
             chart: {
