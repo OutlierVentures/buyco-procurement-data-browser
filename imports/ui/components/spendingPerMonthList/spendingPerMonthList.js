@@ -58,6 +58,8 @@ class SpendingPerMonthList {
 
         });
 
+        $scope.selectedOrganisation = "Wakefield MDC";
+
         $scope.subscribe('spendingOrganisations');
 
         $scope.subscribe('spendingPerMonth', function () {
@@ -71,7 +73,7 @@ class SpendingPerMonthList {
 
         $scope.chartOptions = {
             chart: {
-                type: 'multiBarChart',
+                type: 'multiBarHorizontalChart',
                 height: 450,
                 margin: {
                     top: 20,

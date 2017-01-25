@@ -15,60 +15,67 @@ const collectionName = "spendingOrganisations";
 Meteor.publish(collectionName, function (options, searchString) {
     var self = this;
 
-    // Run the rethinkdb reactive query to get the data.
-    var q = r.table('public_spending');
+    // // Run the rethinkdb reactive query to get the data.
+    // var q = r.table('public_spending');
 
-    console.log("Spending organisations query");
+    // console.log("Spending organisations query");
 
-    q = q.pluck("organisation_name").distinct()
+    // // This query is slow on a table of 320k records. The field has an index though; is there a way
+    // // to quickly select all index values?
+    // q = q.pluck("organisation_name").distinct()
 
-    // Filter by search string
-    if (searchString)
-        q = q.filter(
-            r.row("organisation_name").match("(?i)" + searchString)
-        );
+    // // Filter by search string
+    // if (searchString)
+    //     q = q.filter(
+    //         r.row("organisation_name").match("(?i)" + searchString)
+    //     );
+    
+    // Workaround for the fact that queries are slow: just use static data for now.
+    // TODO: optimise the queries and/or use the slow queries to get live data.
+    self.added(collectionName, "org0", {_id:"org0", organisation_name: "Doncaster Council"});
+    self.added(collectionName, "org1", {_id:"org1", organisation_name: "Wakefield MDC"});
 
-    q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        // console.log("Running RethinkDB query with search string: " + JSON.stringify(searchString));
-        if (error) {
-            console.log("Error while fetching organisations cursor");
-            console.error(error);
-            return;
-        }
+    // q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
+    //     // console.log("Running RethinkDB query with search string: " + JSON.stringify(searchString));
+    //     if (error) {
+    //         console.log("Error while fetching organisations cursor");
+    //         console.error(error);
+    //         return;
+    //     }
 
-        // The RethinkDB cursor has been opened. For each of the items we call the 
-        // Meteor "added", "removed" and "changed" functions so that the RethinkDB
-        // data is progressed to the client.            
-        let count = 0;
-        cursor.each(function (error, row) {            
-            if (error) {
-                console.error(error);
-            } else {
-                // For changefeeds
-                // if (row.new_val && !row.old_val) {
-                //     self.added(collectionName, row.new_val._id, row.new_val);
-                // } else if (!row.new_val && row.old_val) {
-                //     self.removed(collectionName, row.old_val._id);
-                // } else if (row.new_val && row.old_val) {
-                //     self.changed(collectionName, row.new_val._id, row.new_val);
-                // }
+    //     // The RethinkDB cursor has been opened. For each of the items we call the 
+    //     // Meteor "added", "removed" and "changed" functions so that the RethinkDB
+    //     // data is progressed to the client.            
+    //     // let count = 0;
+    //     // cursor.each(function (error, row) {            
+    //     //     if (error) {
+    //     //         console.error(error);
+    //     //     } else {
+    //     //         // For changefeeds
+    //     //         // if (row.new_val && !row.old_val) {
+    //     //         //     self.added(collectionName, row.new_val._id, row.new_val);
+    //     //         // } else if (!row.new_val && row.old_val) {
+    //     //         //     self.removed(collectionName, row.old_val._id);
+    //     //         // } else if (row.new_val && row.old_val) {
+    //     //         //     self.changed(collectionName, row.new_val._id, row.new_val);
+    //     //         // }
 
-                // For non-changefeeds
-                // Add an "_id" field to make minimongo happy.
-                row._id = "org" + count;
+    //     //         // For non-changefeeds
+    //     //         // Add an "_id" field to make minimongo happy.
+    //     //         row._id = "org" + count;
 
-                console.log("Adding spending org row: " + JSON.stringify(row));
-                self.added(collectionName, row._id, row);
-                count++;
-            }
-        });
+    //     //         console.log("Adding spending org row: " + JSON.stringify(row));
+    //     //         self.added(collectionName, row._id, row);
+    //     //         count++;
+    //     //     }
+    //     // });
 
-        self.onStop(function () {
-            cursor.close();
-        });
+    //     self.onStop(function () {
+    //         cursor.close();
+    //     });
 
-        self.ready();
-    }));
+    //     self.ready();
+    // }));
 
     // TODO: publish counts from rethinkdb. Need to pass a function to Counts.publish, but 
     // we can't just do [collection].find().
