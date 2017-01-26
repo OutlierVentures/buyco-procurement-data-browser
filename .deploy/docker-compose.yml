@@ -1,0 +1,20 @@
+version: '1'
+services:
+  rethinkdb:
+    build: ./rethinkdb
+    container_name: buyco_procurement_data_browser_rethinkdb_${BPDB_ENV}
+  app:
+    build: ./app
+    container_name: buyco_procurement_data_browser_${BPDB_ENV}
+    image: buyco_procurement_data_browser_app:${BPDB_ENV}
+    volumes:
+      - ./data:/data
+    ports:
+      - "136.243.69.227:${BPDB_PORT}:4000"
+    links:
+      - mongo
+    environment:
+      - RETHKINKDB_HOST=rethinkdb
+      - ROOT_URL=${BPDB_ROOT_URL}
+      - BPDB_ENV=${BPDB_ENV}
+      - PORT=4141
