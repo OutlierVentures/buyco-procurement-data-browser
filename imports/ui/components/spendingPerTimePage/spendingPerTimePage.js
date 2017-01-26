@@ -27,6 +27,30 @@ class SpendingPerTimePage {
             clientSpendingPerTime: function () {
                 return ClientSpendingPerTime.find({});
             },
+            mergedSpendingPerTime: function () {
+                // Prepare a joined collection with the percentage of client trade.
+                // TODO: this is business logic, move it to an API function.
+                var ps = SpendingPerTime.find({});
+                var cs = ClientSpendingPerTime.find({});
+
+                var merged = [];
+                ps.forEach((spendThisPeriod) => {
+                    let mergedItem = spendThisPeriod;
+                    merged.push(mergedItem);
+
+                    cs.forEach((clientSpendThisPeriod) => {
+                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
+                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
+
+                            mergedItem.client_amount_net = clientSpendThisPeriod.reduction;
+                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.reduction / spendThisPeriod.reduction * 100;
+                        }
+                    });
+
+                });
+
+                return merged;
+            },
             spendingOrganisations: function () {
                 return SpendingOrganisations.find({});
             },
@@ -47,16 +71,16 @@ class SpendingPerTimePage {
                 var clientValues = [];
 
                 let i = 0;
-                spendingPerTime.forEach((spendThisMonth) => {
-                    let xLabel = spendThisMonth.group[0] + "-" + ("00" + spendThisMonth.group[1]).slice(-2);
-                    let yVal = spendThisMonth.reduction;
-                    publicValues.push({ x: i, label: xLabel, y: yVal });
+                spendingPerTime.forEach((spendThisPeriod) => {
+                    let xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
+                    let yVal = spendThisPeriod.reduction;
+                    publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
 
                     // Find corresponding item in client spending
-                    clientSpendingPerTime.forEach((clientSpendThisMonth) => {
-                        if (clientSpendThisMonth.group[0] == spendThisMonth.group[0]
-                            && clientSpendThisMonth.group[1] == spendThisMonth.group[1]) {
-                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisMonth.reduction });
+                    clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
+                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
+                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
+                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.reduction, source: clientSpendThisPeriod });
                         }
                     });
 
@@ -76,6 +100,9 @@ class SpendingPerTimePage {
 
         });
 
+        // UX defaults on component open
+        $scope.detailsVisible = true;
+        $scope.period = "quarter";
         $scope.selectedOrganisation = "Wakefield MDC";
 
         $scope.subscribe('spendingOrganisations');
@@ -91,6 +118,9 @@ class SpendingPerTimePage {
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service")
+            },
+            {
+                period: $scope.getReactively("period")
             }];
         });
 
@@ -99,6 +129,9 @@ class SpendingPerTimePage {
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service")
+            },
+            {
+                period: $scope.getReactively("period")
             }];
         });
 

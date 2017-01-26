@@ -33,6 +33,17 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                    <label for="service">Period</label>
+                    <select class="form-control" name="period" ng-model="period">
+                       <option value="quarter">Quarter</option>
+                       <option value="month">Month</option>
+                    </select>
+                </div>
+            </div>
+        </div>
         <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerTime.length"></nvd3>
         <div ng-show="spendingPerTime.length === 0">
             <p>Loading...</p>
@@ -42,14 +53,20 @@
             <table class="table table-striped">
                 <tr>
                     <th>Year</th>
-                    <th>Month</th>
+                    <th>
+                        <span ng-show="period=='month'">Month</span>
+                        <span ng-show="period=='quarter'">Quarter</span>
+                    </th>
                     <th>Total spending</th>
+                    <th>Spending through my BuyCo</th>
+                    <th>%</th>
                 </tr>
-                <tr ng-repeat="spendGroup in spendingPerTime">
+                <tr ng-repeat="spendGroup in mergedSpendingPerTime">
                     <td>{{ spendGroup.group[0] }}</td>
-                    <td>{{("00"+ spendGroup.group[1]).slice(-2) }}</td>
-                    <td>&pound; {{spendGroup.reduction | number: 2}}
-                    </td>
+                    <td><span ng-show="period=='quarter'">Q</span>{{spendGroup.group[1]}}</td>
+                    <td>&pound; {{spendGroup.reduction | number: 2}} </td>
+                    <td>&pound; {{spendGroup.client_amount_net | number: 2}}</td>
+                    <td>{{spendGroup.client_amount_net_percent | number: 1}}</td>
                 </tr>
             </table>
         </div>

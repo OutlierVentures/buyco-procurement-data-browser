@@ -14,16 +14,20 @@ const collectionName = "clientSpendingPerTime";
 // Because the RethinkDB connection lives only on the server, the modules to
 // query it are under /server and not /import or anywhere else.
 // Source for this approach: https://medium.com/@danphi/meteor-and-rethinkdb-db8864762139
-Meteor.publish(collectionName, function (filters) {
+Meteor.publish(collectionName, function (filters, options) {
     var self = this;
+
+    console.log("clientSpendingPerTime");
+    console.log(filters);
 
     // Only for logged in users.
     // TODO: introduce authentication structure so that each user has their own client data.
     if (!this.userId)
         return;
 
-    console.log("clientSpendingPerTime");
-    console.log(filters);
+    let period = "quarter";
+    if (options && options.period)
+        period = options.period;
 
     // Run the rethinkdb reactive query to get the data.
     var q = r.table('client_spending');
@@ -59,8 +63,12 @@ Meteor.publish(collectionName, function (filters) {
         else
             q = q.filter({ organisation_name: filters.organisation_name });
 
-    q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
-        .sum('amount_net');
+    if (period == "month")
+        q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
+    else if (period = "quarter")
+        q = q.group(r.row("payment_date").year(), r.ceil(r.div(r.row("payment_date").month(), 3)))
+
+    q = q.sum('amount_net');
 
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
         // On an "all" query for an organisation, the query takes 20s, while in the data explorer it takes 4-6s.
