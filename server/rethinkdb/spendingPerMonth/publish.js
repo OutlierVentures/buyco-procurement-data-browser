@@ -26,9 +26,10 @@ Meteor.publish(collectionName, function (filters) {
     let indexUsed = false;
 
     // We can only use 1 index, and it has to be the first call (getAll()). We prefer the most specific
-    // fields to use by index because it will give us the smallest amount of results to process.
+    // fields to use by index because it will give us the smallest amount of results to further filter.
     if (filters.procurement_classification_1)
         if (!indexUsed) {
+            console.log("Using index for procurement_classification_1.");
             q = q.getAll(filters.procurement_classification_1, { index: "procurement_classification_1" });
             indexUsed = true;
         }
@@ -37,6 +38,7 @@ Meteor.publish(collectionName, function (filters) {
 
     if (filters.sercop_service)
         if (!indexUsed) {
+            console.log("Using index for sercop_service.");
             q = q.getAll(filters.sercop_service, { index: "sercop_service" });
             indexUsed = true;
         }
@@ -45,6 +47,7 @@ Meteor.publish(collectionName, function (filters) {
 
     if (filters.organisation_name)
         if (!indexUsed) {
+            console.log("Using index for organisation_name.");
             q = q.getAll(filters.organisation_name, { index: "organisation_name" });
             indexUsed = true;
         }
@@ -55,7 +58,10 @@ Meteor.publish(collectionName, function (filters) {
         .sum('amount_net');
 
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        console.log("spendingPerMonth: query has been run");
+        // On an "all" query for an organisation, the query takes 20s, while in the data explorer it takes 4-6s.
+        // Odd.
+        console.log("spendingPerMonth: got cursor results.");
+
         if (error) {
             console.log("Error while fetching spending cursor");
             console.error(error);

@@ -8,6 +8,7 @@ import { Counts } from 'meteor/tmeasday:publish-counts';
 import { SpendingPerMonth } from '../../../api/spendingPerMonth';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
+import { SpendingCategories } from '../../../api/spendingCategories';
 
 
 import template from './spendingPerMonthList.html';
@@ -29,6 +30,9 @@ class SpendingPerMonthList {
             },
             spendingServices: function () {
                 return SpendingServices.find({});
+            },
+            spendingCategories: function () {
+                return SpendingCategories.find({});
             },
             chartData: function () {
                 var spendingPerMonth = SpendingPerMonth.find({}, {
@@ -66,6 +70,9 @@ class SpendingPerMonthList {
 
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
+            return [$scope.getReactively("selectedOrganisation")];
+        });
+        $scope.subscribe('spendingCategories', function () {
             return [$scope.getReactively("selectedOrganisation")];
         });
 

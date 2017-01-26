@@ -40,6 +40,15 @@ r.db('bigchain').table('wakefield_import')
 );
 
 
+// Switch sercop with code where applicable (only one character)
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"})
+  .filter(r.row("sercop_service").match("^.$"))
+  .update(function(doc){
+    return doc.merge({
+      sercop_uri: doc("sercop_service"),
+      sercop_service: doc("sercop_uri")
+    });
+  });
 
 
 // See total counts

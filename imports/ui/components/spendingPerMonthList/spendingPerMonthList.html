@@ -9,6 +9,7 @@
                 <div class="form-group">
                     <label for="selectedOrganisation">Organisation</label>
                     <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
+                        <option default value="">-- select --</option>
                         <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
                     </select>
                 </div>
@@ -17,6 +18,7 @@
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select class="form-control" name="category" ng-model="category">
+                        <option default value="">-- select --</option>
                         <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
                     </select>
                 </div>
@@ -25,7 +27,8 @@
                 <div class="form-group">
                     <label for="service">Service</label>
                     <select class="form-control" name="service" ng-model="service">
-                        <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
+                       <option default value="">-- select --</option>
+                       <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
                     </select>
                 </div>
             </div>
@@ -37,7 +40,7 @@
                 <th>Month</th>
                 <th>Total spending</th>
             </tr>
-            <tr ng-show="!spendingPerMonth.length">
+            <tr ng-show="spendingPerMonth.length === 0">
                 <td colspan="3">Loading...</td>
             </tr>
             <tr ng-repeat="spendGroup in spendingPerMonth">
