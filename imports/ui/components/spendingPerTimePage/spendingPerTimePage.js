@@ -6,6 +6,7 @@ import utilsPagination from 'angular-utils-pagination';
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
 import { SpendingPerTime } from '../../../api/spendingPerTime';
+import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
@@ -21,9 +22,10 @@ class SpendingPerTimePage {
 
         $scope.helpers({
             spendingPerTime: function () {
-                return SpendingPerTime.find({}, {
-                    sort: $scope.getReactively('sort')
-                });
+                return SpendingPerTime.find({});
+            },
+            clientSpendingPerTime: function () {
+                return ClientSpendingPerTime.find({});
             },
             spendingOrganisations: function () {
                 return SpendingOrganisations.find({});
@@ -36,31 +38,39 @@ class SpendingPerTimePage {
             },
             chartData: function () {
                 var spendingPerTime = SpendingPerTime.find({}, {
-                    sort: $scope.getReactively('sort')
                 });
 
-                var values = [];
-                var values0 = [];
+                var clientSpendingPerTime = ClientSpendingPerTime.find({}, {
+                });
+
+                var publicValues = [];
+                var clientValues = [];
 
                 let i = 0;
                 spendingPerTime.forEach((spendThisMonth) => {
                     let xLabel = spendThisMonth.group[0] + "-" + ("00" + spendThisMonth.group[1]).slice(-2);
                     let yVal = spendThisMonth.reduction;
-                    values.push({ x: i, label: xLabel, y: yVal });
-                    // Set a random amount for users' spending
-                    // TODO: use real values.
-                    values0.push({ x: i, label: xLabel, y: yVal * Math.random() });
+                    publicValues.push({ x: i, label: xLabel, y: yVal });
+
+                    // Find corresponding item in client spending
+                    clientSpendingPerTime.forEach((clientSpendThisMonth) => {
+                        if (clientSpendThisMonth.group[0] == spendThisMonth.group[0]
+                            && clientSpendThisMonth.group[1] == spendThisMonth.group[1]) {
+                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisMonth.reduction });
+                        }
+                    });
+
                     i++;
                 });
 
                 return [{
                     key: 'Total spending',
                     color: '#fdb632',
-                    values: values
+                    values: publicValues
                 }, {
                     key: 'Your BuyCo',
                     color: '#027878',
-                    values: values0
+                    values: clientValues
                 }];
             }
 
@@ -84,6 +94,13 @@ class SpendingPerTimePage {
             }];
         });
 
+        $scope.subscribe('clientSpendingPerTime', function () {
+            return [{
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+                procurement_classification_1: $scope.getReactively("category"),
+                sercop_service: $scope.getReactively("service")
+            }];
+        });
 
         $scope.chartOptions = {
             chart: {
