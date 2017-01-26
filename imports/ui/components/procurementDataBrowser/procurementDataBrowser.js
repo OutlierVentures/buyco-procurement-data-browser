@@ -7,6 +7,7 @@ import { name as BlocksList } from '../blocksList/blocksList';
 import { name as ChartTest } from '../chartTest/chartTest';
 import { name as SpendingList } from '../spendingList/spendingList';
 import { name as SpendingPerMonthList } from '../spendingPerMonthList/spendingPerMonthList';
+import { name as Importer } from '../importer/importer';
 import { name as Navigation } from '../navigation/navigation';
 
 class ProcurementDataBrowser {}
@@ -21,6 +22,7 @@ export default angular.module(name, [
   BlocksList,
   SpendingList,
   SpendingPerMonthList,
+  Importer,
   Navigation,
   'accounts.ui'
 ]).component(name, {

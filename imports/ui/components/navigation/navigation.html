@@ -7,9 +7,10 @@
     <div collapse="!isCollapsed" class="navbar-main navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
         <li><a href="/spending">Transactions</a></li>
-        <li><a href="/spending-per-month">Months</a></li>
+        <li><a href="/spending-per-month">Time</a></li>
         <li><a href="/spending-per-category">Categories</a></li>
         <li><a href="/spending-per-section">Sections</a></li>
+        <li ng-show="false && isLoggedIn"><a href="/import">Import data</a></li>
         <li>
           <login-buttons class="navbar-brand"></login-buttons>
         </li>
