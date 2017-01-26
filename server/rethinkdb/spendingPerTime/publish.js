@@ -3,9 +3,9 @@ r = require('rethinkdb');
 import { Meteor } from 'meteor/meteor';
 import { Connection } from '../connection';
 
-console.log("spendingPerMonth publish.js");
+console.log("spendingPerTime publish.js");
 
-const collectionName = "spendingPerMonth";
+const collectionName = "spendingPerTime";
 
 // On the server side, we publish the collection "blocks" in a custom way, by 
 // querying a rethinkdb table. On the client we publish it as a normal Mongo
@@ -17,7 +17,7 @@ const collectionName = "spendingPerMonth";
 Meteor.publish(collectionName, function (filters) {
     var self = this;
 
-    console.log("spendingPerMonth");
+    console.log("spendingPerTime");
     console.log(filters);
 
     // Run the rethinkdb reactive query to get the data.
@@ -60,7 +60,7 @@ Meteor.publish(collectionName, function (filters) {
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
         // On an "all" query for an organisation, the query takes 20s, while in the data explorer it takes 4-6s.
         // Odd.
-        console.log("spendingPerMonth: got cursor results.");
+        console.log("spendingPerTime: got cursor results.");
 
         if (error) {
             console.log("Error while fetching spending cursor");
@@ -77,7 +77,7 @@ Meteor.publish(collectionName, function (filters) {
                 return;
             }
             let yearMonth = row.group[0] + "-" + row.group[1];
-            // console.log("Processing spendingPerMonth row: " + yearMonth);
+            // console.log("Processing spendingPerTime row: " + yearMonth);
             if (error) {
                 console.error(error);
             } else {

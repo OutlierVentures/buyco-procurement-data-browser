@@ -33,8 +33,8 @@
                 </div>
             </div>
         </div>
-        <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerMonth.length"></nvd3>
-        <div ng-show="spendingPerMonth.length === 0">
+        <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerTime.length"></nvd3>
+        <div ng-show="spendingPerTime.length === 0">
             <p>Loading...</p>
         </div>
         <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right"><span ng-show="!detailsVisible">Show details</span><span ng-show="detailsVisible">Hide details</span></button>
@@ -45,7 +45,7 @@
                     <th>Month</th>
                     <th>Total spending</th>
                 </tr>
-                <tr ng-repeat="spendGroup in spendingPerMonth">
+                <tr ng-repeat="spendGroup in spendingPerTime">
                     <td>{{ spendGroup.group[0] }}</td>
                     <td>{{("00"+ spendGroup.group[1]).slice(-2) }}</td>
                     <td>&pound; {{spendGroup.reduction | number: 2}}

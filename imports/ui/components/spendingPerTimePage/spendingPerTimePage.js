@@ -5,23 +5,23 @@ import utilsPagination from 'angular-utils-pagination';
 
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
-import { SpendingPerMonth } from '../../../api/spendingPerMonth';
+import { SpendingPerTime } from '../../../api/spendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 
 
-import template from './spendingPerMonthList.html';
+import template from './spendingPerTimePage.html';
 
-class SpendingPerMonthList {
+class SpendingPerTimePage {
     constructor($scope, $reactive) {
         'ngInject';
 
         $reactive(this).attach($scope);
 
         $scope.helpers({
-            spendingPerMonth: function () {
-                return SpendingPerMonth.find({}, {
+            spendingPerTime: function () {
+                return SpendingPerTime.find({}, {
                     sort: $scope.getReactively('sort')
                 });
             },
@@ -35,7 +35,7 @@ class SpendingPerMonthList {
                 return SpendingCategories.find({});
             },
             chartData: function () {
-                var spendingPerMonth = SpendingPerMonth.find({}, {
+                var spendingPerTime = SpendingPerTime.find({}, {
                     sort: $scope.getReactively('sort')
                 });
 
@@ -43,7 +43,7 @@ class SpendingPerMonthList {
                 var values0 = [];
 
                 let i = 0;
-                spendingPerMonth.forEach((spendThisMonth) => {
+                spendingPerTime.forEach((spendThisMonth) => {
                     let xLabel = spendThisMonth.group[0] + "-" + ("00" + spendThisMonth.group[1]).slice(-2);
                     let yVal = spendThisMonth.reduction;
                     values.push({ x: i, label: xLabel, y: yVal });
@@ -76,7 +76,7 @@ class SpendingPerMonthList {
             return [$scope.getReactively("selectedOrganisation")];
         });
 
-        $scope.subscribe('spendingPerMonth', function () {
+        $scope.subscribe('spendingPerTime', function () {
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
@@ -127,7 +127,7 @@ class SpendingPerMonthList {
     }
 }
 
-const name = 'spendingPerMonthList';
+const name = 'spendingPerTimePage';
 
 // create a module
 export default angular.module(name, [
@@ -137,15 +137,15 @@ export default angular.module(name, [
 ]).component(name, {
     template,
     controllerAs: name,
-    controller: SpendingPerMonthList
+    controller: SpendingPerTimePage
 })
     .config(config);
 
 function config($stateProvider) {
     'ngInject';
     $stateProvider
-        .state('spending-per-month', {
-            url: '/spending-per-month',
-            template: '<spending-per-month-list></spending-per-month-list>'
+        .state('spending-per-time', {
+            url: '/spending/time',
+            template: '<spending-per-time-page></spending-per-time-page>'
         });
 }

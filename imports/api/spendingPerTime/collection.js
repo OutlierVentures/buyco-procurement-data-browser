@@ -1,7 +1,7 @@
 // On the client side, RethinkDB tables are mimicked as Mongo collections.
-export const SpendingPerMonth = new Mongo.Collection('spendingPerMonth');
+export const SpendingPerTime = new Mongo.Collection('spendingPerTime');
 
-SpendingPerMonth.allow({
+SpendingPerTime.allow({
   insert: function (userId, transaction) {
     return false;
   },

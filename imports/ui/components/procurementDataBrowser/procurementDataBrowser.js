@@ -6,7 +6,7 @@ import template from './procurementDataBrowser.html';
 import { name as BlocksList } from '../blocksList/blocksList';
 import { name as ChartTest } from '../chartTest/chartTest';
 import { name as SpendingList } from '../spendingList/spendingList';
-import { name as SpendingPerMonthList } from '../spendingPerMonthList/spendingPerMonthList';
+import { name as SpendingPerTimePage } from '../spendingPerTimePage/spendingPerTimePage';
 import { name as Importer } from '../importer/importer';
 import { name as Navigation } from '../navigation/navigation';
 
@@ -21,7 +21,7 @@ export default angular.module(name, [
   ChartTest,
   BlocksList,
   SpendingList,
-  SpendingPerMonthList,
+  SpendingPerTimePage,
   Importer,
   Navigation,
   'accounts.ui'
