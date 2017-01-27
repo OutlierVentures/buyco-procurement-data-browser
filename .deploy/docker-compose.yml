@@ -3,6 +3,7 @@ services:
   rethinkdb:
     build: ./rethinkdb
     container_name: buyco_procurement_data_browser_rethinkdb_${BPDB_ENV}
+    image: buyco_procurement_data_browser_rethinkdb:${BPDB_ENV}
 # Expose RethinkDB client port to linked containers
     expose:
       - "28015"
