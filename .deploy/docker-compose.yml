@@ -3,6 +3,21 @@ services:
   rethinkdb:
     build: ./rethinkdb
     container_name: buyco_procurement_data_browser_rethinkdb_${BPDB_ENV}
+# Expose RethinkDB client port to linked containers
+    expose:
+      - "28015"
+# Expose web admin port to host for testing purposes
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/rethinkdb:/data
+  mongo:
+    image: mongo
+    container_name: buyco_procurement_data_browser_mongo_${BPDB_ENV}
+    expose:
+      - "27017"
+    volumes:
+      - ./data/mongodb:/data/db
   app:
     build: ./app
     container_name: buyco_procurement_data_browser_${BPDB_ENV}
@@ -13,8 +28,10 @@ services:
       - "127.0.0.1:${BPDB_PORT}:4000"
     links:
       - rethinkdb
+      - mongo
     environment:
-      - RETHKINKDB_HOST=rethinkdb
+      - RETHINKDB_HOST=rethinkdb
+      - MONGO_URL=mongodb://mongo
       - ROOT_URL=${BPDB_ROOT_URL}
       - BPDB_ENV=${BPDB_ENV}
       - PORT=4000
