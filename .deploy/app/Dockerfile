@@ -44,6 +44,4 @@ RUN cd /var/www/buyco-procurement-data-browser \
 
 RUN npm install -g forever
 
-EXPOSE 3000
-
 CMD ["forever", "--minUptime", "1000", "--spinSleepTime", "1000", "/var/www/buyco-procurement-data-browser-build/bundle/main.js"]
