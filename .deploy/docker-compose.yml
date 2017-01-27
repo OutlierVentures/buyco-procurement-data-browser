@@ -1,4 +1,4 @@
-version: '1'
+version: '2'
 services:
   rethinkdb:
     build: ./rethinkdb
@@ -10,11 +10,11 @@ services:
     volumes:
       - ./data:/data
     ports:
-      - "136.243.69.227:${BPDB_PORT}:4000"
+      - "127.0.0.1:${BPDB_PORT}:4000"
     links:
-      - mongo
+      - rethinkdb
     environment:
       - RETHKINKDB_HOST=rethinkdb
       - ROOT_URL=${BPDB_ROOT_URL}
       - BPDB_ENV=${BPDB_ENV}
-      - PORT=4141
+      - PORT=4000
