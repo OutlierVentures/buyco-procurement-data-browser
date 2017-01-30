@@ -22,6 +22,8 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
+        var that = this;
+
         $scope.helpers({
             spendingPerTime: function () {
                 return SpendingPerTime.find({});
@@ -95,11 +97,16 @@ class SpendingPerTimePage {
                     i++;
                 });
 
-                return [{
+                $scope.publicSpendingData = {
                     key: $scope.selectedOrganisation,
                     color: '#404040',
                     values: publicValues
-                }, {
+                };
+
+                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
+
+                return [$scope.publicSpendingData,
+                {
                     key: 'YPO',
                     color: '#543996',
                     values: clientValues

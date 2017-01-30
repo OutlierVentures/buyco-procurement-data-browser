@@ -54,19 +54,15 @@ class SpendingGrouped {
             for (var h = 0; h < 12; h++) {
                 let yVal = 10e7 * Math.random() + 1;
                 let month = h + 1;
-                let xLabel = "2016-" + ("00" + month).slice(-2);
+                let xLabel = ""; // "2016-" + ("00" + month).slice(-2);
                 values.push({ x: h, label: xLabel, y: yVal });
-                values0.push({ x: h, label: xLabel, y: yVal * Math.random() });
+                //values0.push({ x: h, label: xLabel, y: yVal * Math.random() });
             }
 
             return [{
-                key: 'Total spending',
+                key: 'Spending for category',
                 color: '#ffeead',
                 values: values
-            }, {
-                key: 'Your spending',
-                color: '#96ceb4',
-                values: values0
             }];
         }
     }
