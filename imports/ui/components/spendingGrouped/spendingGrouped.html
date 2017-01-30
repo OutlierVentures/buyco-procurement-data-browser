@@ -1,0 +1,26 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2>Spend by {{groupFieldDisplayName}}</h2>
+    </div>
+    <div class="panel-body">
+        <nvd3 options="options" data="data"></nvd3>
+
+        <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+            <span ng-show="!detailsVisible">Show details</span>
+            <span ng-show="detailsVisible">Hide details</span></button>
+
+        <div ng-show="detailsVisible">
+            <table class="table table-striped">
+                <tr>
+                    <th class="text-capitalize">{{groupFieldDisplayName}}</th>
+                    <th>Total</th>
+                </tr>
+                <tr ng-repeat="spendGroup in mergedSpendingGroup">
+                    <td>{{ spendGroup.group[0] }}</td>
+                    <td>&pound; {{spendGroup.reduction | number: 2}} </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>

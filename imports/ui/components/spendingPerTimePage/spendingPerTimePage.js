@@ -11,6 +11,7 @@ import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 
+import { name as SpendingGrouped } from '../spendingGrouped/spendingGrouped';
 
 import template from './spendingPerTimePage.html';
 
@@ -190,6 +191,7 @@ export default angular.module(name, [
     angularMeteor,
     uiRouter,
     utilsPagination,
+    SpendingGrouped
 ]).component(name, {
     template,
     controllerAs: name,
