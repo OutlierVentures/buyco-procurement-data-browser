@@ -1,0 +1,17 @@
+<style>
+/* Workaround for black circles http://stackoverflow.com/questions/13619436/large-black-circles-overlay-scatterchart */
+.nv-point-paths {
+    display: none !important;
+}
+
+/* Workaround for undesired area fill http://stackoverflow.com/questions/33824119/nvd3-line-chart-automatically-setting-fill-opacity */
+.lines1Wrap .nv-group, .lines2Wrap .nv-group {
+    fill-opacity: 0 !important;
+}
+</style>
+<h1>Line/bar chart test</h1>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <nvd3 options="options" data="data"></nvd3>
+    </div>
+</div>
