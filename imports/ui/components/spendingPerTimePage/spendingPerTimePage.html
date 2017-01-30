@@ -4,6 +4,7 @@
         <h2>Amounts over time</h2>
     </div>
     <div class="panel-body">
+
         <div class="row">
             <div class="col-md-4 col-xs-12">
                 <div class="form-group">
@@ -14,6 +15,11 @@
                     </select>
                 </div>
             </div>
+            <div class="col-md-4 pull-right">
+                <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right"><span ng-show="!filtersVisible">Filter</span><span ng-show="filtersVisible">Hide filter</span></button>
+            </div>
+        </div>
+        <div class="row" ng-show="filtersVisible">
             <div class="col-md-4 col-xs-12">
                 <div class="form-group">
                     <label for="category">Category</label>
@@ -32,8 +38,6 @@
                     </select>
                 </div>
             </div>
-        </div>
-        <div class="row">
             <div class="col-md-4 col-xs-12">
                 <div class="form-group">
                     <label for="service">Period</label>
@@ -57,8 +61,8 @@
                         <span ng-show="period=='month'">Month</span>
                         <span ng-show="period=='quarter'">Quarter</span>
                     </th>
-                    <th>Total spending</th>
-                    <th>Spending through my BuyCo</th>
+                    <th>Total</th>
+                    <th>Through YPO</th>
                     <th>%</th>
                 </tr>
                 <tr ng-repeat="spendGroup in mergedSpendingPerTime">

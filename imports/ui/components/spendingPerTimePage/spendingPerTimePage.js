@@ -72,7 +72,13 @@ class SpendingPerTimePage {
 
                 let i = 0;
                 spendingPerTime.forEach((spendThisPeriod) => {
-                    let xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
+                    let xLabel;
+                    if ($scope.period == "quarter")
+                        // "2016 Q2"
+                        xLabel = spendThisPeriod.group[0] + " Q" + spendThisPeriod.group[1];
+                    else
+                        // E.g. "2016-05" for May 2016
+                        xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
                     let yVal = spendThisPeriod.reduction;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
 
@@ -88,12 +94,12 @@ class SpendingPerTimePage {
                 });
 
                 return [{
-                    key: 'Total spending',
-                    color: '#fdb632',
+                    key: $scope.selectedOrganisation,
+                    color: '#404040',
                     values: publicValues
                 }, {
-                    key: 'Your BuyCo',
-                    color: '#027878',
+                    key: 'YPO',
+                    color: '#543996',
                     values: clientValues
                 }];
             }
@@ -137,12 +143,12 @@ class SpendingPerTimePage {
 
         $scope.chartOptions = {
             chart: {
-                type: 'multiBarHorizontalChart',
+                type: 'multiBarChart',
                 height: 600,
                 margin: {
                     top: 20,
                     right: 20,
-                    bottom: 80,
+                    bottom: 50,
                     left: 60
                 },
                 clipEdge: true,
@@ -152,7 +158,7 @@ class SpendingPerTimePage {
                 showControls: false,
                 xAxis: {
                     // axisLabel: 'Month',
-                    // axisLabelDistance: 50,
+                    axisLabelDistance: 50,
                     showMaxMin: false,
                     tickFormat: function (d) {
                         // return d3.format(',f')(d);
@@ -161,7 +167,7 @@ class SpendingPerTimePage {
                     }
                 },
                 yAxis: {
-                    axisLabel: 'Amount',
+                    // axisLabel: 'Amount',
                     axisLabelDistance: 20,
                     tickFormat: function (d) {
                         return d3.format(',.1f')(d / 1e6) + "M";
