@@ -5,7 +5,19 @@
   <base href="/">
   <title>Procurement Data Browser</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <style>
+/* Workaround for black circles http://stackoverflow.com/questions/13619436/large-black-circles-overlay-scatterchart */
+.nv-point-paths {
+    display: none !important;
+}
+
+/* Workaround for undesired area fill http://stackoverflow.com/questions/33824119/nvd3-line-chart-automatically-setting-fill-opacity */
+.lines1Wrap .nv-group, .lines2Wrap .nv-group {
+    fill-opacity: 0 !important;
+}
+</style>
 </head>
+
 <body>
   <procurement-data-browser></procurement-data-browser>
 </body>

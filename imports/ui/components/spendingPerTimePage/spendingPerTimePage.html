@@ -78,6 +78,11 @@
 </div>
 
 <div>
+    <button type="button" ng-click="performanceIndicatorsVisible = !performanceIndicatorsVisible" class="btn btn-default pull-right">
+        <span ng-show="!performanceIndicatorsVisible">Show performance indicators</span><span ng-show="performanceIndicatorsVisible">Hide performance indicators</span></button>
+    <spending-performance ng-show="performanceIndicatorsVisible"></spending-performance>
+</div>
+<div>
     <button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>
     <spending-grouped ng-show="drillDownVisible"></spending-grouped>
