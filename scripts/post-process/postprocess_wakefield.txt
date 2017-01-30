@@ -50,6 +50,15 @@ r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield 
     });
   });
 
+// Update category apostrophe
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"})
+  .filter(r.row("sercop_service").match("Children´s and Education Services"))
+  .update(function(doc){
+    return doc.merge({
+      sercop_service: "Children's and Education Services"
+    });
+  });
+
 
 // See total counts
 
