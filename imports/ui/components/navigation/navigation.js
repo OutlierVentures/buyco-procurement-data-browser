@@ -15,7 +15,6 @@ class NavigationController {
     $scope.helpers({
       isLoggedIn: function () {
         return Meteor.userId() != null;
-
       }
     });
   }

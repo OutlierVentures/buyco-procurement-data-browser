@@ -25,6 +25,9 @@ class SpendingPerTimePage {
         var that = this;
 
         $scope.helpers({
+            isLoggedIn: function () {
+                return Meteor.userId() != null;
+            },
             spendingPerTime: function () {
                 return SpendingPerTime.find({});
             },
