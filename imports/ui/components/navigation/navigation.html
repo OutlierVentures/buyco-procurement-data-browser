@@ -1,10 +1,10 @@
 <div class="navbar navbar-default navbar-static-top">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" ng-click="isCollapsed = !isCollapsed" class="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+      <button type="button" ng-init="isCollapsed=true" ng-click="isCollapsed = !isCollapsed" class="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
       <a href="/" class="navbar-brand">PublicData.Works</a>
     </div>
-    <div collapse="!isCollapsed" class="navbar-main navbar-collapse collapse">
+    <div uib-collapse="isCollapsed" class="navbar-main navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
         <li><a href="/spending">Transactions</a></li>
         <li><a href="/spending/time">Time</a></li>

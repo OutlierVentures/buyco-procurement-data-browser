@@ -1,5 +1,6 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
+import angularUiBootstrap from 'angular-ui-bootstrap';
 
 import template from './navigation.html';
 
@@ -22,7 +23,8 @@ class NavigationController {
 
 // create a module
 export default angular.module(name, [
-  angularMeteor
+  angularMeteor,
+  angularUiBootstrap
 ]).component(name, {
   template,
   controllerAs: name,
