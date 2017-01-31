@@ -19,7 +19,7 @@ class SpendingPerformance {
                     bottom: 50,
                     left: 60
                 },
-                color: d3.scale.category10().range(),
+                // color: d3.scale.category10().range(),
                 //useInteractiveGuideline: true,
                 duration: 500,
                 xAxis: {
@@ -52,17 +52,23 @@ class SpendingPerformance {
             type: "line",
             key: "Children in need, per 10,000",
             yAxis: 2,
+            color: "#1f77b4",
             values: [
                 { x: 0, label: "2015 Q1", y: 20 },
                 { x: 1, label: "2015 Q2", y: 60 },
                 { x: 2, label: "2015 Q3", y: 30 },
-                { x: 3, label: "2015 Q4", y: 40 }]
+                { x: 3, label: "2015 Q4", y: 40 }
+            ]
         };
 
         $scope.$on('chartRefresh', function (e, newData) {
             let spendingData = JSON.parse(JSON.stringify(newData));
+            spendingData.key = "Spending";
             spendingData.yAxis = 1;
-            spendingData.type = "bar";
+            spendingData.type = "line";
+            spendingData.values.forEach((val) => {
+                delete val.series;
+            });
             $scope.data = [
                 spendingData,
                 performanceValues

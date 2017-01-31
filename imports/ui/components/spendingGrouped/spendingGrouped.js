@@ -17,7 +17,7 @@ class SpendingGrouped {
                     top: 20,
                     right: 20,
                     bottom: 45,
-                    left: 120
+                    left: 50
                 },
                 clipEdge: true,
                 //staggerLabels: true,
@@ -25,7 +25,7 @@ class SpendingGrouped {
                 stacked: false,
                 showControls: false,
                 xAxis: {
-                    axisLabel: 'Month',
+                    axisLabel: 'Category',
                     showMaxMin: false,
                     tickFormat: function (d) {
                         // return d3.format(',f')(d);
@@ -37,7 +37,7 @@ class SpendingGrouped {
                     axisLabel: 'Amount',
                     axisLabelDistance: 50,
                     tickFormat: function (d) {
-                        return d3.format(',.1f')(d);
+                        return d3.format(',.1f')(d / 1e6) + "M";
                     }
                 }
             }
@@ -51,17 +51,19 @@ class SpendingGrouped {
             var values = [];
             var values0 = [];
 
-            for (var h = 0; h < 12; h++) {
-                let yVal = 10e7 * Math.random() + 1;
-                let month = h + 1;
-                let xLabel = ""; // "2016-" + ("00" + month).slice(-2);
+            let currentVal = 10e7 * Math.random() + 1;
+
+            for (var h = 0; h < 20; h++) {
+                let yVal = currentVal;
+                currentVal = currentVal * (0.6 + Math.random() * 0.4);
+                let xLabel = "";
                 values.push({ x: h, label: xLabel, y: yVal });
                 //values0.push({ x: h, label: xLabel, y: yVal * Math.random() });
             }
 
             return [{
                 key: 'Spending for category',
-                color: '#ffeead',
+                color: '#1f77b4',
                 values: values
             }];
         }

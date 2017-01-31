@@ -117,6 +117,7 @@ class SpendingPerTimePage {
 
         // UX defaults on component open
         $scope.detailsVisible = true;
+        $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
         $scope.selectedOrganisation = "Wakefield MDC";
 
