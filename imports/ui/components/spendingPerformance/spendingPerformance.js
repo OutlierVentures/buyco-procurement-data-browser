@@ -54,10 +54,10 @@ class SpendingPerformance {
             yAxis: 2,
             color: "#1f77b4",
             values: [
-                { x: 0, label: "2015 Q1", y: 20 },
-                { x: 1, label: "2015 Q2", y: 60 },
-                { x: 2, label: "2015 Q3", y: 30 },
-                { x: 3, label: "2015 Q4", y: 40 }
+                { x: 0, label: "2015 Q1", y: 407 },
+                { x: 1, label: "2015 Q2", y: 353 },
+                { x: 2, label: "2015 Q3", y: 291 },
+                { x: 3, label: "2015 Q4", y: 175 }
             ]
         };
 
