@@ -24,7 +24,7 @@ class SpendingPerformance {
                 duration: 500,
                 xAxis: {
                     tickFormat: function (d) {
-                        if (!$scope.data[0])
+                        if (!$scope.data[0].values[d])
                             return "";
                         var label = $scope.data[0].values[d].label;
                         return label;

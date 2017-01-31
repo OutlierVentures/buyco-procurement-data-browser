@@ -105,12 +105,18 @@ class SpendingPerTimePage {
 
                 $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
 
-                return [$scope.publicSpendingData,
-                {
-                    key: 'YPO',
-                    color: '#543996',
-                    values: clientValues
-                }];
+                let dataSeries = [$scope.publicSpendingData];
+
+                if (Meteor.userId()) {
+                    dataSeries.push(
+                        {
+                            key: 'YPO',
+                            color: '#543996',
+                            values: clientValues
+                        });
+                }
+
+                return dataSeries;
             }
 
         });
