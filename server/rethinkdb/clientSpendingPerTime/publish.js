@@ -20,10 +20,13 @@ Meteor.publish(collectionName, function (filters, options) {
     console.log("clientSpendingPerTime");
     console.log(filters);
 
-    // Only for logged in users.
-    // TODO: introduce authentication structure so that each user has their own client data.
-    if (!this.userId)
+    if (!filters.client_id)
         return;
+
+    // Only users with viewer/admin role for this org are allowed to access.
+    if (!(Roles.userIsInRole(this.userId, 'viewer', filters.client_id)
+        || Roles.userIsInRole(this.userId, 'admin', filters.client_id)))
+        throw new Meteor.Error(403);
 
     let period = "quarter";
     if (options && options.period)
@@ -67,6 +70,10 @@ Meteor.publish(collectionName, function (filters, options) {
         q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
     else if (period = "quarter")
         q = q.group(r.row("payment_date").year(), r.ceil(r.div(r.row("payment_date").month(), 3)))
+
+    // PERMISSION CHECK
+    // We do this after the filters above because in most cases it will be most efficient.
+    q = q.filter({ client_id: filters.client_id });
 
     q = q.sum('amount_net');
 
