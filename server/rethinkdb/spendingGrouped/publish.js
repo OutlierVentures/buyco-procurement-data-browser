@@ -8,6 +8,27 @@ console.log("spendingGrouped publish.js");
 const collectionName = "spendingGrouped";
 
 /**
+ * Javascript implementation of Java's string.hashCode()
+ * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+ */
+String.prototype.hashCode = function () {
+    var hash = 0,
+        strlen = this.length,
+        i,
+        c;
+    if (strlen === 0) {
+        return hash;
+    }
+    for (i = 0; i < strlen; i++) {
+        c = this.charCodeAt(i);
+
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
+
+/**
  * A collection for getting spending amount by a group field (category, service, supplier).
  */
 Meteor.publish(collectionName, function (filters, options) {
@@ -66,7 +87,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     q = q.sum('amount_net');
 
-    q = q.ungroup().orderBy(r.desc("reduction"));
+    q = q.ungroup().orderBy(r.desc("reduction")).limit(20);
 
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
         console.log("spendingGrouped: got cursor results.");
@@ -86,8 +107,23 @@ Meteor.publish(collectionName, function (filters, options) {
                 return;
             }
 
-            // Add _id for minimongo
-            row._id = row.group;            
+            // Store the groupField and filters in the row so that the client side can properly 
+            // filter it.
+            // Subscriptions are per client session, so subscriptions between multiple sessions
+            // won't overlap. However the client can have multiple subscriptions to this collection
+            // with a different group field and filters, which leads to different results.
+            // The client is supplied with the complete result set and therefore must filter these
+            // results through minimongo.
+            row.groupField = groupField;
+            row.organisation_name = filters.organisation_name;
+            row.procurement_classification_1 = filters.procurement_classification_1;
+            row.sercop_service = filters.sercop_service;
+
+            // Add _id for minimongo. We use a simple hash function based on the group, filter and value
+            // to get unique values.
+            let fingerprint = groupField + JSON.stringify(filters) + row.group;
+            // console.log("fingerprint", fingerprint);
+            row._id = fingerprint.hashCode();
 
             // console.log("Processing spendingGrouped row: " + JSON.stringify(row));
 

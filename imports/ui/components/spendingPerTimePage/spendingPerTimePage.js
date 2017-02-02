@@ -122,10 +122,10 @@ class SpendingPerTimePage {
                 return dataSeries;
             },
             /**
-             * Filter fields to pass to the category chart. This variable is bound by the sub chart
+             * Filter fields to pass to the sub charts. This variable is bound by the sub chart
              * component in the template.
              */
-            categoryChartFilters: () => {
+            subChartFilters: () => {
                 return {
                     organisation_name: $scope.getReactively("selectedOrganisation"),
                     procurement_classification_1: $scope.getReactively("category"),

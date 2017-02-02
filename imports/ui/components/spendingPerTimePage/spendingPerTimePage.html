@@ -85,5 +85,13 @@
 <div>
     <button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>
-    <spending-grouped ng-show="drillDownVisible" filters="categoryChartFilters" group-field="'procurement_classification_1'"></spending-grouped>
+    <div>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'"></spending-grouped>
+    </div>
+    <div>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'"></spending-grouped>
+    </div>
+    <div>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'"></spending-grouped>
+    </div>
 </div>
