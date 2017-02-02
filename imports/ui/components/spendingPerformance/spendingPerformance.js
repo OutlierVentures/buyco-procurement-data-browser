@@ -80,7 +80,7 @@ class SpendingPerformance {
 
         // this.s = $scope;
 
-        // this.$onInit = function ($scope) {
+        // this.$onInit = function () {
         //     this.s.data.push(this.spendingData);
         // }
     }
@@ -101,7 +101,7 @@ export default angular.module(name, [
         organisationName: '<',
         // Using the bindings to set the chart data doesn't work very well
         // because the parent keeps resetting it.
-        spendingData: '<'
+        // spendingData: '<'
     },
     controller: SpendingPerformance
 });

@@ -11,7 +11,7 @@ import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 
-import { name as SpendingGrouped } from '../spendingGrouped/spendingGrouped';
+import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
 import template from './spendingPerTimePage.html';
@@ -120,12 +120,26 @@ class SpendingPerTimePage {
                 }
 
                 return dataSeries;
+            },
+            /**
+             * Filter fields to pass to the category chart. This variable is bound by the sub chart
+             * component in the template.
+             */
+            categoryChartFilters: () => {
+                return {
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    procurement_classification_1: $scope.getReactively("category"),
+                    sercop_service: $scope.getReactively("service")
+                };
             }
-
         });
 
         // UX defaults on component open
+
+        // Show details and drilldown by default. If we start them as collapsed, nvd3 initialises their
+        // charts only several pixels wide and doesn't correct when uncollapsed.
         $scope.detailsVisible = true;
+        $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
         $scope.selectedOrganisation = "Wakefield MDC";
@@ -171,6 +185,7 @@ class SpendingPerTimePage {
                     left: 60
                 },
                 clipEdge: true,
+                // Alternate indent for labels
                 //staggerLabels: true,
                 duration: 500,
                 stacked: false,
@@ -180,7 +195,6 @@ class SpendingPerTimePage {
                     axisLabelDistance: 50,
                     showMaxMin: false,
                     tickFormat: function (d) {
-                        // return d3.format(',f')(d);
                         var label = $scope.chartData[0].values[d].label;
                         return label;
                     }
@@ -209,7 +223,7 @@ export default angular.module(name, [
     angularMeteor,
     uiRouter,
     utilsPagination,
-    SpendingGrouped,
+    SpendingGroupedChart,
     SpendingPerformance
 ]).component(name, {
     template,

@@ -7,19 +7,15 @@ console.log("spendingGrouped publish.js");
 
 const collectionName = "spendingGrouped";
 
-// On the server side, we publish the collection "blocks" in a custom way, by 
-// querying a rethinkdb table. On the client we publish it as a normal Mongo
-// collection so that minimongo will be used. When minimongo calls the server
-// side to get data, the code below is used.
-// Because the RethinkDB connection lives only on the server, the modules to
-// query it are under /server and not /import or anywhere else.
-// Source for this approach: https://medium.com/@danphi/meteor-and-rethinkdb-db8864762139
+/**
+ * A collection for getting spending amount by a group field (category, service, supplier).
+ */
 Meteor.publish(collectionName, function (filters, options) {
     var self = this;
 
     console.log("spendingGrouped");
-    console.log(filters);
-    console.log(options);
+    console.log("filters", filters);
+    console.log("options", options);
 
     let groupField;
 
@@ -70,9 +66,9 @@ Meteor.publish(collectionName, function (filters, options) {
 
     q = q.sum('amount_net');
 
+    q = q.ungroup().orderBy(r.desc("reduction"));
+
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        // On an "all" query for an organisation, the query takes 20s, while in the data explorer it takes 4-6s.
-        // Odd.
         console.log("spendingGrouped: got cursor results.");
 
         if (error) {
@@ -90,13 +86,16 @@ Meteor.publish(collectionName, function (filters, options) {
                 return;
             }
 
-            console.log("Processing spendingGrouped row: " + JSON.stringify(row));
+            // Add _id for minimongo
+            row._id = row.group;            
+
+            // console.log("Processing spendingGrouped row: " + JSON.stringify(row));
 
             if (error) {
                 console.error(error);
             } else {
                 // For non-changefeeds
-                self.added(collectionName, yearMonth, row);
+                self.added(collectionName, row._id, row);
             }
         });
 

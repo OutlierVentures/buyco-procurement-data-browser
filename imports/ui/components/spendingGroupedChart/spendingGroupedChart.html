@@ -1,9 +1,9 @@
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h2>Spend by {{groupFieldDisplayName}}</h2>
+        <h2>Spend by {{groupDisplayName}}</h2>
     </div>
     <div class="panel-body">
-        <nvd3 options="options" data="data"></nvd3>
+        <nvd3 options="chartOptions" data="chartData"></nvd3>
 
         <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
             <span ng-show="!detailsVisible">Show details</span>
@@ -12,11 +12,11 @@
         <div ng-show="detailsVisible">
             <table class="table table-striped">
                 <tr>
-                    <th class="text-capitalize">{{groupFieldDisplayName}}</th>
+                    <th class="text-capitalize">{{groupDisplayName}}</th>
                     <th>Total</th>
                 </tr>
-                <tr ng-repeat="spendGroup in mergedSpendingGroup">
-                    <td>{{ spendGroup.group[0] }}</td>
+                <tr ng-repeat="spendGroup in spendingGrouped">
+                    <td>{{spendGroup.group}}</td>
                     <td>&pound; {{spendGroup.reduction | number: 2}} </td>
                 </tr>
             </table>
