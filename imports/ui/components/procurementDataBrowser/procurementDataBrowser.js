@@ -40,7 +40,7 @@ function config($locationProvider, $urlRouterProvider, $qProvider) {
 
   $locationProvider.html5Mode(true);
 
-  $urlRouterProvider.otherwise('/spending');
+  $urlRouterProvider.otherwise('/spending/time');
 
   $qProvider.errorOnUnhandledRejections(false);
 }
