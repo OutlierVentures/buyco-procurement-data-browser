@@ -1,5 +1,30 @@
-<navigation class="navbar navbar-static-top navbar-dark bg-inverse"></navigation>
+<navigation></navigation>
 
-<div class="main container">
-    <div ui-view=""></div>
+<div class="main-content">
+    <div class="breadcrumbs">
+        <ul>
+            <li><a href="#/" title="">Home</a></li>
+            <li><a href="/spending" title="">Dashboard</a></li>
+        </ul>
+    </div>
+    <div class="heading-sec">
+        <div class="row">
+            <div class="col-md-12 column">
+                <div class="heading-profile">
+                    <h2>Procurement spending</h2>
+                    <span>Open spending info</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-content" ui-view=""></div>    
 </div>
+<footer>
+    <div class="container">
+        <p>&copy; 2017 Buyco Services Ltd.</p>
+        <ul>
+        	<li><a href="/spending/time" title="">Dashboard</a></li>
+        	<li><a href="/spending" title="">Transaction browser</a></li>
+        </ul>
+    </div>
+</footer>

@@ -1,0 +1,22 @@
+/* Workaround for black circles http://stackoverflow.com/questions/13619436/large-black-circles-overlay-scatterchart */
+.nv-point-paths {
+    display: none !important;
+}
+
+/* Workaround for undesired area fill http://stackoverflow.com/questions/33824119/nvd3-line-chart-automatically-setting-fill-opacity */
+.lines1Wrap .nv-group, .lines2Wrap .nv-group {
+    fill-opacity: 0 !important;
+}
+
+/* More space for the logo */
+.top-bar .logo {
+    min-width: 250px;
+}
+
+header .admin-details {
+    background: transparent;
+}
+
+.side-menus nav > ul > li a  {
+    padding-left: 30px;
+}

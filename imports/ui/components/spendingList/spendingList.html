@@ -1,37 +1,42 @@
-<h1>Procurement spending</h1>
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2>Transaction browser</h2>
-    </div>
-    <div class="panel-body">
-        <div class="input-group pull-right col-md-3 col-sm-12">
-            <input type="search" ng-model="search" placeholder="Search" class="form-control" />
-            <!--<div dropdown="" on-toggle="toggled(open)" class="dropdown input-group-btn">
+<div class="row">
+    <div class="col-md-12">
+        <div class="widget">
+            <div class="activity-sec">
+                <div class="widget-title">
+                    <h3>Transaction browser</h3>
+                </div>
+                <div>
+                    <div class="input-group pull-right col-md-3 col-sm-12">
+                        <input type="search" ng-model="search" placeholder="Search" class="form-control" />
+                        <!--<div dropdown="" on-toggle="toggled(open)" class="dropdown input-group-btn">
                 <button dropdown-toggle="" class="btn btn-primary dropdown-toggle">{{ orderProperty==='1' ? 'Ascending' : 'Descending' }}<span class="caret"></span></button>
                 <ul role="menu" class="dropdown-menu">
                     <li ng-click="orderProperty='1'">Ascending</li>
                     <li ng-click="orderProperty='-1'">Descending</li>
                 </ul>
             </div>-->
-        </div>
-        <table class="table table-striped">
-            <tr>
-                <th>TX number</th>
-                <th>Organisation</th>
-                <th>Category</th>
-                <th>Purpose</th>
-                <th>Amount</th>
-            </tr>
-            <tr dir-paginate="tx in spending | itemsPerPage: perPage" total-items="spendingTransactionsCount" current-page='page'>
-                <td>{{tx.transaction_number}}</td>
-                <td>{{tx.organisation_name}}</td>
-                <td>{{tx.procurement_classification_1}}</td>
-                <td>{{tx.purpose}}</td>
-                <td>&pound; {{tx.amount_net | number: 2}}</td>
-            </tr>
-        </table>
+                    </div>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>TX number</th>
+                            <th>Organisation</th>
+                            <th>Category</th>
+                            <th>Purpose</th>
+                            <th>Amount</th>
+                        </tr>
+                        <tr dir-paginate="tx in spending | itemsPerPage: perPage" total-items="spendingTransactionsCount" current-page='page'>
+                            <td>{{tx.transaction_number}}</td>
+                            <td>{{tx.organisation_name}}</td>
+                            <td>{{tx.procurement_classification_1}}</td>
+                            <td>{{tx.purpose}}</td>
+                            <td>&pound; {{tx.amount_net | number: 2}}</td>
+                        </tr>
+                    </table>
 
-        <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" class="col-md-12"></dir-pagination-controls>
+                    <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" class="col-md-12"></dir-pagination-controls>
+                    <p>Total number of records: {{spendingTransactionsCount}}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<p>Total number of records: {{spendingTransactionsCount}}</p>
