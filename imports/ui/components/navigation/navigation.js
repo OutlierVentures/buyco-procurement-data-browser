@@ -29,3 +29,4 @@ export default angular.module(name, [
   controllerAs: name,
   controller: NavigationController
 });
+

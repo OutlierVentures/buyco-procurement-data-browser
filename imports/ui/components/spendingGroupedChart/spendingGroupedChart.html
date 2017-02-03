@@ -1,26 +1,26 @@
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2>Spend by {{groupDisplayName}}</h2>
-    </div>
-    <div class="panel-body">
-        <nvd3 options="chartOptions" data="chartData"></nvd3>
+<div class="widget">
+    <div class="activity-sec">
+        <div class="widget-title">
+            <h3>Spend by {{groupDisplayName}}</h3>
+            <nvd3 options="chartOptions" data="chartData"></nvd3>
 
-        <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+            <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
             <span ng-show="!detailsVisible">Show details</span>
             <span ng-show="detailsVisible">Hide details</span></button>
 
-        <div ng-show="detailsVisible">
-            <table class="table table-striped">
-                <tr>
-                    <th class="text-capitalize">{{groupDisplayName}}</th>
-                    <th>Total</th>
-                </tr>
-                <tr ng-repeat="spendGroup in spendingGrouped">
-                    <td>{{spendGroup.group}}</td>
-                    <td>&pound; {{spendGroup.reduction | number: 2}} </td>
-                </tr>
-            </table>
-        </div>
+            <div ng-show="detailsVisible">
+                <table class="table table-striped">
+                    <tr>
+                        <th class="text-capitalize">{{groupDisplayName}}</th>
+                        <th>Total</th>
+                    </tr>
+                    <tr ng-repeat="spendGroup in spendingGrouped">
+                        <td>{{spendGroup.group}}</td>
+                        <td>&pound; {{spendGroup.reduction | number: 2}} </td>
+                    </tr>
+                </table>
+            </div>
 
+        </div>
     </div>
 </div>
