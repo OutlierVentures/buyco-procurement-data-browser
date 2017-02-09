@@ -30,7 +30,7 @@ services:
       - mongo_bigchaindb
     environment:
       - MONGO_URL=mongodb://mongo
-      - MONGO_BIGCHAINDB_URL=mongodb://mongo_bigchaindb
+      - MONGO_BIGCHAINDB_URL=mongodb://mongo_bigchaindb/bigchain
       - ROOT_URL=${BPDB_ROOT_URL}
       - BPDB_ENV=${BPDB_ENV}
       - PORT=4000
