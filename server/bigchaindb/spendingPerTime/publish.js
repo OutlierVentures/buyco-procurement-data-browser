@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
-import { publishUniqueValues } from '../utils';
 import { removeEmptyFilters } from '../utils';
 
 console.log("spendingPerTime publish.js");

@@ -46,11 +46,11 @@ class SpendingPerTimePage {
                     merged.push(mergedItem);
 
                     cs.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod._group.year
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod._group[$scope.period]) {
+                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                            && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
 
                             mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
-                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.reduction * 100;
+                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.totalAmount * 100;
                         }
                     });
 
@@ -95,8 +95,8 @@ class SpendingPerTimePage {
 
                     // Find corresponding item in client spending
                     clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod._group.year
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod._group[$scope.period]) {
+                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                            && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
                             clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
                         }
                     });
