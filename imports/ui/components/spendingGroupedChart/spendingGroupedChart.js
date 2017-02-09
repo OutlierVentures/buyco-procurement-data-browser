@@ -13,7 +13,7 @@ class SpendingGroupedChart {
         'ngInject';
 
         $reactive(this).attach($scope);
-        
+
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
@@ -37,12 +37,19 @@ class SpendingGroupedChart {
         // is left as an exercise to the reader; I couldn't get it to work reactively correctly when 
         // using a single filters object.
         this.spendingGrouped = () => {
-            return SpendingGrouped.find({
+            let filters = {
                 organisation_name: this.getReactively("filters.organisation_name"),
-                procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                sercop_service: this.getReactively("filters.sercop_service"),
                 groupField: this.getReactively("groupField")
-            });
+            };
+
+            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
+            // while all rows should be shown. Hence we only add them if they have a non-empty value.
+            if (this.getReactively("filters.procurement_classification_1"))
+                filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+            if (this.getReactively("filters.sercop_service"))
+                filters.sercop_service = this.getReactively("filters.sercop_service");
+
+            return SpendingGrouped.find(filters);
         }
 
         $scope.helpers({
@@ -58,6 +65,8 @@ class SpendingGroupedChart {
             chartData: () => {
                 var publicValues = [];
 
+                console.log("spendingGroupChart '" + this.groupField + "': processing chart data. Filters are:", this.filters);
+
                 let i = 0;
                 this.spendingGrouped().forEach((spendThisGroup) => {
                     let xLabel;
@@ -70,9 +79,9 @@ class SpendingGroupedChart {
                     //     ...
                     // }
                     // For the label we just use the "group" field.
-                    xLabel = spendThisGroup.group;
+                    xLabel = spendThisGroup._group;
 
-                    let yVal = spendThisGroup.reduction;
+                    let yVal = spendThisGroup.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisGroup });
 
                     i++;

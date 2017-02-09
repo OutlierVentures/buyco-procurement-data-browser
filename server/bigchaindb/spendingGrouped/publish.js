@@ -1,7 +1,6 @@
-r = require('rethinkdb');
-
 import { Meteor } from 'meteor/meteor';
-import { Connection } from '../connection';
+import { Spending } from '../spending';
+import { removeEmptyFilters } from '../utils';
 
 console.log("spendingGrouped publish.js");
 
@@ -29,108 +28,61 @@ Meteor.publish(collectionName, function (filters, options) {
     else
         return;
 
-    // Run the rethinkdb reactive query to get the data.
-    var q = r.table('public_spending');
+    let pipeLine = [];
 
-    let indexUsed = false;
+    removeEmptyFilters(filters);
 
-    // We can only use 1 index, and it has to be the first call (getAll()). We prefer the most specific
-    // fields to use by index because it will give us the smallest amount of results to further filter.
-    // TODO: refactor this to a query generator module which is reused by all rethinkdb publishers
-    if (filters.procurement_classification_1)
-        if (!indexUsed) {
-            console.log("Using index for procurement_classification_1.");
-            q = q.getAll(filters.procurement_classification_1, { index: "procurement_classification_1" });
-            indexUsed = true;
+    if (filters) {
+        pipeLine.push({ $match: filters });
+    }
+
+    let groupClause = { $group: { _id: '$' + groupField, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+
+    // Include the filtered fields in the result documents so the client can filter
+    // them too.
+    if (filters) {
+        for (let k in filters) {
+            if (filters[k] !== undefined)
+                groupClause.$group[k] = { $first: '$' + k };
         }
-        else
-            q = q.filter({ procurement_classification_1: filters.procurement_classification_1 });
+    }
 
-    if (filters.sercop_service)
-        if (!indexUsed) {
-            console.log("Using index for sercop_service.");
-            q = q.getAll(filters.sercop_service, { index: "sercop_service" });
-            indexUsed = true;
-        }
-        else
-            q = q.filter({ sercop_service: filters.sercop_service });
+    pipeLine.push(groupClause);
 
-    if (filters.organisation_name)
-        if (!indexUsed) {
-            console.log("Using index for organisation_name.");
-            q = q.getAll(filters.organisation_name, { index: "organisation_name" });
-            indexUsed = true;
-        }
-        else
-            q = q.filter({ organisation_name: filters.organisation_name });
+    let sortClause = {
+        "$sort": { "totalAmount": -1 }
+    };
+    pipeLine.push(sortClause);
 
-    q = q.group(groupField);
+    let limitClause = {
+        $limit: 20
+    }
+    pipeLine.push(limitClause);
 
-    q = q.sum('amount_net');
+    console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
 
-    q = q.ungroup().orderBy(r.desc("reduction")).limit(20);
+    // Call the aggregate
+    let cursor = Spending.aggregate(
+        pipeLine
+    ).forEach((doc) => {
+        doc._group = doc._id;
+        doc._id = JSON.stringify(doc).hashCode();
 
-    q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        console.log("spendingGrouped: got cursor results.");
+        // Store the groupField in the row so that the client can use it for filtering.
+        doc.groupField = groupField;
 
-        if (error) {
-            console.log("Error while fetching spending cursor");
-            console.error(error);
-            return;
-        }
+        // We add each document to the published collection so the subscribing client receives them.
+        this.added(collectionName, doc._id, doc);
+    });
 
-        // The RethinkDB cursor has been opened. For each of the items we call the 
-        // Meteor "added", "removed" and "changed" functions so that the RethinkDB
-        // data is progressed to the client.            
-        cursor.each(function (error, row) {
-            if (error) {
-                console.error(error);
-                return;
-            }
+    // Stop observing the cursor when client unsubs.
+    // Stopping a subscription automatically takes
+    // care of sending the client any removed messages.
+    this.onStop(() => {
+        if (cursor)
+            cursor.stop();
+    });
 
-            // Store the groupField and filters in the row so that the client side can properly 
-            // filter it.
-            // Subscriptions are per client session, so subscriptions between multiple sessions
-            // won't overlap. However the client can have multiple subscriptions to this collection
-            // with a different group field and filters, which leads to different results.
-            // The client is supplied with the complete result set and therefore must filter these
-            // results through minimongo.
-            row.groupField = groupField;
-            row.organisation_name = filters.organisation_name;
-            row.procurement_classification_1 = filters.procurement_classification_1;
-            row.sercop_service = filters.sercop_service;
-
-            // Add _id for minimongo. We use a simple hash function based on the group, filter and value
-            // to get unique values.
-            let fingerprint = groupField + JSON.stringify(filters) + row.group;
-            // console.log("fingerprint", fingerprint);
-            row._id = fingerprint.hashCode();
-
-            // console.log("Processing spendingGrouped row: " + JSON.stringify(row));
-
-            if (error) {
-                console.error(error);
-            } else {
-                // For non-changefeeds
-                self.added(collectionName, row._id, row);
-            }
-        });
-
-        self.onStop(function () {
-            cursor.close();
-        });
-
-        self.ready();
-    }));
-
-    // TODO: publish counts from rethinkdb. Need to pass a function to Counts.publish, but 
-    // we can't just do [collection].find().
-    // The below is incorrect in any case.
-    // r.table('wakefield_spending').count().run(Connection, Meteor.bindEnvironment(function (error, result) {
-    //     console.log("Count result: " + JSON.stringify(result));
-    //     Counts.publish(this, 'spendingTransactionsCount', result, { noReady: true });
-    // }));
-
-
+    this.ready();
 });
 

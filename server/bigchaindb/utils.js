@@ -35,9 +35,16 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     removeEmptyFilters(filters);
 
+    let matchClause = {};
+
     if (filters) {
-        pipeLine.push({ $match: filters });
+        matchClause.$match = filters;
     }
+
+    if (!matchClause.$match || !matchClause.$match[sourceFieldName])
+        matchClause.$match[sourceFieldName] = { $exists: true };
+
+    pipeLine.push(matchClause);
 
     let groupClause = {
         $group: {

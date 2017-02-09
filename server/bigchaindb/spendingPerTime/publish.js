@@ -46,7 +46,7 @@ Meteor.publish(collectionName, function (filters, options) {
         pipeLine
     ).forEach((doc) => {
         doc._group = doc._id;
-        doc._id = JSON.stringify(doc._id).hashCode()
+        doc._id = JSON.stringify(doc).hashCode();
 
         // We add each document to the published collection so the subscribing client receives them.
         this.added(collectionName, doc._id, doc);
