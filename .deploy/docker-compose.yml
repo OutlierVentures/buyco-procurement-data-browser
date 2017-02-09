@@ -19,7 +19,7 @@ services:
     container_name: buyco_procurement_data_browser_${BPDB_ENV}
     image: buyco_procurement_data_browser_app:${BPDB_ENV}
     volumes:
-      - ./data/app:/data
+      - ./data:/data
 # The web port is opened on local host only. Made available externally through nginx proxy.
 # Make sure that the container port number matches the Metior port number in PORT below.
     ports:
@@ -30,7 +30,7 @@ services:
       - mongo_bigchaindb
     environment:
       - MONGO_URL=mongodb://mongo
-      - MONGO_BIGCHAINDB_URL=mongodb://mongo_bigchaindb
+      - MONGO_BIGCHAINDB_URL=mongodb://mongo_bigchaindb/bigchain
       - ROOT_URL=${BPDB_ROOT_URL}
       - BPDB_ENV=${BPDB_ENV}
       - PORT=4000
