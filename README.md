@@ -62,7 +62,7 @@ meteor npm install
 meteor run
 ```
 
-The app should now be available at `http://localhost:3000`. Initially it won't show any data.
+The app should now be available at `http://localhost:3000`. Initially it won't show any data; see _Importing open spending data_ for instructions to get data in.
 
 ## Run using Docker
 
