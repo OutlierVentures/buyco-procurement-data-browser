@@ -146,6 +146,8 @@ class SpendingPerTimePage {
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
+
+        // TODO: remove this hardcoded default option, just use the first item in the list
         $scope.selectedOrganisation = "Wakefield MDC";
 
         $scope.subscribe('spendingOrganisations');

@@ -65,7 +65,7 @@ class SpendingGroupedChart {
             chartData: () => {
                 var publicValues = [];
 
-                console.log("spendingGroupChart '" + this.groupField + "': processing chart data. Filters are:", this.filters);
+                // console.log("spendingGroupChart '" + this.groupField + "': processing chart data. Filters are:", this.filters);
 
                 let i = 0;
                 this.spendingGrouped().forEach((spendThisGroup) => {
