@@ -46,11 +46,11 @@ class SpendingPerTimePage {
                     merged.push(mergedItem);
 
                     cs.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
+                        if (clientSpendThisPeriod.group[0] == spendThisPeriod._group.year
+                            && clientSpendThisPeriod.group[1] == spendThisPeriod._group[$scope.period]) {
 
-                            mergedItem.client_amount_net = clientSpendThisPeriod.reduction;
-                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.reduction / spendThisPeriod.reduction * 100;
+                            mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
+                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.reduction * 100;
                         }
                     });
 
@@ -86,18 +86,18 @@ class SpendingPerTimePage {
                     let xLabel;
                     if ($scope.period == "quarter")
                         // "2016 Q2"
-                        xLabel = spendThisPeriod.group[0] + " Q" + spendThisPeriod.group[1];
+                        xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
-                    let yVal = spendThisPeriod.reduction;
+                        xLabel = spendThisPeriod._id + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
+                    let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
 
                     // Find corresponding item in client spending
                     clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
-                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.reduction, source: clientSpendThisPeriod });
+                        if (clientSpendThisPeriod.group[0] == spendThisPeriod._group.year
+                            && clientSpendThisPeriod.group[1] == spendThisPeriod._group[$scope.period]) {
+                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
                         }
                     });
 

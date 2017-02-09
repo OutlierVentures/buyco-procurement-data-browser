@@ -2,6 +2,7 @@ r = require('rethinkdb');
 
 import { Meteor } from 'meteor/meteor';
 import { Connection } from '../connection';
+import { removeEmptyFilters } from '../utils';
 
 console.log("clientSpendingPerTime publish.js");
 
@@ -19,6 +20,8 @@ Meteor.publish(collectionName, function (filters, options) {
 
     console.log("clientSpendingPerTime");
     console.log(filters);
+
+    removeEmptyFilters(filters);
 
     if (!filters.client_id)
         return;

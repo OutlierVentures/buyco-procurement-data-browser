@@ -1,3 +1,23 @@
+/**
+ * Javascript implementation of Java's string.hashCode()
+ * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+ */
+String.prototype.hashCode = function () {
+    var hash = 0,
+        strlen = this.length,
+        i,
+        c;
+    if (strlen === 0) {
+        return hash;
+    }
+    for (i = 0; i < strlen; i++) {
+        c = this.charCodeAt(i);
+
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
 
 /**
  * Publish the unique values of a field in a source collection as a new collection.
@@ -10,17 +30,13 @@
  * @param sourceFieldName The field in the datasource to take the unique values form, for example "lastName"
  * @param targetFieldName Optional alternative field name to be used in the collection docs, for example "name"
  */
-export const publishUniqueValues = (publishFunction, collectionName, sourceCollection, filter, sourceFieldName, targetFieldName) => {
+export const publishUniqueValues = (publishFunction, collectionName, sourceCollection, filters, sourceFieldName, targetFieldName) => {
     let pipeLine = [];
 
-    // Clean up the filter
-    for (let k in filter) {
-        if (filter[k] === null)
-            delete filter[k];
-    }
+    removeEmptyFilters(filters);
 
-    if (filter) {
-        pipeLine.push({ $match: filter });
+    if (filters) {
+        pipeLine.push({ $match: filters });
     }
 
     let groupClause = {
@@ -33,9 +49,9 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     // Include the filtered fields in the result documents so the client can filter
     // them too.
-    if (filter) {
-        for (let k in filter) {
-            if (filter[k] !== undefined)
+    if (filters) {
+        for (let k in filters) {
+            if (filters[k] !== undefined)
                 groupClause.$group[k] = { $first: '$' + k };
         }
     }
@@ -45,7 +61,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
     let sortClause = { "$sort": { [sourceFieldName]: 1 } };
     pipeLine.push(sortClause);
 
-    console.log("publishUniqueValues pipeLine", JSON.stringify(pipeLine));
+    // console.log("publishUniqueValues pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = sourceCollection.aggregate(
@@ -73,3 +89,15 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     publishFunction.ready();
 }
+
+/**
+ * Remove empty filter values from a filter object.
+ */
+export const removeEmptyFilters = (filters) => {
+    for (let k in filters) {
+        // Take out empty values. We explicitly take out the empty string as a filter value,
+        // because select boxes can pass them when an empty "-- select --" option is selected.
+        if (filters[k] === null || filters[k] === "")
+            delete filters[k];
+    }
+};

@@ -8,28 +8,9 @@ console.log("spendingGrouped publish.js");
 const collectionName = "spendingGrouped";
 
 /**
- * Javascript implementation of Java's string.hashCode()
- * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
- */
-String.prototype.hashCode = function () {
-    var hash = 0,
-        strlen = this.length,
-        i,
-        c;
-    if (strlen === 0) {
-        return hash;
-    }
-    for (i = 0; i < strlen; i++) {
-        c = this.charCodeAt(i);
-
-        hash = ((hash << 5) - hash) + c;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
-};
-
-/**
- * A collection for getting spending amount by a group field (category, service, supplier).
+ * Publish the distinct categories.
+ * For aggregations we use the approach with directly calling the low-level added/changed/removed
+ * interface explained here: http://docs.meteor.com/api/pubsub.html#Meteor-publish
  */
 Meteor.publish(collectionName, function (filters, options) {
     var self = this;
