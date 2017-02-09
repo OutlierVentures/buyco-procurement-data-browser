@@ -1,0 +1,67 @@
+// Delete previous data
+r.db('bigchain').table('wakefield_import').delete();
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"}).delete();
+
+// Show imported data
+r.db('bigchain').table('wakefield_import');
+
+
+
+// Preprocess Wakefield data
+
+// Convert amount to number 
+r.db('bigchain').table('wakefield_import').filter(r.row("amount_net").match(","))
+  .update(function(doc) {
+    return doc.merge({
+        amount_net: doc('amount_net').split(',').reduce(
+        function(l, r) {
+             return l.add(r)
+        })
+    })
+});
+
+
+  
+  
+
+// Import the data to the public_spending table in the right format
+r.db('bigchain').table('public_spending').insert(
+// Select normalised data like we want to import it
+r.db('bigchain').table('wakefield_import')
+  .merge({
+    amount_net: r.row('amount_net').coerceTo('number'),
+    effective_date: r.row('effective_date').split('/').do(function(arr) {
+				return r.ISO8601(r.add(arr.nth(2), "-", arr.nth(1), "-", arr.nth(0)), {defaultTimezone: '+00:00'});
+    	}),
+    payment_date: r.row('payment_date').split('/').do(function(arr) {
+				return r.ISO8601(r.add(arr.nth(2), "-", arr.nth(1), "-", arr.nth(0)), {defaultTimezone: '+00:00'});
+    	})
+		})
+);
+
+
+// Switch sercop with code where applicable (only one character)
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"})
+  .filter(r.row("sercop_service").match("^.$"))
+  .update(function(doc){
+    return doc.merge({
+      sercop_uri: doc("sercop_service"),
+      sercop_service: doc("sercop_uri")
+    });
+  });
+
+// Update category apostrophe
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"})
+  .filter(r.row("sercop_service").match("Children´s and Education Services"))
+  .update(function(doc){
+    return doc.merge({
+      sercop_service: "Children's and Education Services"
+    });
+  });
+
+
+// See total counts
+
+r.db('bigchain').table('public_spending').filter({organisation_name: "Wakefield MDC"}).count();
+
+r.db('bigchain').table('wakefield_import').count();

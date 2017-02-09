@@ -17,8 +17,10 @@ const collectionName = "spending";
 Meteor.publish(collectionName, function (options, searchString) {
     var self = this;
 
+    // TODO: select based on organisation name
+
     // Run the rethinkdb reactive query to get the data.
-    var q = r.table('wakefield_spending');
+    var q = r.table('public_spending');
 
     q = q.orderBy({
         // The field to order by must be an index. If necessary, create using:
