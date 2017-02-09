@@ -62,10 +62,14 @@ class SpendingPerTimePage {
                 return SpendingOrganisations.find({});
             },
             spendingServices: function () {
-                return SpendingServices.find({});
+                return SpendingServices.find({
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                });
             },
             spendingCategories: function () {
-                return SpendingCategories.find({ organisation_name: $scope.getReactively("selectedOrganisation") });
+                return SpendingCategories.find({
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                });
             },
             chartData: function () {
                 var spendingPerTime = SpendingPerTime.find({}, {
@@ -146,10 +150,14 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
-            return [$scope.getReactively("selectedOrganisation")];
+            return [{
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+            }];
         });
         $scope.subscribe('spendingCategories', function () {
-            return [$scope.getReactively("selectedOrganisation")];
+            return [{
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+            }];
         });
 
         $scope.subscribe('spendingPerTime', function () {

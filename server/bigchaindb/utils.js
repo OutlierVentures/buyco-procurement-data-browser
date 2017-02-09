@@ -15,7 +15,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     // Clean up the filter
     for (let k in filter) {
-        if (filter[k] === undefined)
+        if (filter[k] === null)
             delete filter[k];
     }
 
@@ -44,6 +44,8 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     let sortClause = { "$sort": { [sourceFieldName]: 1 } };
     pipeLine.push(sortClause);
+
+    console.log("publishUniqueValues pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = sourceCollection.aggregate(
