@@ -69,9 +69,9 @@
                                         <th ng-show="isLoggedIn">%</th>
                                     </tr>
                                     <tr ng-repeat="spendGroup in mergedSpendingPerTime">
-                                        <td>{{ spendGroup.group[0] }}</td>
-                                        <td><span ng-show="period=='quarter'">Q</span>{{spendGroup.group[1]}}</td>
-                                        <td>&pound; {{spendGroup.reduction | number: 2}} </td>
+                                        <td>{{ spendGroup._group.year }}</td>
+                                        <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
+                                        <td>&pound; {{spendGroup.totalAmount | number: 2}} </td>
                                         <td ng-show="isLoggedIn">&pound; {{spendGroup.client_amount_net | number: 2}}</td>
                                         <td ng-show="isLoggedIn">{{spendGroup.client_amount_net_percent | number: 1}}</td>
                                     </tr>

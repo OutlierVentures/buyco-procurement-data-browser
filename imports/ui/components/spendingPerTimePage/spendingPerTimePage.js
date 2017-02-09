@@ -46,11 +46,11 @@ class SpendingPerTimePage {
                     merged.push(mergedItem);
 
                     cs.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
+                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                            && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
 
-                            mergedItem.client_amount_net = clientSpendThisPeriod.reduction;
-                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.reduction / spendThisPeriod.reduction * 100;
+                            mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
+                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.totalAmount * 100;
                         }
                     });
 
@@ -62,10 +62,14 @@ class SpendingPerTimePage {
                 return SpendingOrganisations.find({});
             },
             spendingServices: function () {
-                return SpendingServices.find({});
+                return SpendingServices.find({
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                });
             },
             spendingCategories: function () {
-                return SpendingCategories.find({});
+                return SpendingCategories.find({
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                });
             },
             chartData: function () {
                 var spendingPerTime = SpendingPerTime.find({}, {
@@ -82,18 +86,18 @@ class SpendingPerTimePage {
                     let xLabel;
                     if ($scope.period == "quarter")
                         // "2016 Q2"
-                        xLabel = spendThisPeriod.group[0] + " Q" + spendThisPeriod.group[1];
+                        xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
-                    let yVal = spendThisPeriod.reduction;
+                        xLabel = spendThisPeriod._id + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
+                    let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
 
                     // Find corresponding item in client spending
                     clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod.group[0] == spendThisPeriod.group[0]
-                            && clientSpendThisPeriod.group[1] == spendThisPeriod.group[1]) {
-                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.reduction, source: clientSpendThisPeriod });
+                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                            && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
+                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
                         }
                     });
 
@@ -146,10 +150,14 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
-            return [$scope.getReactively("selectedOrganisation")];
+            return [{
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+            }];
         });
         $scope.subscribe('spendingCategories', function () {
-            return [$scope.getReactively("selectedOrganisation")];
+            return [{
+                organisation_name: $scope.getReactively("selectedOrganisation"),
+            }];
         });
 
         $scope.subscribe('spendingPerTime', function () {

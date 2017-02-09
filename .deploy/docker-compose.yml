@@ -1,19 +1,12 @@
 version: '2'
 services:
-  rethinkdb:
-    build: ./rethinkdb
-    container_name: buyco_procurement_data_browser_rethinkdb_${BPDB_ENV}
-    image: buyco_procurement_data_browser_rethinkdb:${BPDB_ENV}
-# Expose RethinkDB client port to linked containers
+  mongo_bigchaindb:
+    image: mongo
+    container_name: buyco_procurement_data_browser_mongo_bigchaindb_${BPDB_ENV}
     expose:
-      - "28015"
-# Expose web admin port locally to host for testing / initialisation purposes.
-# Disabled by default. Should not be enabled in production, because the web interface
-# can't be secured.
-#    ports:
-#      - "127.0.0.1:8080:8080"
+      - "27017"
     volumes:
-      - ./data/rethinkdb:/data
+      - ./data/mongodb_bigchaindb:/data/db
   mongo:
     image: mongo
     container_name: buyco_procurement_data_browser_mongo_${BPDB_ENV}
@@ -33,11 +26,11 @@ services:
       - "127.0.0.1:${BPDB_PORT}:4000"
 # The app container has access to both database containers on the (internally) exposed ports.
     links:
-      - rethinkdb
       - mongo
+      - mongo_bigchaindb
     environment:
-      - RETHINKDB_HOST=rethinkdb
       - MONGO_URL=mongodb://mongo
+      - MONGO_BIGCHAINDB_URL=mongodb://mongo_bigchaindb/bigchain
       - ROOT_URL=${BPDB_ROOT_URL}
       - BPDB_ENV=${BPDB_ENV}
       - PORT=4000

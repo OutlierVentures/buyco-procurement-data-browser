@@ -1,5 +1,4 @@
-// On the client side, RethinkDB tables are mimicked as Mongo collections.
-export const Spending = new Mongo.Collection('spending');
+export const Spending = new Mongo.Collection('public_spending');
 
 Spending.allow({
   insert: function (userId, transaction) {
@@ -12,3 +11,5 @@ Spending.allow({
     return false;
   }
 });
+
+
