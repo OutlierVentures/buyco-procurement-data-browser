@@ -3,7 +3,7 @@ import { Config } from '../config';
 
 let database = new MongoInternals.RemoteCollectionDriver(Config.bigchainDb.database.url);
 
-let Spending = new Mongo.Collection('public_spending', { _driver: database });
+export const Spending = new Mongo.Collection('public_spending', { _driver: database });
 
 console.log("spending publish.js");
 
@@ -47,7 +47,6 @@ Meteor.publish(collectionName, function (options, searchString) {
     // The official way is documented here and should work well: http://docs.meteor.com/api/pubsub.html#Meteor-publish
 
     // Counts.publish(this, 'spendingTransactionsCount', Spending.find(selector), { noReady: true });
-
+    debugger;
     return Spending.find(selector, queryOptions);
 });
-
