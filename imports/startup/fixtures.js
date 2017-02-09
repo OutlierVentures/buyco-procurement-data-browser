@@ -8,8 +8,7 @@ Meteor.startup(() => {
   var defaultUsers = [
     { email: "aron@outlierventures.io", name: "Aron van Ammers", roles: [{ group: Roles.GLOBAL_GROUP, role: 'admin' }] },
     { email: "taimur@buyco.io", name: "Taimur Khan", roles: [{ group: Roles.GLOBAL_GROUP, role: 'admin' }] },
-    { email: "jb@outlierventures.io", name: "Jamie Burke", roles: [{ group: Roles.GLOBAL_GROUP, role: 'admin' }] },
-    { email: "gavin.rimmington@ypo.co.uk", name: "Gavin Rimmington", roles: [{ group: "ypo.co.uk", role: 'viewer' }] }
+    { email: "jb@outlierventures.io", name: "Jamie Burke", roles: [{ group: Roles.GLOBAL_GROUP, role: 'admin' }] }
   ];
 
   ensureUserIsInRoles = (userId, defaultUserInfo) => {
