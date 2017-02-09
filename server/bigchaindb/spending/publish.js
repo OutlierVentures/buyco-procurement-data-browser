@@ -42,11 +42,10 @@ Meteor.publish(collectionName, function (options, searchString) {
             { purpose: searchRegex }
         ];
     }
-
+    
     // TODO: publish counts. The package tmeasday:counts is only usable for counts in the order of 100.
     // The official way is documented here and should work well: http://docs.meteor.com/api/pubsub.html#Meteor-publish
 
     // Counts.publish(this, 'spendingTransactionsCount', Spending.find(selector), { noReady: true });
-    debugger;
     return Spending.find(selector, queryOptions);
 });
