@@ -3,42 +3,59 @@ r = require('rethinkdb');
 import { Meteor } from 'meteor/meteor';
 import { Connection } from '../connection';
 
-console.log("clientSpendingPerTime publish.js");
+console.log("spendingGrouped publish.js");
 
-const collectionName = "clientSpendingPerTime";
+const collectionName = "spendingGrouped";
 
-// On the server side, we publish the collection "blocks" in a custom way, by 
-// querying a rethinkdb table. On the client we publish it as a normal Mongo
-// collection so that minimongo will be used. When minimongo calls the server
-// side to get data, the code below is used.
-// Because the RethinkDB connection lives only on the server, the modules to
-// query it are under /server and not /import or anywhere else.
-// Source for this approach: https://medium.com/@danphi/meteor-and-rethinkdb-db8864762139
+/**
+ * Javascript implementation of Java's string.hashCode()
+ * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+ */
+String.prototype.hashCode = function () {
+    var hash = 0,
+        strlen = this.length,
+        i,
+        c;
+    if (strlen === 0) {
+        return hash;
+    }
+    for (i = 0; i < strlen; i++) {
+        c = this.charCodeAt(i);
+
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
+
+/**
+ * A collection for getting spending amount by a group field (category, service, supplier).
+ */
 Meteor.publish(collectionName, function (filters, options) {
     var self = this;
 
-    console.log("clientSpendingPerTime");
-    console.log(filters);
+    console.log("spendingGrouped");
+    console.log("filters", filters);
+    console.log("options", options);
 
-    if (!filters.client_id)
+    let groupField;
+
+    // We allow grouping by these fields
+    if (options.groupField == "procurement_classification_1"
+        || options.groupField == "supplier_name"
+        || options.groupField == "sercop_service")
+        groupField = options.groupField;
+    else
         return;
 
-    // Only users with viewer/admin role for this org are allowed to access.
-    if (!(Roles.userIsInRole(this.userId, 'viewer', filters.client_id)
-        || Roles.userIsInRole(this.userId, 'admin', filters.client_id)))
-        throw new Meteor.Error(403);
-
-    let period = "quarter";
-    if (options && options.period)
-        period = options.period;
-
     // Run the rethinkdb reactive query to get the data.
-    var q = r.table('client_spending');
+    var q = r.table('public_spending');
 
     let indexUsed = false;
 
     // We can only use 1 index, and it has to be the first call (getAll()). We prefer the most specific
     // fields to use by index because it will give us the smallest amount of results to further filter.
+    // TODO: refactor this to a query generator module which is reused by all rethinkdb publishers
     if (filters.procurement_classification_1)
         if (!indexUsed) {
             console.log("Using index for procurement_classification_1.");
@@ -66,21 +83,14 @@ Meteor.publish(collectionName, function (filters, options) {
         else
             q = q.filter({ organisation_name: filters.organisation_name });
 
-    if (period == "month")
-        q = q.group(r.row("payment_date").year(), r.row("payment_date").month())
-    else if (period = "quarter")
-        q = q.group(r.row("payment_date").year(), r.ceil(r.div(r.row("payment_date").month(), 3)))
-
-    // PERMISSION CHECK
-    // We do this after the filters above because in most cases it will be most efficient.
-    q = q.filter({ client_id: filters.client_id });
+    q = q.group(groupField);
 
     q = q.sum('amount_net');
 
+    q = q.ungroup().orderBy(r.desc("reduction")).limit(20);
+
     q.run(Connection, Meteor.bindEnvironment(function (error, cursor) {
-        // On an "all" query for an organisation, the query takes 20s, while in the data explorer it takes 4-6s.
-        // Odd.
-        console.log("clientSpendingPerTime: got cursor results.");
+        console.log("spendingGrouped: got cursor results.");
 
         if (error) {
             console.log("Error while fetching spending cursor");
@@ -96,13 +106,32 @@ Meteor.publish(collectionName, function (filters, options) {
                 console.error(error);
                 return;
             }
-            let yearMonth = row.group[0] + "-" + row.group[1];
-            // console.log("Processing clientSpendingPerTime row: " + yearMonth);
+
+            // Store the groupField and filters in the row so that the client side can properly 
+            // filter it.
+            // Subscriptions are per client session, so subscriptions between multiple sessions
+            // won't overlap. However the client can have multiple subscriptions to this collection
+            // with a different group field and filters, which leads to different results.
+            // The client is supplied with the complete result set and therefore must filter these
+            // results through minimongo.
+            row.groupField = groupField;
+            row.organisation_name = filters.organisation_name;
+            row.procurement_classification_1 = filters.procurement_classification_1;
+            row.sercop_service = filters.sercop_service;
+
+            // Add _id for minimongo. We use a simple hash function based on the group, filter and value
+            // to get unique values.
+            let fingerprint = groupField + JSON.stringify(filters) + row.group;
+            // console.log("fingerprint", fingerprint);
+            row._id = fingerprint.hashCode();
+
+            // console.log("Processing spendingGrouped row: " + JSON.stringify(row));
+
             if (error) {
                 console.error(error);
             } else {
                 // For non-changefeeds
-                self.added(collectionName, yearMonth, row);
+                self.added(collectionName, row._id, row);
             }
         });
 

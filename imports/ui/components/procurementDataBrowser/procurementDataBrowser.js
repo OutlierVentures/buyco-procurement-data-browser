@@ -5,6 +5,7 @@ import uiRouter from 'angular-ui-router';
 import template from './procurementDataBrowser.html';
 import { name as BlocksList } from '../blocksList/blocksList';
 import { name as ChartTest } from '../chartTest/chartTest';
+import { name as LineBarChartTest } from '../lineBarChartTest/lineBarChartTest';
 import { name as SpendingList } from '../spendingList/spendingList';
 import { name as SpendingPerTimePage } from '../spendingPerTimePage/spendingPerTimePage';
 import { name as Importer } from '../importer/importer';
@@ -19,6 +20,7 @@ export default angular.module(name, [
   angularMeteor,
   uiRouter,
   ChartTest,
+  LineBarChartTest,
   BlocksList,
   SpendingList,
   SpendingPerTimePage,
@@ -38,7 +40,7 @@ function config($locationProvider, $urlRouterProvider, $qProvider) {
 
   $locationProvider.html5Mode(true);
 
-  $urlRouterProvider.otherwise('/spending');
+  $urlRouterProvider.otherwise('/spending/time');
 
   $qProvider.errorOnUnhandledRejections(false);
 }

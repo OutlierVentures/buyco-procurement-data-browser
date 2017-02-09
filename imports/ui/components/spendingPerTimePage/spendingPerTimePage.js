@@ -11,6 +11,8 @@ import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 
+import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
+import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
 import template from './spendingPerTimePage.html';
 
@@ -20,7 +22,12 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
+        var that = this;
+
         $scope.helpers({
+            isLoggedIn: function () {
+                return Meteor.userId() != null;
+            },
             spendingPerTime: function () {
                 return SpendingPerTime.find({});
             },
@@ -72,7 +79,13 @@ class SpendingPerTimePage {
 
                 let i = 0;
                 spendingPerTime.forEach((spendThisPeriod) => {
-                    let xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
+                    let xLabel;
+                    if ($scope.period == "quarter")
+                        // "2016 Q2"
+                        xLabel = spendThisPeriod.group[0] + " Q" + spendThisPeriod.group[1];
+                    else
+                        // E.g. "2016-05" for May 2016
+                        xLabel = spendThisPeriod.group[0] + "-" + ("00" + spendThisPeriod.group[1]).slice(-2);
                     let yVal = spendThisPeriod.reduction;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
 
@@ -87,21 +100,47 @@ class SpendingPerTimePage {
                     i++;
                 });
 
-                return [{
-                    key: 'Total spending',
-                    color: '#fdb632',
+                $scope.publicSpendingData = {
+                    key: $scope.selectedOrganisation,
+                    color: '#404040',
                     values: publicValues
-                }, {
-                    key: 'Your BuyCo',
-                    color: '#027878',
-                    values: clientValues
-                }];
-            }
+                };
 
+                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
+
+                let dataSeries = [$scope.publicSpendingData];
+
+                if (Meteor.userId()) {
+                    dataSeries.push(
+                        {
+                            key: 'YPO',
+                            color: '#543996',
+                            values: clientValues
+                        });
+                }
+
+                return dataSeries;
+            },
+            /**
+             * Filter fields to pass to the sub charts. This variable is bound by the sub chart
+             * component in the template.
+             */
+            subChartFilters: () => {
+                return {
+                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    procurement_classification_1: $scope.getReactively("category"),
+                    sercop_service: $scope.getReactively("service")
+                };
+            }
         });
 
         // UX defaults on component open
+
+        // Show details and drilldown by default. If we start them as collapsed, nvd3 initialises their
+        // charts only several pixels wide and doesn't correct when uncollapsed.
         $scope.detailsVisible = true;
+        $scope.drillDownVisible = true;
+        $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
         $scope.selectedOrganisation = "Wakefield MDC";
 
@@ -126,6 +165,7 @@ class SpendingPerTimePage {
 
         $scope.subscribe('clientSpendingPerTime', function () {
             return [{
+                client_id: "ypo.co.uk",
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service")
@@ -137,31 +177,31 @@ class SpendingPerTimePage {
 
         $scope.chartOptions = {
             chart: {
-                type: 'multiBarHorizontalChart',
+                type: 'multiBarChart',
                 height: 600,
                 margin: {
                     top: 20,
                     right: 20,
-                    bottom: 80,
+                    bottom: 50,
                     left: 60
                 },
                 clipEdge: true,
+                // Alternate indent for labels
                 //staggerLabels: true,
                 duration: 500,
                 stacked: false,
                 showControls: false,
                 xAxis: {
                     // axisLabel: 'Month',
-                    // axisLabelDistance: 50,
+                    axisLabelDistance: 50,
                     showMaxMin: false,
                     tickFormat: function (d) {
-                        // return d3.format(',f')(d);
                         var label = $scope.chartData[0].values[d].label;
                         return label;
                     }
                 },
                 yAxis: {
-                    axisLabel: 'Amount',
+                    // axisLabel: 'Amount',
                     axisLabelDistance: 20,
                     tickFormat: function (d) {
                         return d3.format(',.1f')(d / 1e6) + "M";
@@ -184,6 +224,8 @@ export default angular.module(name, [
     angularMeteor,
     uiRouter,
     utilsPagination,
+    SpendingGroupedChart,
+    SpendingPerformance
 ]).component(name, {
     template,
     controllerAs: name,

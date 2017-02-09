@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible Node.js debug attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Process",
+            "port": 5858,
+            // With sourceMaps disabled, normal breakpoints do stop the debugger at the right point.
+            // However the file shown is then the bundled app.js. So we enable sourceMaps and
+            // use "debugger;" to trigger breakpoints.
+            // I have not been able to use normal breakpoints with sourceMaps enabled.
+            "sourceMaps": true,
+            "address": "publicdata.works.dev",
+            "remoteRoot": "/home/vagrant/develop/buyco-procurement-data-browser/",
+            "localRoot": "${workspaceRoot}"
+        }
+    ]
+}
