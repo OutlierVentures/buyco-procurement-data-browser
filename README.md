@@ -2,6 +2,11 @@
 
 Meteor app for browsing and visualising spending data stored in a BigchainDB/MongoDB backend.
 
+Live environments:
+
+- Development (`develop` branch): [http://dev.app.publicdata.works](http://dev.app.publicdata.works)
+- Staging (`master` branch): [http://staging.app.publicdata.works](http://staging.app.publicdata.works) - to be set up
+
 ## Components
 
 - Meteor app
@@ -31,7 +36,7 @@ Clone the repository in a working folder:
 git clone git@github.com:OutlierVentures/buyco-procurement-data-browser.git
 ```
 
-Create a working branch to create your changes. Any commits to the main branches go through pull requests.
+Create a working branch to create your changes. Create a pull request when you want something to be committed to `develop`.
 
 ```
 git checkout -b my-new-branch
