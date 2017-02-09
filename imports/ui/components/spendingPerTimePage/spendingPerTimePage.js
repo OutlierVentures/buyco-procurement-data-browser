@@ -65,7 +65,7 @@ class SpendingPerTimePage {
                 return SpendingServices.find({});
             },
             spendingCategories: function () {
-                return SpendingCategories.find({});
+                return SpendingCategories.find({ organisation_name: $scope.getReactively("selectedOrganisation") });
             },
             chartData: function () {
                 var spendingPerTime = SpendingPerTime.find({}, {

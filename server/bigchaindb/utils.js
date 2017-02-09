@@ -13,6 +13,12 @@
 export const publishUniqueValues = (publishFunction, collectionName, sourceCollection, filter, sourceFieldName, targetFieldName) => {
     let pipeLine = [];
 
+    // Clean up the filter
+    for (let k in filter) {
+        if (filter[k] === undefined)
+            delete filter[k];
+    }
+
     if (filter) {
         pipeLine.push({ $match: filter });
     }
@@ -25,17 +31,33 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
 
     groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
 
+    // Include the filtered fields in the result documents so the client can filter
+    // them too.
+    if (filter) {
+        for (let k in filter) {
+            if (filter[k] !== undefined)
+                groupClause.$group[k] = { $first: '$' + k };
+        }
+    }
+
     pipeLine.push(groupClause);
 
-    if (!targetFieldName)
-        targetFieldName = sourceFieldName;
+    let sortClause = { "$sort": { [sourceFieldName]: 1 } };
+    pipeLine.push(sortClause);
 
+    // Call the aggregate
     let cursor = sourceCollection.aggregate(
         pipeLine
     ).forEach((doc) => {
-        let addedDoc = {};
-        addedDoc[targetFieldName] = doc[sourceFieldName];
+        // Prepare the document for publishing. Start with a clone.
+        let addedDoc = JSON.parse(JSON.stringify(doc));
 
+        if (targetFieldName && targetFieldName != sourceFieldName) {
+            delete addedDoc[sourceFieldName];
+            addedDoc[targetFieldName] = doc[sourceFieldName];
+        }
+
+        // We add each document to the published collection so the subscribing client receives them.
         publishFunction.added(collectionName, doc[sourceFieldName], addedDoc);
     });
 
