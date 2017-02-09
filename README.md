@@ -120,12 +120,6 @@ When using a local MongoDB installation on the default port:
 mongorestore -d bigchain public_spending.bson
 ```
 
-When using the Meteor MongoDB instance, ensure that the app is running (`meteor run`) and restore the data to that instance:
-
-```
-mongorestore --port 3001 -d bigchain ../import/public_spending.bson
-```
-
 You should see something like:
 
 ```
