@@ -9,6 +9,35 @@ class SpendingPerformance {
     constructor($scope, $reactive) {
         'ngInject';
 
+        $scope.dataSource = [
+            {
+                label : '2015',
+                children : 20,
+                spending : 50,
+                total : 70
+            }, {
+                label : '2016',
+                children : 35,
+                spending : 50,
+                total : 85
+            }, {
+                label : '2017',
+                children : 20,
+                spending : 30,
+                total : 50
+            }, {
+                label : '2018',
+                children : 54,
+                spending : 23,
+                total : 77
+            }, {
+                label : '2019',
+                children : 87,
+                spending : 13,
+                total : 100
+            }
+        ];
+
         $scope.options = {
             chart: {
                 type: 'multiChart',
@@ -45,8 +74,79 @@ class SpendingPerformance {
             }
         };
 
-        var that = this;
+        $scope.chartOptions = {
+            palette: "vintage",
+            dataSource: $scope.dataSource,
+            commonSeriesSettings:{
+                argumentField: "label",
+                type: "fullstackedbar"
+            },
+            series: [{
+                    valueField: "children",
+                    name: "Children in need, per 10,000"
+                }, {
+                    valueField: "spending",
+                    name: "Spending"
+                }, {
+                    axis: "total",
+                    type: "spline",
+                    valueField: "total",
+                    name: "Total",
+                    color: "#008fd8"
+                }
+            ],
+            valueAxis: [{
+                grid: {
+                    visible: true
+                }
+            }, {
+                name: "total",
+                position: "right",
+                grid: {
+                    visible: true
+                },
+                label: {
+                    format: "largeNumber"
+                }
+            }],
+            tooltip: {
+                enabled: true,
+                shared: true,
+                format: {
+                    type: "largeNumber",
+                    precision: 1
+                },
+                customizeTooltip: function (arg) {
+                    var items = arg.valueText.split("\n"),
+                        color = arg.point.getColor();
+                    $.each(items, function(index, item) {
+                        if(item.indexOf(arg.seriesName) === 0) {
+                            items[index] = $("<b>")
+                                            .text(item)
+                                            .css("color", color)
+                                            .prop("outerHTML");
+                        }
+                    });
+                    return { text: items.join("\n") };
+                }
+            },
+            legend: {
+                verticalAlignment: "bottom",
+                horizontalAlignment: "center"
+            },
+            "export": {
+                enabled: true
+            }
+        };
 
+        $scope.helpers({
+            chartData: function () {
+                $scope.chartOptions.dataSource = $scope.getReactively("dataSource");
+                return $scope.chartOptions;
+            }
+        });
+
+        var that = this;
 
         let performanceValues = {
             type: "line",
@@ -73,18 +173,41 @@ class SpendingPerformance {
                 spendingData,
                 performanceValues
             ];
+
+            loadSpendingPerformanceData(spendingData, performanceValues);
         });
 
-        // Using $onInit to detect when the binding is initially set works, but not to 
-        // check when it gets updated.
+        function loadSpendingPerformanceData(spendingValues, performanceValues) {
+            $scope.dataSource = [];
+            spendingValues.values.forEach((spendingData) => {
+                let flag = false;
+                performanceValues.values.forEach((performanceData) => {
+                    if(spendingData.label === performanceData.label) {
+                        flag = true;
+                        $scope.dataSource.push(
+                            {
+                                label : spendingData.label,
+                                children : performanceData.y,
+                                spending : spendingData.y,
+                                total : performanceData.y + spendingData.y
+                            }
+                        );
+                    }
+                });
 
-        // this.s = $scope;
-
-        // this.$onInit = function () {
-        //     this.s.data.push(this.spendingData);
-        // }
+                if(!flag) {
+                    $scope.dataSource.push(
+                        {
+                            label : spendingData.label,
+                            children : 0,
+                            spending : spendingData.y,
+                            total : spendingData.y
+                        }
+                    );
+                }
+            });
+        };
     }
-
 }
 
 const name = 'spendingPerformance';

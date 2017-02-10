@@ -1,6 +1,7 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
+import dx from '../../../../node_modules/devextreme/dist/js/dx.all.js';
 
 import template from './procurementDataBrowser.html';
 import { name as ChartTest } from '../chartTest/chartTest';
@@ -24,7 +25,8 @@ export default angular.module(name, [
   SpendingPerTimePage,
   Importer,
   Navigation,
-  'accounts.ui'
+  'accounts.ui',
+  'dx'
 ]).component(name, {
   template,
   controllerAs: name,

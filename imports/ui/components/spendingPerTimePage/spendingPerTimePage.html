@@ -13,13 +13,16 @@
                                     <div class="form-group">
                                         <label for="selectedOrganisation">Organisation</label>
                                         <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
-                        <option default value="">-- select --</option>
-                        <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
-                    </select>
+                                            <option default value="">-- select --</option>
+                                            <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-4 pull-right">
-                                    <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right"><span ng-show="!filtersVisible">Filter</span><span ng-show="filtersVisible">Hide filter</span></button>
+                                    <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right">
+                                        <span ng-show="!filtersVisible">Filter</span>
+                                        <span ng-show="filtersVisible">Hide filter</span>
+                                    </button>
                                 </div>
                             </div>
                             <div class="row" ng-show="filtersVisible">
@@ -27,35 +30,40 @@
                                     <div class="form-group">
                                         <label for="category">Category</label>
                                         <select class="form-control" name="category" ng-model="category">
-                        <option default value="">-- select --</option>
-                        <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
-                    </select>
+                                            <option default value="">-- select --</option>
+                                            <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-4 col-xs-12">
                                     <div class="form-group">
                                         <label for="service">Service</label>
                                         <select class="form-control" name="service" ng-model="service">
-                       <option default value="">-- select --</option>
-                       <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
-                    </select>
+                                            <option default value="">-- select --</option>
+                                            <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-4 col-xs-12">
                                     <div class="form-group">
                                         <label for="service">Period</label>
                                         <select class="form-control" name="period" ng-model="period">
-                       <option value="quarter">Quarter</option>
-                       <option value="month">Month</option>
-                    </select>
+                                            <option value="quarter">Quarter</option>
+                                            <option value="month">Month</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-                            <nvd3 options="chartOptions" data="chartData" ng-show="spendingPerTime.length"></nvd3>
+                            <!--<nvd3 options="chartOptions" data="chartData" ng-show="spendingPerTime.length"></nvd3>-->
+                            <div id="chart" dx-chart="{ series: chartData.series, bindingOptions: {dataSource: 'chartData.dataSource' }  }" ng-show="spendingPerTime.length"></div>
+                            
                             <div ng-show="spendingPerTime.length === 0">
                                 <p>Loading...</p>
                             </div>
-                            <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right"><span ng-show="!detailsVisible">Show details</span><span ng-show="detailsVisible">Hide details</span></button>
+                            <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+                                <span ng-show="!detailsVisible">Show details</span>
+                                <span ng-show="detailsVisible">Hide details</span>
+                            </button>
                             <div ng-show="detailsVisible">
                                 <table class="table table-striped">
                                     <tr>

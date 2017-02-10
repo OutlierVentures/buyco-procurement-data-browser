@@ -14,6 +14,8 @@ class SpendingGroupedChart {
 
         $reactive(this).attach($scope);
 
+        $scope.dataSource = [];
+        
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
@@ -97,47 +99,114 @@ class SpendingGroupedChart {
 
                 let dataSeries = [$scope.publicSpendingData];
 
+                loadSpendingGroupChartData();
                 return dataSeries;
             }
 
         });
 
-        $scope.chartOptions = {
-            chart: {
-                type: 'multiBarHorizontalChart',
-                height: 450,
-                margin: {
-                    top: 20,
-                    right: 20,
-                    bottom: 45,
-                    // We leave a lot of space on the left to show group values (e.g. category names, supplier names etc)
-                    left: 250
+        function loadSpendingGroupChartData() {
+            $scope.dataSource = [];
+            $scope.publicSpendingData.values.forEach((data) => {
+               $scope.dataSource.push(
+                   {
+                       label : data.label,
+                       chartValue : data.y
+                   }
+               );
+            });
+
+            $scope.dataSeries = [{
+                    valueField: "chartValue",
+                    name: $scope.publicSpendingData.key,
+                    stack: "male"
+                },{
+                    valueField: 'zero',
+                    type: 'scatter',
+                    point: {
+                        color: 'none'
                 },
-                clipEdge: true,
-                //staggerLabels: true,
-                duration: 500,
-                stacked: false,
-                showControls: false,
-                showValues: false,
-                xAxis: {
-                    axisLabel: '',
-                    showMaxMin: false,
-                    tickFormat: function (d) {
-                        if (!$scope.chartData || !$scope.chartData[0])
-                            return;
-                        var label = $scope.chartData[0].values[d].label;
-                        return label;
-                    }
-                },
-                yAxis: {
-                    axisLabel: 'Amount',
-                    axisLabelDistance: 50,
-                    tickFormat: function (d) {
-                        return d3.format(',.1f')(d / 1e6) + "M";
+                showInLegend: false,
+                label: {
+                    visible: true,
+                    customizeText: function(e) {
+                        return e.argumentText;
                     }
                 }
-            }
+            }];
+
+            $scope.chartOptions = {
+                dataSource: $scope.dataSource.map(function(i){
+                    i.zero = 0;
+                    return i;
+                }),
+                
+                commonSeriesSettings: {
+                    argumentField: "label",
+                    type: "bar",
+                },
+                argumentAxis: {            
+                    label: {
+                        visible: false                    
+                    }
+                },
+                rotated: true,
+                series: $scope.dataSeries,
+                legend: {
+                    verticalAlignment: "bottom",
+                    horizontalAlignment: "center"
+                },
+                title: "",
+                export: {
+                    enabled: true
+                },
+                tooltip: {
+                    enabled: true,
+                    customizeTooltip: function(arg) {
+                        return {
+                            text: arg.percentText + " - " + arg.valueText
+                        };
+                    }
+                }
+            };
         };
+
+        // $scope.chartOptions = {
+        //     chart: {
+        //         type: 'multiBarHorizontalChart',
+        //         height: 450,
+        //         margin: {
+        //             top: 20,
+        //             right: 20,
+        //             bottom: 45,
+        //             // We leave a lot of space on the left to show group values (e.g. category names, supplier names etc)
+        //             left: 250
+        //         },
+        //         clipEdge: true,
+        //         //staggerLabels: true,
+        //         duration: 500,
+        //         stacked: false,
+        //         showControls: false,
+        //         showValues: false,
+        //         xAxis: {
+        //             axisLabel: '',
+        //             showMaxMin: false,
+        //             tickFormat: function (d) {
+        //                 if (!$scope.chartData || !$scope.chartData[0])
+        //                     return;
+        //                 var label = $scope.chartData[0].values[d].label;
+        //                 return label;
+        //             }
+        //         },
+        //         yAxis: {
+        //             axisLabel: 'Amount',
+        //             axisLabelDistance: 50,
+        //             tickFormat: function (d) {
+        //                 return d3.format(',.1f')(d / 1e6) + "M";
+        //             }
+        //         }
+        //     }
+        // };
     }
 }
 

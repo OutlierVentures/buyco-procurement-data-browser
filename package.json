@@ -17,6 +17,8 @@
     "babel-runtime": "^6.22.0",
     "bcrypt": "^1.0.2",
     "bootstrap": "^3.3.6",
+    "devextreme": "^16.2.4",
+    "jquery": "^2.2.3",
     "meteor-node-stubs": "~0.2.0",
     "rethinkdb": "^2.3.3",
     "underscore": "^1.8.3"
