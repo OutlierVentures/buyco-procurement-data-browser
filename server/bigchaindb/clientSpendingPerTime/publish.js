@@ -36,7 +36,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     if (period == "month")
         groupClause.$group._id.month = { $month: "$effective_date" };
-    else if (period = "quarter")
+    else if (period == "quarter")
         groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$effective_date" }, 3] } };
 
     pipeLine.push(groupClause);

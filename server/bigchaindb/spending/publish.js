@@ -5,8 +5,6 @@ let database = new MongoInternals.RemoteCollectionDriver(Config.bigchainDb.datab
 
 export const Spending = new Mongo.Collection('public_spending', { _driver: database });
 
-console.log("spending publish.js");
-
 const collectionName = "public_spending";
 
 Meteor.publish(collectionName, function (options, searchString) {

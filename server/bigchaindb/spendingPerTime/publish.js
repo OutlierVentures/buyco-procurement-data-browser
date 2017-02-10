@@ -22,12 +22,12 @@ Meteor.publish(collectionName, function (filters, options) {
         pipeLine.push({ $match: filters });
     }
 
-    let groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+    let groupClause = { $group: { _id: { year: { $year: "$payment_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
 
     if (period == "month")
-        groupClause.$group._id.month = { $month: "$effective_date" };
-    else if (period = "quarter")
-        groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$effective_date" }, 3] } };
+        groupClause.$group._id.month = { $month: "$payment_date" };
+    else if (period == "quarter")
+        groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$payment_date" }, 3] } };
 
     pipeLine.push(groupClause);
 
