@@ -144,6 +144,7 @@ docker exec -ti buyco_procurement_data_browser_mongo_bigchaindb_development bash
 Install wget to download the files:
 
 ```
+apt-get update
 apt-get install wget
 ```
 
