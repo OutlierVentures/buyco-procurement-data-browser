@@ -57,21 +57,32 @@ class SpendingPerformance {
             series: [ {
                     valueField: "spending",
                     name: "Spending",
-                    type: 'bar'
+                    color: 'rgb(255, 170, 102)',
+                    type: "bar"
                 }, {
+                    axis: "children",
+                    type: "spline",
                     valueField: "children",
                     name: "Children in need, per 10,000",
-                    type: "spline",
                     color: "#008fd8"
                 }
             ],
             valueAxis: [{
                 grid: {
                     visible: true
-                },
+                },                
                 label: {
                     format: "largeNumber"
                 }
+            }, {
+                    name: "children",
+                    position: "right",
+                    grid: {
+                        visible: true
+                    },
+                    label: {
+                        format: "largeNumber"
+                    }
             }],
             tooltip: {
                 enabled: true,
@@ -100,6 +111,9 @@ class SpendingPerformance {
             },
             "export": {
                 enabled: true
+            },
+            size: {
+                height: 400
             }
         };
 
@@ -118,10 +132,10 @@ class SpendingPerformance {
             yAxis: 2,
             color: "#1f77b4",
             values: [
-                { x: 0, label: "2015 Q1", y: 40700000 },
-                { x: 1, label: "2015 Q2", y: 35300000 },
-                { x: 2, label: "2015 Q3", y: 29100000 },
-                { x: 3, label: "2015 Q4", y: 17500000 }
+                { x: 0, label: "2015 Q1", y: 407 },
+                { x: 1, label: "2015 Q2", y: 353 },
+                { x: 2, label: "2015 Q3", y: 291 },
+                { x: 3, label: "2015 Q4", y: 175 }
             ]
         };
 
