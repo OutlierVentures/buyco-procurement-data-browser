@@ -2,8 +2,11 @@
     <div class="activity-sec">
         <div class="widget-title">
             <h3>Spend by {{groupDisplayName}}</h3>
-            <nvd3 options="chartOptions" data="chartData"></nvd3>
-
+            <!--<nvd3 options="chartOptions" data="chartData"></nvd3>-->
+            <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
+                rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
+                valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size'} }"></div>
+<!--<div id="chart" dx-chart="chartOptions1"></div>-->
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
             <span ng-show="!detailsVisible">Show details</span>
             <span ng-show="detailsVisible">Hide details</span></button>

@@ -14,6 +14,8 @@ class SpendingGroupedChart {
 
         $reactive(this).attach($scope);
 
+        $scope.dataSource = [];
+        
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
@@ -97,47 +99,153 @@ class SpendingGroupedChart {
 
                 let dataSeries = [$scope.publicSpendingData];
 
+                loadSpendingGroupChartData();
                 return dataSeries;
             }
 
         });
 
-        $scope.chartOptions = {
-            chart: {
-                type: 'multiBarHorizontalChart',
-                height: 450,
-                margin: {
-                    top: 20,
-                    right: 20,
-                    bottom: 45,
-                    // We leave a lot of space on the left to show group values (e.g. category names, supplier names etc)
-                    left: 250
-                },
-                clipEdge: true,
-                //staggerLabels: true,
-                duration: 500,
-                stacked: false,
-                showControls: false,
-                showValues: false,
-                xAxis: {
-                    axisLabel: '',
-                    showMaxMin: false,
-                    tickFormat: function (d) {
-                        if (!$scope.chartData || !$scope.chartData[0])
-                            return;
-                        var label = $scope.chartData[0].values[d].label;
-                        return label;
-                    }
-                },
-                yAxis: {
-                    axisLabel: 'Amount',
-                    axisLabelDistance: 50,
-                    tickFormat: function (d) {
-                        return d3.format(',.1f')(d / 1e6) + "M";
-                    }
+        var pow = Math.pow, floor = Math.floor, abs = Math.abs, log = Math.log;
+
+        function round(n, precision) {
+            var prec = Math.pow(10, precision);
+            return Math.round(n*prec)/prec;
+        };
+
+        function format(n) {
+            var base = floor(log(abs(n))/log(1000));
+            var suffix = 'kmb'[base-1];
+            return suffix ? round(n/pow(1000,base),2)+suffix : ''+n;
+        };
+
+        function loadSpendingGroupChartData() {
+            $scope.dataSource = [];
+            $scope.publicSpendingData.values.forEach((data) => {
+               $scope.dataSource.push(
+                   {
+                       label : data.label,
+                       chartValue : data.y
+                   }
+               );
+            });
+
+            $scope.dataSource.sort(function (a, b) {
+                return a.chartValue - b.chartValue;
+            });
+
+            if($scope.dataSource.length > 10) {
+                $scope.chartSize = {
+                    height: 700
+                }
+            } else {
+                $scope.chartSize = {
+                    height: 500
                 }
             }
-        };
+
+            // console.log($scope.dataSource.length);
+
+            $scope.dataSeries = [{
+                    valueField: "chartValue",
+                    name: $scope.publicSpendingData.key,
+                    stack: "male",
+                    color: 'rgb(255, 170, 102)'
+                },{
+                    valueField: 'zero',
+                    type: 'scatter',
+                    point: {
+                        color: 'none'
+                    },
+                    showInLegend: false,
+                    label: {
+                        visible: true,
+                        font: {
+                            color: 'gray'
+                        },
+                        customizeText: function(e) {
+                            return e.argumentText;
+                        }
+                    }
+            }];
+
+            $scope.chartOptions = {
+                dataSource: $scope.dataSource.map(function(i){
+                    i.zero = 0;
+                    return i;
+                }),                
+                commonSeriesSettings: {
+                    argumentField: "label",
+                    type: "bar"
+                },
+                argumentAxis: {            
+                    label: {
+                        visible: false,
+                        format: "largeNumber"
+                    }
+                },
+                rotated: true,
+                series: $scope.dataSeries,
+                legend: {
+                    verticalAlignment: "bottom",
+                    horizontalAlignment: "center"
+                },
+                title: "",
+                export: {
+                    enabled: true
+                },
+                tooltip: {
+                    enabled: true,
+                    customizeTooltip: function(arg) {
+                        return {
+                            text: arg.percentText + " - " + arg.valueText
+                        };
+                    }
+                },
+                valueAxis: [{
+                    label: {
+                        format: "largeNumber"
+                    }
+                }],
+                size: $scope.chartSize
+            };
+        }
+
+        // $scope.chartOptions = {
+        //     chart: {
+        //         type: 'multiBarHorizontalChart',
+        //         height: 450,
+        //         margin: {
+        //             top: 20,
+        //             right: 20,
+        //             bottom: 45,
+        //             // We leave a lot of space on the left to show group values (e.g. category names, supplier names etc)
+        //             left: 250
+        //         },
+        //         clipEdge: true,
+        //         //staggerLabels: true,
+        //         duration: 500,
+        //         stacked: false,
+        //         showControls: false,
+        //         showValues: false,
+        //         xAxis: {
+        //             axisLabel: '',
+        //             showMaxMin: false,
+        //             tickFormat: function (d) {
+        //                 if (!$scope.chartData || !$scope.chartData[0])
+        //                     return;
+        //                 var label = $scope.chartData[0].values[d].label;
+        //                 return label;
+        //             }
+        //         },
+        //         yAxis: {
+        //             axisLabel: 'Amount',
+        //             axisLabelDistance: 50,
+        //             tickFormat: function (d) {
+        //                 return d3.format(',.1f')(d / 1e6) + "M";
+        //             }
+        //         }
+        //     }
+        // };
     }
 }
 
@@ -147,7 +255,7 @@ const name = 'spendingGrouped';
 export default angular.module(name, [
     angularMeteor,
     uiRouter,
-    angularNvd3,
+    angularNvd3
 ]).component(name, {
     template,
     controllerAs: name,

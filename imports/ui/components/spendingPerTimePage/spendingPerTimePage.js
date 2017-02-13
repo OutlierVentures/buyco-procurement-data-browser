@@ -23,6 +23,7 @@ class SpendingPerTimePage {
         $reactive(this).attach($scope);
 
         var that = this;
+        $scope.dataSource = [];
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -79,9 +80,10 @@ class SpendingPerTimePage {
                 });
 
                 var publicValues = [];
-                var clientValues = [];
+                // var clientValues = [];
 
                 let i = 0;
+                let sourceValues = [];
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -92,14 +94,15 @@ class SpendingPerTimePage {
                         xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
                     let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
+                    sourceValues.push({ xAxis: xLabel, yAxis: yVal });
 
                     // Find corresponding item in client spending
-                    clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
-                            && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
-                            clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
-                        }
-                    });
+                    // clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
+                    //     if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                    //         && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
+                    //         clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
+                    //     }
+                    // });
 
                     i++;
                 });
@@ -112,18 +115,39 @@ class SpendingPerTimePage {
 
                 $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
 
-                let dataSeries = [$scope.publicSpendingData];
+                // let dataSeries = [$scope.publicSpendingData];
 
-                if (Meteor.userId()) {
-                    dataSeries.push(
-                        {
-                            key: 'YPO',
-                            color: '#543996',
-                            values: clientValues
-                        });
-                }
+                // if (Meteor.userId()) {
+                //     dataSeries.push(
+                //         {
+                //             key: 'YPO',
+                //             color: '#543996',
+                //             values: clientValues
+                //         });
+                // }
 
-                return dataSeries;
+                const options =  
+                {
+                    dataSource: sourceValues,
+                    series: {
+                        argumentField: "xAxis",
+                        valueField: "yAxis",
+                        name: "Wakefield MDC",
+                        type: "bar",
+                        color: '#ffaa66'
+                    },
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
+                        }
+                    }],
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    }
+                };
+
+                return options;
             },
             /**
              * Filter fields to pass to the sub charts. This variable is bound by the sub chart
@@ -185,45 +209,46 @@ class SpendingPerTimePage {
             }];
         });
 
-        $scope.chartOptions = {
-            chart: {
-                type: 'multiBarChart',
-                height: 600,
-                margin: {
-                    top: 20,
-                    right: 20,
-                    bottom: 50,
-                    left: 60
-                },
-                clipEdge: true,
-                // Alternate indent for labels
-                //staggerLabels: true,
-                duration: 500,
-                stacked: false,
-                showControls: false,
-                xAxis: {
-                    // axisLabel: 'Month',
-                    axisLabelDistance: 50,
-                    showMaxMin: false,
-                    tickFormat: function (d) {
-                        var label = $scope.chartData[0].values[d].label;
-                        return label;
-                    }
-                },
-                yAxis: {
-                    // axisLabel: 'Amount',
-                    axisLabelDistance: 20,
-                    tickFormat: function (d) {
-                        return d3.format(',.1f')(d / 1e6) + "M";
-                    }
-                },
-                callback: function (chart) {
-                    chart.multibar.dispatch.on('elementClick', function (e) {
-                        console.log('The chart was clicked', e.data);
-                    });
-                }
-            }
-        };
+
+        // $scope.chartOptions = {
+        //     chart: {
+        //         type: 'multiBarChart',
+        //         height: 600,
+        //         margin: {
+        //             top: 20,
+        //             right: 20,
+        //             bottom: 50,
+        //             left: 60
+        //         },
+        //         clipEdge: true,
+        //         // Alternate indent for labels
+        //         //staggerLabels: true,
+        //         duration: 500,
+        //         stacked: false,
+        //         showControls: false,
+        //         xAxis: {
+        //             // axisLabel: 'Month',
+        //             axisLabelDistance: 50,
+        //             showMaxMin: false,
+        //             tickFormat: function (d) {
+        //                 var label = $scope.chartData[0].values[d].label;
+        //                 return label;
+        //             }
+        //         },
+        //         yAxis: {
+        //             // axisLabel: 'Amount',
+        //             axisLabelDistance: 20,
+        //             tickFormat: function (d) {
+        //                 return d3.format(',.1f')(d / 1e6) + "M";
+        //             }
+        //         },
+        //         callback: function (chart) {
+        //             chart.multibar.dispatch.on('elementClick', function (e) {
+        //                 console.log('The chart was clicked', e.data);
+        //             });
+        //         }
+        //     }
+        // };
     }
 }
 
