@@ -11,42 +11,6 @@ class SpendingPerformance {
 
         $scope.dataSource = [];
 
-        // $scope.options = {
-        //     chart: {
-        //         type: 'multiChart',
-        //         height: 450,
-        //         margin: {
-        //             top: 20,
-        //             right: 20,
-        //             bottom: 50,
-        //             left: 60
-        //         },
-        //         // color: d3.scale.category10().range(),
-        //         //useInteractiveGuideline: true,
-        //         duration: 500,
-        //         xAxis: {
-        //             tickFormat: function (d) {
-        //                 if (!$scope.data[0].values[d])
-        //                     return "";
-        //                 var label = $scope.data[0].values[d].label;
-        //                 return label;
-        //             }
-        //         },
-        //         yAxis1: {
-        //             // axisLabel: 'Amount',
-        //             axisLabelDistance: 20,
-        //             tickFormat: function (d) {
-        //                 return d3.format(',.1f')(d / 1e6) + "M";
-        //             }
-        //         },
-        //         yAxis2: {
-        //             tickFormat: function (d) {
-        //                 return d;
-        //             }
-        //         }
-        //     }
-        // };
-
         $scope.chartOptions = {
             palette: "vintage",
             dataSource: $scope.dataSource,
@@ -70,7 +34,7 @@ class SpendingPerformance {
             valueAxis: [{
                 grid: {
                     visible: true
-                },                
+                },
                 label: {
                     format: "largeNumber"
                 }

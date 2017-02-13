@@ -24,7 +24,7 @@ class SpendingPerTimePage {
 
         var that = this;
         $scope.dataSource = [];
-
+        $scope.date = {startDate: null, endDate: null};
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
