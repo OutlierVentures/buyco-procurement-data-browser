@@ -135,6 +135,15 @@ class SpendingPerTimePage {
                         name: "Wakefield MDC",
                         type: "bar",
                         color: '#ffaa66'
+                    },
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
+                        }
+                    }],
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
                     }
                 };
 

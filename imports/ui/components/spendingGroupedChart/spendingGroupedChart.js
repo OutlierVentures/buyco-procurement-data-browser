@@ -105,6 +105,19 @@ class SpendingGroupedChart {
 
         });
 
+        var pow = Math.pow, floor = Math.floor, abs = Math.abs, log = Math.log;
+
+        function round(n, precision) {
+            var prec = Math.pow(10, precision);
+            return Math.round(n*prec)/prec;
+        };
+
+        function format(n) {
+            var base = floor(log(abs(n))/log(1000));
+            var suffix = 'kmb'[base-1];
+            return suffix ? round(n/pow(1000,base),2)+suffix : ''+n;
+        };
+
         function loadSpendingGroupChartData() {
             $scope.dataSource = [];
             $scope.publicSpendingData.values.forEach((data) => {
@@ -116,38 +129,58 @@ class SpendingGroupedChart {
                );
             });
 
+            $scope.dataSource.sort(function (a, b) {
+                return a.chartValue - b.chartValue;
+            });
+
+            if($scope.dataSource.length > 10) {
+                $scope.chartSize = {
+                    height: 700
+                }
+            } else {
+                $scope.chartSize = {
+                    height: 500
+                }
+            }
+
+            // console.log($scope.dataSource.length);
+
             $scope.dataSeries = [{
                     valueField: "chartValue",
                     name: $scope.publicSpendingData.key,
-                    stack: "male"
+                    stack: "male",
+                    color: 'rgb(255, 170, 102)'
                 },{
                     valueField: 'zero',
                     type: 'scatter',
                     point: {
                         color: 'none'
-                },
-                showInLegend: false,
-                label: {
-                    visible: true,
-                    customizeText: function(e) {
-                        return e.argumentText;
+                    },
+                    showInLegend: false,
+                    label: {
+                        visible: true,
+                        font: {
+                            color: 'gray'
+                        },
+                        customizeText: function(e) {
+                            return e.argumentText;
+                        }
                     }
-                }
             }];
 
             $scope.chartOptions = {
                 dataSource: $scope.dataSource.map(function(i){
                     i.zero = 0;
                     return i;
-                }),
-                
+                }),                
                 commonSeriesSettings: {
                     argumentField: "label",
-                    type: "bar",
+                    type: "bar"
                 },
                 argumentAxis: {            
                     label: {
-                        visible: false                    
+                        visible: false,
+                        format: "largeNumber"
                     }
                 },
                 rotated: true,
@@ -167,9 +200,15 @@ class SpendingGroupedChart {
                             text: arg.percentText + " - " + arg.valueText
                         };
                     }
-                }
+                },
+                valueAxis: [{
+                    label: {
+                        format: "largeNumber"
+                    }
+                }],
+                size: $scope.chartSize
             };
-        };
+        }
 
         // $scope.chartOptions = {
         //     chart: {
@@ -216,7 +255,7 @@ const name = 'spendingGrouped';
 export default angular.module(name, [
     angularMeteor,
     uiRouter,
-    angularNvd3,
+    angularNvd3
 ]).component(name, {
     template,
     controllerAs: name,

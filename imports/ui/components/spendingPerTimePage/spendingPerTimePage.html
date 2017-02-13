@@ -55,7 +55,8 @@
                                 </div>
                             </div>
                             <!--<nvd3 options="chartOptions" data="chartData" ng-show="spendingPerTime.length"></nvd3>-->
-                            <div id="chart" dx-chart="{ series: chartData.series, bindingOptions: {dataSource: 'chartData.dataSource' }  }" ng-show="spendingPerTime.length"></div>
+                            <div id="chart" dx-chart="{ series: chartData.series, valueAxis: chartData.valueAxis, legend: chartData.legend, 
+                                    bindingOptions: { dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
                             
                             <div ng-show="spendingPerTime.length === 0">
                                 <p>Loading...</p>

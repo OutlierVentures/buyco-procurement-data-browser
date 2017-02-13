@@ -9,70 +9,43 @@ class SpendingPerformance {
     constructor($scope, $reactive) {
         'ngInject';
 
-        $scope.dataSource = [
-            {
-                label : '2015',
-                children : 20,
-                spending : 50,
-                total : 70
-            }, {
-                label : '2016',
-                children : 35,
-                spending : 50,
-                total : 85
-            }, {
-                label : '2017',
-                children : 20,
-                spending : 30,
-                total : 50
-            }, {
-                label : '2018',
-                children : 54,
-                spending : 23,
-                total : 77
-            }, {
-                label : '2019',
-                children : 87,
-                spending : 13,
-                total : 100
-            }
-        ];
+        $scope.dataSource = [];
 
-        $scope.options = {
-            chart: {
-                type: 'multiChart',
-                height: 450,
-                margin: {
-                    top: 20,
-                    right: 20,
-                    bottom: 50,
-                    left: 60
-                },
-                // color: d3.scale.category10().range(),
-                //useInteractiveGuideline: true,
-                duration: 500,
-                xAxis: {
-                    tickFormat: function (d) {
-                        if (!$scope.data[0].values[d])
-                            return "";
-                        var label = $scope.data[0].values[d].label;
-                        return label;
-                    }
-                },
-                yAxis1: {
-                    // axisLabel: 'Amount',
-                    axisLabelDistance: 20,
-                    tickFormat: function (d) {
-                        return d3.format(',.1f')(d / 1e6) + "M";
-                    }
-                },
-                yAxis2: {
-                    tickFormat: function (d) {
-                        return d;
-                    }
-                }
-            }
-        };
+        // $scope.options = {
+        //     chart: {
+        //         type: 'multiChart',
+        //         height: 450,
+        //         margin: {
+        //             top: 20,
+        //             right: 20,
+        //             bottom: 50,
+        //             left: 60
+        //         },
+        //         // color: d3.scale.category10().range(),
+        //         //useInteractiveGuideline: true,
+        //         duration: 500,
+        //         xAxis: {
+        //             tickFormat: function (d) {
+        //                 if (!$scope.data[0].values[d])
+        //                     return "";
+        //                 var label = $scope.data[0].values[d].label;
+        //                 return label;
+        //             }
+        //         },
+        //         yAxis1: {
+        //             // axisLabel: 'Amount',
+        //             axisLabelDistance: 20,
+        //             tickFormat: function (d) {
+        //                 return d3.format(',.1f')(d / 1e6) + "M";
+        //             }
+        //         },
+        //         yAxis2: {
+        //             tickFormat: function (d) {
+        //                 return d;
+        //             }
+        //         }
+        //     }
+        // };
 
         $scope.chartOptions = {
             palette: "vintage",
@@ -81,27 +54,18 @@ class SpendingPerformance {
                 argumentField: "label",
                 type: "fullstackedbar"
             },
-            series: [{
-                    valueField: "children",
-                    name: "Children in need, per 10,000"
-                }, {
+            series: [ {
                     valueField: "spending",
-                    name: "Spending"
+                    name: "Spending",
+                    type: 'bar'
                 }, {
-                    axis: "total",
+                    valueField: "children",
+                    name: "Children in need, per 10,000",
                     type: "spline",
-                    valueField: "total",
-                    name: "Total",
                     color: "#008fd8"
                 }
             ],
             valueAxis: [{
-                grid: {
-                    visible: true
-                }
-            }, {
-                name: "total",
-                position: "right",
                 grid: {
                     visible: true
                 },
@@ -154,10 +118,10 @@ class SpendingPerformance {
             yAxis: 2,
             color: "#1f77b4",
             values: [
-                { x: 0, label: "2015 Q1", y: 407 },
-                { x: 1, label: "2015 Q2", y: 353 },
-                { x: 2, label: "2015 Q3", y: 291 },
-                { x: 3, label: "2015 Q4", y: 175 }
+                { x: 0, label: "2015 Q1", y: 40700000 },
+                { x: 1, label: "2015 Q2", y: 35300000 },
+                { x: 2, label: "2015 Q3", y: 29100000 },
+                { x: 3, label: "2015 Q4", y: 17500000 }
             ]
         };
 
@@ -179,34 +143,25 @@ class SpendingPerformance {
 
         function loadSpendingPerformanceData(spendingValues, performanceValues) {
             $scope.dataSource = [];
-            spendingValues.values.forEach((spendingData) => {
-                let flag = false;
-                performanceValues.values.forEach((performanceData) => {
-                    if(spendingData.label === performanceData.label) {
-                        flag = true;
-                        $scope.dataSource.push(
-                            {
-                                label : spendingData.label,
-                                children : performanceData.y,
-                                spending : spendingData.y,
-                                total : performanceData.y + spendingData.y
-                            }
-                        );
-                    }
-                });
 
-                if(!flag) {
+            if(spendingValues.values[0].label.search('Q') != -1) {
+                performanceValues.values.forEach((performanceData) => {
                     $scope.dataSource.push(
-                        {
-                            label : spendingData.label,
-                            children : 0,
-                            spending : spendingData.y,
-                            total : spendingData.y
-                        }
-                    );
-                }
+                    {
+                        label : performanceData.label,
+                        children : performanceData.y
+                    });
+                });
+            }
+
+            spendingValues.values.forEach((spendingData) => {
+                $scope.dataSource.push(
+                {
+                    label : spendingData.label,
+                    spending : spendingData.y
+                });
             });
-        };
+        }
     }
 }
 
@@ -216,12 +171,12 @@ const name = 'spendingPerformance';
 export default angular.module(name, [
     angularMeteor,
     uiRouter,
-    angularNvd3,
+    angularNvd3
 ]).component(name, {
     template,
     controllerAs: name,
     bindings: {
-        organisationName: '<',
+        organisationName: '<'
         // Using the bindings to set the chart data doesn't work very well
         // because the parent keeps resetting it.
         // spendingData: '<'
