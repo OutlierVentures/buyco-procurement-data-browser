@@ -25,7 +25,8 @@
                                     </button>
                                 </div>
                             </div>
-                            <input date-range-picker class="form-control date-picker" type="text" ng-model="date" />
+                            <input date-range-picker class="form-control date-picker" type="text" ng-model="filterDate" 
+                                options="{ranges: ranges, alwaysShowCalendars: true}"/>
                             <div class="row" ng-show="filtersVisible">
                                 <div class="col-md-4 col-xs-12">
                                     <div class="form-group">
@@ -107,13 +108,13 @@
             <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>-->
             <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'"></spending-grouped>
+                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate"></spending-grouped>
             </div>
             <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'"></spending-grouped>
+                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate"></spending-grouped>
             </div>
             <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'"></spending-grouped>
+                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate"></spending-grouped>
             </div>
         </div>
     </div>

@@ -15,7 +15,7 @@ class SpendingGroupedChart {
         $reactive(this).attach($scope);
 
         $scope.dataSource = [];
-        
+
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
@@ -24,6 +24,7 @@ class SpendingGroupedChart {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
                 sercop_service: this.getReactively("filters.sercop_service")
+                // effective_date: {$gt: this.getReactively("filters.filterDate.startDate").toDate(), $lt: this.getReactively("filters.filterDate.endDate").toDate()}
             },
             {
                 groupField: this.getReactively("groupField")
@@ -42,6 +43,7 @@ class SpendingGroupedChart {
             let filters = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 groupField: this.getReactively("groupField")
+                // filterDate: this.getReactively("filterDate"),
             };
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
@@ -104,19 +106,6 @@ class SpendingGroupedChart {
             }
 
         });
-
-        var pow = Math.pow, floor = Math.floor, abs = Math.abs, log = Math.log;
-
-        function round(n, precision) {
-            var prec = Math.pow(10, precision);
-            return Math.round(n*prec)/prec;
-        }
-
-        function format(n) {
-            var base = floor(log(abs(n))/log(1000));
-            var suffix = 'kmb'[base-1];
-            return suffix ? round(n/pow(1000,base),2)+suffix : ''+n;
-        }
 
         function loadSpendingGroupChartData() {
             $scope.dataSource = [];
@@ -242,7 +231,8 @@ export default angular.module(name, [
         // Filters should contain field names to match as equal.
         filters: '<',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
-        groupField: '<'
+        groupField: '<',
+        filterDate: '<'
     },
     controller: SpendingGroupedChart
 });
