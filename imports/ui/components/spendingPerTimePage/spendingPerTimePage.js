@@ -208,47 +208,6 @@ class SpendingPerTimePage {
                 period: $scope.getReactively("period")
             }];
         });
-
-
-        // $scope.chartOptions = {
-        //     chart: {
-        //         type: 'multiBarChart',
-        //         height: 600,
-        //         margin: {
-        //             top: 20,
-        //             right: 20,
-        //             bottom: 50,
-        //             left: 60
-        //         },
-        //         clipEdge: true,
-        //         // Alternate indent for labels
-        //         //staggerLabels: true,
-        //         duration: 500,
-        //         stacked: false,
-        //         showControls: false,
-        //         xAxis: {
-        //             // axisLabel: 'Month',
-        //             axisLabelDistance: 50,
-        //             showMaxMin: false,
-        //             tickFormat: function (d) {
-        //                 var label = $scope.chartData[0].values[d].label;
-        //                 return label;
-        //             }
-        //         },
-        //         yAxis: {
-        //             // axisLabel: 'Amount',
-        //             axisLabelDistance: 20,
-        //             tickFormat: function (d) {
-        //                 return d3.format(',.1f')(d / 1e6) + "M";
-        //             }
-        //         },
-        //         callback: function (chart) {
-        //             chart.multibar.dispatch.on('elementClick', function (e) {
-        //                 console.log('The chart was clicked', e.data);
-        //             });
-        //         }
-        //     }
-        // };
     }
 }
 
