@@ -52,7 +52,7 @@ class SpendingGroupedChart {
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
             return SpendingGrouped.find(filters);
-        }
+        };
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -110,13 +110,13 @@ class SpendingGroupedChart {
         function round(n, precision) {
             var prec = Math.pow(10, precision);
             return Math.round(n*prec)/prec;
-        };
+        }
 
         function format(n) {
             var base = floor(log(abs(n))/log(1000));
             var suffix = 'kmb'[base-1];
             return suffix ? round(n/pow(1000,base),2)+suffix : ''+n;
-        };
+        }
 
         function loadSpendingGroupChartData() {
             $scope.dataSource = [];
@@ -195,10 +195,26 @@ class SpendingGroupedChart {
                 },
                 tooltip: {
                     enabled: true,
-                    customizeTooltip: function(arg) {
-                        return {
-                            text: arg.percentText + " - " + arg.valueText
-                        };
+                    shared: true,
+                    format: {
+                        type: "largeNumber",
+                        precision: 1
+                    },
+                    customizeTooltip: function (arg) {
+                        var items = arg.points[0].valueText.split("\n"),
+                            color = arg.point.getColor();
+                        var tempItem = '';
+                        tempItem += arg.argument + ' ';
+                        tempItem += items;
+                        $.each(items, function(index, item) {
+                            if(item.indexOf(arg.points[0].valueText) === 0) {
+                                items[index] = $("<b>")
+                                                .text(tempItem)
+                                                .css("color", color)
+                                                .prop("outerHTML");
+                            }
+                        });
+                        return { text: items.join("\n") };
                     }
                 },
                 valueAxis: [{
@@ -209,43 +225,6 @@ class SpendingGroupedChart {
                 size: $scope.chartSize
             };
         }
-
-        // $scope.chartOptions = {
-        //     chart: {
-        //         type: 'multiBarHorizontalChart',
-        //         height: 450,
-        //         margin: {
-        //             top: 20,
-        //             right: 20,
-        //             bottom: 45,
-        //             // We leave a lot of space on the left to show group values (e.g. category names, supplier names etc)
-        //             left: 250
-        //         },
-        //         clipEdge: true,
-        //         //staggerLabels: true,
-        //         duration: 500,
-        //         stacked: false,
-        //         showControls: false,
-        //         showValues: false,
-        //         xAxis: {
-        //             axisLabel: '',
-        //             showMaxMin: false,
-        //             tickFormat: function (d) {
-        //                 if (!$scope.chartData || !$scope.chartData[0])
-        //                     return;
-        //                 var label = $scope.chartData[0].values[d].label;
-        //                 return label;
-        //             }
-        //         },
-        //         yAxis: {
-        //             axisLabel: 'Amount',
-        //             axisLabelDistance: 50,
-        //             tickFormat: function (d) {
-        //                 return d3.format(',.1f')(d / 1e6) + "M";
-        //             }
-        //         }
-        //     }
-        // };
     }
 }
 

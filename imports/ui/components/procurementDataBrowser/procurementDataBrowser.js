@@ -2,6 +2,12 @@ import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
 import dx from '../../../../node_modules/devextreme/dist/js/dx.all.js';
+import bootstrapdaterangepicker from '/node_modules/bootstrap-daterangepicker/daterangepicker.js';
+import daterangepicker from '/node_modules/angular-daterangepicker/index.js';
+
+import '/node_modules/bootstrap/dist/css/bootstrap.css';
+import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
+
 
 import template from './procurementDataBrowser.html';
 import { name as ChartTest } from '../chartTest/chartTest';
@@ -26,7 +32,8 @@ export default angular.module(name, [
   Importer,
   Navigation,
   'accounts.ui',
-  'dx'
+  'dx',
+  daterangepicker
 ]).component(name, {
   template,
   controllerAs: name,

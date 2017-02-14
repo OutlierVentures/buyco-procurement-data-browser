@@ -11,42 +11,6 @@ class SpendingPerformance {
 
         $scope.dataSource = [];
 
-        // $scope.options = {
-        //     chart: {
-        //         type: 'multiChart',
-        //         height: 450,
-        //         margin: {
-        //             top: 20,
-        //             right: 20,
-        //             bottom: 50,
-        //             left: 60
-        //         },
-        //         // color: d3.scale.category10().range(),
-        //         //useInteractiveGuideline: true,
-        //         duration: 500,
-        //         xAxis: {
-        //             tickFormat: function (d) {
-        //                 if (!$scope.data[0].values[d])
-        //                     return "";
-        //                 var label = $scope.data[0].values[d].label;
-        //                 return label;
-        //             }
-        //         },
-        //         yAxis1: {
-        //             // axisLabel: 'Amount',
-        //             axisLabelDistance: 20,
-        //             tickFormat: function (d) {
-        //                 return d3.format(',.1f')(d / 1e6) + "M";
-        //             }
-        //         },
-        //         yAxis2: {
-        //             tickFormat: function (d) {
-        //                 return d;
-        //             }
-        //         }
-        //     }
-        // };
-
         $scope.chartOptions = {
             palette: "vintage",
             dataSource: $scope.dataSource,
@@ -57,11 +21,13 @@ class SpendingPerformance {
             series: [ {
                     valueField: "spending",
                     name: "Spending",
-                    type: 'bar'
+                    color: 'rgb(255, 170, 102)',
+                    type: "bar"
                 }, {
+                    axis: "children",
+                    type: "spline",
                     valueField: "children",
                     name: "Children in need, per 10,000",
-                    type: "spline",
                     color: "#008fd8"
                 }
             ],
@@ -72,6 +38,15 @@ class SpendingPerformance {
                 label: {
                     format: "largeNumber"
                 }
+            }, {
+                    name: "children",
+                    position: "right",
+                    grid: {
+                        visible: true
+                    },
+                    label: {
+                        format: "largeNumber"
+                    }
             }],
             tooltip: {
                 enabled: true,
@@ -100,6 +75,9 @@ class SpendingPerformance {
             },
             "export": {
                 enabled: true
+            },
+            size: {
+                height: 400
             }
         };
 
@@ -118,10 +96,10 @@ class SpendingPerformance {
             yAxis: 2,
             color: "#1f77b4",
             values: [
-                { x: 0, label: "2015 Q1", y: 40700000 },
-                { x: 1, label: "2015 Q2", y: 35300000 },
-                { x: 2, label: "2015 Q3", y: 29100000 },
-                { x: 3, label: "2015 Q4", y: 17500000 }
+                { x: 0, label: "2015 Q1", y: 407 },
+                { x: 1, label: "2015 Q2", y: 353 },
+                { x: 2, label: "2015 Q3", y: 291 },
+                { x: 3, label: "2015 Q4", y: 175 }
             ]
         };
 
