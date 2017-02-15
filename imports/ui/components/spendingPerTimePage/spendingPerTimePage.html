@@ -91,15 +91,15 @@
                                             <span ng-show="period=='quarter'">Quarter</span>
                                         </th>
                                         <th>Total</th>
-                                        <th ng-show="isLoggedIn">Through YPO</th>
-                                        <th ng-show="isLoggedIn">%</th>
+                                        <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
+                                        <th ng-show="selectedClient">%</th>
                                     </tr>
                                     <tr ng-repeat="spendGroup in mergedSpendingPerTime">
                                         <td>{{ spendGroup._group.year }}</td>
                                         <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
                                         <td>&pound; {{spendGroup.totalAmount | number: 2}} </td>
-                                        <td ng-show="isLoggedIn">&pound; {{spendGroup.client_amount_net | number: 2}}</td>
-                                        <td ng-show="isLoggedIn">{{spendGroup.client_amount_net_percent | number: 1}}</td>
+                                        <td ng-show="selectedClient">&pound; {{spendGroup.client_amount_net | number: 2}}</td>
+                                        <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
                                     </tr>
                                 </table>
                             </div>
