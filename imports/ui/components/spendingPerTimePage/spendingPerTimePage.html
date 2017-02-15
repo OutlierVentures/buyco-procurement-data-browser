@@ -46,7 +46,14 @@
                                 </div>
                                 <div class="col-md-4 col-xs-12">
                                     <div class="form-group">
-                                        <label for="service">Period</label>
+                                        <label for="filterDate">Date range</label>
+                                        <input date-range-picker name="filterDate" class="form-control date-picker" type="text" ng-model="filterDate" 
+                                            options="{ranges: ranges, alwaysShowCalendars: true}"/>
+                                    </div>
+                                </div>                           
+                                <div class="col-md-4 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="service">Group by period</label>
                                         <select class="form-control" name="period" ng-model="period">
                                             <option value="quarter">Quarter</option>
                                             <option value="month">Month</option>
@@ -54,9 +61,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <input date-range-picker class="form-control date-picker" type="text" ng-model="filterDate" 
-                                options="{ranges: ranges, alwaysShowCalendars: true}"/>
 
                             <div id="chart" dx-chart="{ series: chartData.series, valueAxis: chartData.valueAxis, legend: chartData.legend, 
                                     bindingOptions: { dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
