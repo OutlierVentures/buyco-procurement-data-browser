@@ -108,8 +108,13 @@ wget https://www.blockstars.io/projects/public-data-works/public_spending.bson h
 Ensure that your `mongo_bigchaindb` instance doesn't currently have a table `public_spending`. Drop it if necessary. Using the mongo shell:
 
 ```
-use bigchain
-db.public_spending.drop()
+# mongo
+MongoDB shell version v3.4.0
+(...)
+> use bigchain
+switched to db bigchain
+> db.public_spending.drop()
+true
 ```
 
 Restore the data file to the `mongo_bigchaindb` Mongo instance. The file is in BSON format, so we have to use `mongorestore` to import it.
@@ -144,6 +149,7 @@ docker exec -ti buyco_procurement_data_browser_mongo_bigchaindb_development bash
 Install wget to download the files:
 
 ```
+apt-get update
 apt-get install wget
 ```
 
