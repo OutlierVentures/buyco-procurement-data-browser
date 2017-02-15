@@ -27,6 +27,9 @@ class SpendingPerTimePage {
 
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
+        lastYearLabel =  'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
+        yearBeforeLabel =  'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+
         $scope.ranges = {
             // 'Today': [moment(), moment()],
             // 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -34,7 +37,8 @@ class SpendingPerTimePage {
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-            'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
             'This Year': [moment().startOf('year'), moment().endOf('year')]
         };
 
@@ -109,7 +113,7 @@ class SpendingPerTimePage {
                         xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = spendThisPeriod._id + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
+                        xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
                     let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
                     sourceValues.push({ xAxis: xLabel, yAxis: yVal });
@@ -129,7 +133,7 @@ class SpendingPerTimePage {
                     series: {
                         argumentField: "xAxis",
                         valueField: "yAxis",
-                        name: "Wakefield MDC",
+                        name: $scope.selectedOrganisation,
                         type: "bar",
                         color: '#ffaa66'
                     },
@@ -188,7 +192,10 @@ class SpendingPerTimePage {
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
-                effective_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
+                // Use  `payment_date` for filter and group rather than `effective_date` even though
+                // the latter might be the correct one.
+                // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
+                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
             },
             {
                 period: $scope.getReactively("period")
@@ -201,7 +208,7 @@ class SpendingPerTimePage {
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
-                effective_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
+                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
             },
             {
                 period: $scope.getReactively("period")
