@@ -49,7 +49,7 @@ Meteor.publish(collectionName, function (filters, options) {
     };
     pipeLine.push(sortClause);
 
-    // console.log("clientSpendingPerTime pipeLine", JSON.stringify(pipeLine));
+    console.log("clientSpendingPerTime pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = ClientSpending.aggregate(

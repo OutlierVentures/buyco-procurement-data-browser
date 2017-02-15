@@ -62,8 +62,8 @@
                                 </div>
                             </div>
 
-                            <div id="chart" dx-chart="{ series: chartData.series, valueAxis: chartData.valueAxis, legend: chartData.legend, 
-                                    bindingOptions: { dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
+                            <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, 
+                                    bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
                             
                             <div ng-show="spendingPerTime.length === 0">
                                 <p>Loading...</p>

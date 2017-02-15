@@ -10,6 +10,7 @@ import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
+import { Clients } from '../../../api/clients';
 
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
@@ -27,8 +28,8 @@ class SpendingPerTimePage {
 
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
-        lastYearLabel =  'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
-        yearBeforeLabel =  'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+        lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
+        yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
         $scope.ranges = {
             // 'Today': [moment(), moment()],
@@ -81,6 +82,9 @@ class SpendingPerTimePage {
 
                 return merged;
             },
+            clients: function () {
+                return Clients.find({});
+            },
             spendingOrganisations: function () {
                 return SpendingOrganisations.find({});
             },
@@ -98,8 +102,10 @@ class SpendingPerTimePage {
                 var spendingPerTime = SpendingPerTime.find({}, {
                 });
 
+                var allowedClients = Clients.find({}).fetch();
+
                 var clientSpendingPerTime = ClientSpendingPerTime.find({}, {
-                });
+                }).fetch();
 
                 var publicValues = [];
                 // var clientValues = [];
@@ -116,7 +122,18 @@ class SpendingPerTimePage {
                         xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
                     let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
-                    sourceValues.push({ xAxis: xLabel, yAxis: yVal });
+                    dataPoint = { xAxis: xLabel, yAxis: yVal };
+
+                    let clientVal = _(clientSpendingPerTime).find((v) => {
+                        return v._group
+                            && v._group.year == spendThisPeriod._group.year
+                            && v._group[$scope.period] === spendThisPeriod._group[$scope.period];
+                    });
+
+                    if (clientVal !== undefined)
+                        dataPoint.clientValue = clientVal.totalAmount;
+
+                    sourceValues.push(dataPoint);
                     i++;
                 });
 
@@ -126,27 +143,40 @@ class SpendingPerTimePage {
                     values: publicValues
                 };
 
-                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
-                const options =  
-                {
-                    dataSource: sourceValues,
-                    series: {
+                let series = [{
+                    argumentField: "xAxis",
+                    valueField: "yAxis",
+                    name: $scope.selectedOrganisation,
+                    type: "bar",
+                    color: '#ffaa66'
+                }];
+
+                // Add client series if we have data for it
+                if (allowedClients.length > 0) {
+                    series.push({
                         argumentField: "xAxis",
-                        valueField: "yAxis",
-                        name: $scope.selectedOrganisation,
+                        valueField: "clientValue",
+                        name: "YPO",
                         type: "bar",
-                        color: '#ffaa66'
-                    },
-                    valueAxis: [{
-                        label: {
-                            format: "largeNumber"
+                        color: '#543996'
+                    })
+                }
+
+                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
+                const options =
+                    {
+                        dataSource: sourceValues,
+                        series: series,
+                        valueAxis: [{
+                            label: {
+                                format: "largeNumber"
+                            }
+                        }],
+                        legend: {
+                            verticalAlignment: "bottom",
+                            horizontalAlignment: "center"
                         }
-                    }],
-                    legend: {
-                        verticalAlignment: "bottom",
-                        horizontalAlignment: "center"
-                    }
-                };
+                    };
 
                 return options;
             },
@@ -175,6 +205,7 @@ class SpendingPerTimePage {
         // TODO: remove this hardcoded default option, just use the first item in the list
         $scope.selectedOrganisation = "Wakefield MDC";
 
+        $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
             return [{
@@ -195,7 +226,7 @@ class SpendingPerTimePage {
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
-                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
+                payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
                 period: $scope.getReactively("period")
@@ -208,7 +239,7 @@ class SpendingPerTimePage {
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
-                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
+                payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
                 period: $scope.getReactively("period")
