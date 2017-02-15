@@ -2,13 +2,13 @@ import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("spendingPerTime publish.js");
+// console.log("spendingPerTime publish.js");
 
 const collectionName = "spendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("spendingPerTime");
-    console.log(filters);
+    // console.log("spendingPerTime");
+    // console.log(filters);
 
     let period = "quarter";
     if (options && options.period)
@@ -18,11 +18,25 @@ Meteor.publish(collectionName, function (filters, options) {
 
     removeEmptyFilters(filters);
 
+    let groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+
     if (filters) {
-        pipeLine.push({ $match: filters });
+        if(filters.organisation_name === 'All') {
+            allFilter = {
+                effective_date: filters.effective_date
+            };
+            groupClause = { $group: { _id: { year: { $year: "$effective_date" }, organisation: "$organisation_name" }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+        } else {
+            allFilter = {
+                organisation_name: filters.organisation_name,
+                effective_date: filters.effective_date
+            };
+            groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+        }
+        pipeLine.push({ $match: allFilter });
     }
 
-    let groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+    // let groupClause = { $group: { _id: { year: { $year: "$effective_date" }, organisation: "$organisation_name" }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
 
     if (period == "month")
         groupClause.$group._id.month = { $month: "$effective_date" };

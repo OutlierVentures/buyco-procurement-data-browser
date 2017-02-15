@@ -25,9 +25,7 @@ class SpendingGroupedChart {
                     procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
                     sercop_service: this.getReactively("filters.sercop_service")
                 };
-            if(this.getReactively('filterDate')) {
-               filterOptions.effective_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
-            }
+                
             return [
                 filterOptions,
             {
@@ -47,7 +45,6 @@ class SpendingGroupedChart {
             let filters = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 groupField: this.getReactively("groupField")
-                // filterDate: this.getReactively("filterDate"),
             };
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,

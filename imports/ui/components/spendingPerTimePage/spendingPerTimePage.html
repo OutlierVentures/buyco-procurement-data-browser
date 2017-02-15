@@ -14,6 +14,7 @@
                                         <label for="selectedOrganisation">Organisation</label>
                                         <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
                                             <option default value="">-- select --</option>
+                                            <option value="All">All</option>
                                             <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
                                         </select>
                                     </div>
@@ -58,9 +59,17 @@
                             <input date-range-picker class="form-control date-picker" type="text" ng-model="filterDate" 
                                 options="{ranges: ranges, alwaysShowCalendars: true}"/>
 
-                            <div id="chart" dx-chart="{ series: chartData.series, valueAxis: chartData.valueAxis, legend: chartData.legend, 
-                                    bindingOptions: { dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
+                            <!--<div ng-if="selectedOrganisation !== 'All'">
+                                <div id="chart" dx-chart="{ valueAxis: chartData.valueAxis, legend: chartData.legend, 
+                                        bindingOptions: { dataSource: 'chartData.dataSource', series: 'chartData.series' } }" 
+                                        ng-show="spendingPerTime.length"></div>
+                            </div>-->
                             
+                            <!--<div ng-if="selectedOrganisation === 'All'">-->
+                                <div id="chart" dx-chart="{ valueAxis: chartData.valueAxis, legend: chartData.legend, 
+                                    bindingOptions: { dataSource: 'chartData.dataSource', series: 'chartData.series', commonSeriesSettings: 'chartData.commonSeriesSettings' } }" 
+                                    ng-show="spendingPerTime.length"></div>
+                            <!--</div>-->
                             <div ng-show="spendingPerTime.length === 0">
                                 <p>Loading...</p>
                             </div>
@@ -105,7 +114,7 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div>
+        <div ng-if="selectedOrganisation !== 'All'">
             <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>-->
             <div>

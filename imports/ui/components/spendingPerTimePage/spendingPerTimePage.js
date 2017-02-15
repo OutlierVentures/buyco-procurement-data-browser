@@ -23,13 +23,10 @@ class SpendingPerTimePage {
         $reactive(this).attach($scope);
 
         var that = this;
-        $scope.dataSource = [];
 
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
         $scope.ranges = {
-            // 'Today': [moment(), moment()],
-            // 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
@@ -91,6 +88,7 @@ class SpendingPerTimePage {
                 });
             },
             chartData: function () {
+                // console.log('chartData = ', $scope.selectedOrganisation);
                 var spendingPerTime = SpendingPerTime.find({}, {
                 });
 
@@ -98,7 +96,6 @@ class SpendingPerTimePage {
                 });
 
                 var publicValues = [];
-                // var clientValues = [];
 
                 let i = 0;
                 let sourceValues = [];
@@ -112,10 +109,27 @@ class SpendingPerTimePage {
                         xLabel = spendThisPeriod._id + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
                     let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
-                    sourceValues.push({ xAxis: xLabel, yAxis: yVal });
+
+                    if($scope.selectedOrganisation === 'All') {
+                        if(spendThisPeriod._group.organisation === 'Doncaster Council') {
+                            sourceValues.push({
+                                xAxis: xLabel,
+                                Don: yVal
+                            });
+                        } else { 
+                            sourceValues.push({
+                                xAxis: xLabel,
+                                MDC: yVal
+                            });
+                        }
+
+                    } else {
+                        sourceValues.push({ xAxis: xLabel, yAxis: yVal });
+                    }
                     i++;
                 });
 
+                // console.log('chartData - sourceValues = ', sourceValues);
                 $scope.publicSpendingData = {
                     key: $scope.selectedOrganisation,
                     color: '#404040',
@@ -123,26 +137,63 @@ class SpendingPerTimePage {
                 };
 
                 $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
-                const options =  
-                {
-                    dataSource: sourceValues,
-                    series: {
-                        argumentField: "xAxis",
-                        valueField: "yAxis",
-                        name: "Wakefield MDC",
-                        type: "bar",
-                        color: '#ffaa66'
-                    },
-                    valueAxis: [{
-                        label: {
-                            format: "largeNumber"
+
+                let options = {};
+                if($scope.selectedOrganisation === 'All') {
+                    // console.log('asdf');
+                    options = {
+                        dataSource: sourceValues,
+                        commonSeriesSettings: {
+                            argumentField: "xAxis",
+                            type: "bar",
+                            hoverMode: "allArgumentPoints",
+                            selectionMode: "allArgumentPoints",
+                            label: {
+                                visible: true,
+                                format: {
+                                    type: "fixedPoint",
+                                    precision: 0
+                                }
+                            }
+                        },
+                        series: [
+                            { valueField: "MDC", name: "Wakefield MDC" },
+                            { valueField: "Don", name: "Doncaster Council" }
+                        ],
+                        legend: {
+                            verticalAlignment: "bottom",
+                            horizontalAlignment: "center"
+                        },
+                        valueAxis: [{
+                            label: {
+                                format: "largeNumber"
+                            }
+                        }]
+                    };
+                } else {
+                    // console.log('erterte');
+                    options =  
+                    {
+                        dataSource: sourceValues,
+                        commonSeriesSettings: {},
+                        series: {
+                            argumentField: "xAxis",
+                            valueField: "yAxis",
+                            name: $scope.selectedOrganisation,
+                            type: "bar",
+                            color: '#ffaa66'
+                        },
+                        valueAxis: [{
+                            label: {
+                                format: "largeNumber"
+                            }
+                        }],
+                        legend: {
+                            verticalAlignment: "bottom",
+                            horizontalAlignment: "center"
                         }
-                    }],
-                    legend: {
-                        verticalAlignment: "bottom",
-                        horizontalAlignment: "center"
-                    }
-                };
+                    };
+                }
 
                 return options;
             },
@@ -169,7 +220,8 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         // TODO: remove this hardcoded default option, just use the first item in the list
-        $scope.selectedOrganisation = "Wakefield MDC";
+        // $scope.selectedOrganisation = "Wakefield MDC";
+        $scope.selectedOrganisation = "All";
 
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
