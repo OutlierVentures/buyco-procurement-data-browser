@@ -24,7 +24,29 @@ class SpendingPerTimePage {
 
         var that = this;
         $scope.dataSource = [];
-        $scope.date = {startDate: null, endDate: null};
+
+        var start = moment().subtract(1, 'year').startOf('year');
+        var end = moment();
+        lastYearLabel =  'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
+        yearBeforeLabel =  'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+
+        $scope.ranges = {
+            // 'Today': [moment(), moment()],
+            // 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
+            'This Year': [moment().startOf('year'), moment().endOf('year')]
+        };
+
+        $scope.filterDate = {
+            startDate: start,
+            endDate: end
+        };
+
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -95,15 +117,6 @@ class SpendingPerTimePage {
                     let yVal = spendThisPeriod.totalAmount;
                     publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
                     sourceValues.push({ xAxis: xLabel, yAxis: yVal });
-
-                    // Find corresponding item in client spending
-                    // clientSpendingPerTime.forEach((clientSpendThisPeriod) => {
-                    //     if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
-                    //         && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
-                    //         clientValues.push({ x: i, label: xLabel, y: clientSpendThisPeriod.totalAmount, source: clientSpendThisPeriod });
-                    //     }
-                    // });
-
                     i++;
                 });
 
@@ -114,25 +127,13 @@ class SpendingPerTimePage {
                 };
 
                 $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
-
-                // let dataSeries = [$scope.publicSpendingData];
-
-                // if (Meteor.userId()) {
-                //     dataSeries.push(
-                //         {
-                //             key: 'YPO',
-                //             color: '#543996',
-                //             values: clientValues
-                //         });
-                // }
-
                 const options =  
                 {
                     dataSource: sourceValues,
                     series: {
                         argumentField: "xAxis",
                         valueField: "yAxis",
-                        name: "Wakefield MDC",
+                        name: $scope.selectedOrganisation,
                         type: "bar",
                         color: '#ffaa66'
                     },
@@ -177,12 +178,12 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: $scope.getReactively("selectedOrganisation")
             }];
         });
         $scope.subscribe('spendingCategories', function () {
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: $scope.getReactively("selectedOrganisation")
             }];
         });
 
@@ -190,7 +191,11 @@ class SpendingPerTimePage {
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service")
+                sercop_service: $scope.getReactively("service"),
+                // Use  `payment_date` for filter and group rather than `effective_date` even though
+                // the latter might be the correct one.
+                // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
+                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
             },
             {
                 period: $scope.getReactively("period")
@@ -202,7 +207,8 @@ class SpendingPerTimePage {
                 client_id: "ypo.co.uk",
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service")
+                sercop_service: $scope.getReactively("service"),
+                payment_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
             },
             {
                 period: $scope.getReactively("period")

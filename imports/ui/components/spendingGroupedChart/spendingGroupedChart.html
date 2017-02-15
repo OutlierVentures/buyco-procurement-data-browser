@@ -8,8 +8,9 @@
                 valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size'} }"></div>
 <!--<div id="chart" dx-chart="chartOptions1"></div>-->
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
-            <span ng-show="!detailsVisible">Show details</span>
-            <span ng-show="detailsVisible">Hide details</span></button>
+                <span ng-show="!detailsVisible">Show details</span>
+                <span ng-show="detailsVisible">Hide details</span>
+            </button>
 
             <div ng-show="detailsVisible">
                 <table class="table table-striped">

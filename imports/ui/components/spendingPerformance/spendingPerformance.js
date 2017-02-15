@@ -122,23 +122,25 @@ class SpendingPerformance {
         function loadSpendingPerformanceData(spendingValues, performanceValues) {
             $scope.dataSource = [];
 
-            if(spendingValues.values[0].label.search('Q') != -1) {
-                performanceValues.values.forEach((performanceData) => {
+            if(spendingValues.values.length) {
+                if(spendingValues.values[0].label.search('Q') != -1) {
+                    performanceValues.values.forEach((performanceData) => {
+                        $scope.dataSource.push(
+                        {
+                            label : performanceData.label,
+                            children : performanceData.y
+                        });
+                    });
+                }
+
+                spendingValues.values.forEach((spendingData) => {
                     $scope.dataSource.push(
                     {
-                        label : performanceData.label,
-                        children : performanceData.y
+                        label : spendingData.label,
+                        spending : spendingData.y
                     });
                 });
             }
-
-            spendingValues.values.forEach((spendingData) => {
-                $scope.dataSource.push(
-                {
-                    label : spendingData.label,
-                    spending : spendingData.y
-                });
-            });
         }
     }
 }
