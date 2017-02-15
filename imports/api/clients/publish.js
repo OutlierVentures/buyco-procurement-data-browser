@@ -19,10 +19,12 @@ if (Meteor.isServer) {
             };
 
             _(groups).each((g) => {
-                selector.$or.push({"client_id":g});
+                selector.$or.push({ "client_id": g });
             });
 
-            console.log(selector);
+            if (selector.$or.length == 0)
+                return;
+
             return Clients.find(selector);
         }
 

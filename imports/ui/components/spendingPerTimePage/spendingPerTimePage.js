@@ -82,6 +82,18 @@ class SpendingPerTimePage {
 
                 return merged;
             },
+            firstClient: function () {
+                var cs = $scope.getReactively('clients');
+                if (cs && cs.length > 0)
+                    return cs[0];
+                return null;
+            },
+            firstClientId: function () {
+                var fc = $scope.getReactively('firstClient');
+                if (fc)
+                    return fc.client_id;
+                return null;
+            },
             clients: function () {
                 return Clients.find({});
             },
@@ -99,16 +111,13 @@ class SpendingPerTimePage {
                 });
             },
             chartData: function () {
-                var spendingPerTime = SpendingPerTime.find({}, {
-                });
+                var spendingPerTime = $scope.getReactively("spendingPerTime");
 
-                var allowedClients = Clients.find({}).fetch();
+                var allowedClients = $scope.getReactively("clients");
 
-                var clientSpendingPerTime = ClientSpendingPerTime.find({}, {
-                }).fetch();
+                var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
 
                 var publicValues = [];
-                // var clientValues = [];
 
                 let i = 0;
                 let sourceValues = [];
@@ -151,12 +160,14 @@ class SpendingPerTimePage {
                     color: '#ffaa66'
                 }];
 
+                let fc = $scope.getReactively("firstClient");
+
                 // Add client series if we have data for it
-                if (allowedClients.length > 0) {
+                if (allowedClients.length > 0 && fc) {
                     series.push({
                         argumentField: "xAxis",
                         valueField: "clientValue",
-                        name: "YPO",
+                        name: fc.name,
                         type: "bar",
                         color: '#543996'
                     })
@@ -235,7 +246,7 @@ class SpendingPerTimePage {
 
         $scope.subscribe('clientSpendingPerTime', function () {
             return [{
-                client_id: "ypo.co.uk",
+                client_id: $scope.getReactively("firstClientId"),
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),

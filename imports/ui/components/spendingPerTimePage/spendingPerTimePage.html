@@ -60,6 +60,16 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="col-md-4 col-xs-12" ng-show="clients.length">
+                                    <div class="form-group">
+                                        <label for="service">Compare your data</label>
+                                        <!-- Currently we only allow 1 set of client data, so select the option by default. -->
+                                        <select class="form-control" name="selectedClient" ng-model="firstClientId">
+                                            <option ng-repeat="client in clients" value="{{client.client_id}}">{{client.name}}</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, 
