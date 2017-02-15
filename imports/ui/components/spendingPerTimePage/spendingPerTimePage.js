@@ -28,12 +28,14 @@ class SpendingPerTimePage {
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
         $scope.ranges = {
-            'Today': [moment(), moment()],
-            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            // 'Today': [moment(), moment()],
+            // 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            'This Year': [moment().startOf('year'), moment().endOf('year')]
         };
 
         $scope.filterDate = {
@@ -172,8 +174,7 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation"),
-                effective_date: {$gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate()}
+                organisation_name: $scope.getReactively("selectedOrganisation")
             }];
         });
         $scope.subscribe('spendingCategories', function () {
@@ -206,47 +207,6 @@ class SpendingPerTimePage {
                 period: $scope.getReactively("period")
             }];
         });
-
-
-        // $scope.chartOptions = {
-        //     chart: {
-        //         type: 'multiBarChart',
-        //         height: 600,
-        //         margin: {
-        //             top: 20,
-        //             right: 20,
-        //             bottom: 50,
-        //             left: 60
-        //         },
-        //         clipEdge: true,
-        //         // Alternate indent for labels
-        //         //staggerLabels: true,
-        //         duration: 500,
-        //         stacked: false,
-        //         showControls: false,
-        //         xAxis: {
-        //             // axisLabel: 'Month',
-        //             axisLabelDistance: 50,
-        //             showMaxMin: false,
-        //             tickFormat: function (d) {
-        //                 var label = $scope.chartData[0].values[d].label;
-        //                 return label;
-        //             }
-        //         },
-        //         yAxis: {
-        //             // axisLabel: 'Amount',
-        //             axisLabelDistance: 20,
-        //             tickFormat: function (d) {
-        //                 return d3.format(',.1f')(d / 1e6) + "M";
-        //             }
-        //         },
-        //         callback: function (chart) {
-        //             chart.multibar.dispatch.on('elementClick', function (e) {
-        //                 console.log('The chart was clicked', e.data);
-        //             });
-        //         }
-        //     }
-        // };
     }
 }
 

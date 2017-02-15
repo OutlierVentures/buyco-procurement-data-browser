@@ -14,9 +14,9 @@ const collectionName = "spendingGrouped";
 Meteor.publish(collectionName, function (filters, options) {
     var self = this;
 
-    console.log("spendingGrouped");
-    console.log("filters", filters);
-    console.log("options", options);
+    // console.log("spendingGrouped");
+    // console.log("filters", filters);
+    // console.log("options", options);
 
     let groupField;
 
