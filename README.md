@@ -108,6 +108,8 @@ Download the latest public spending data dump:
 wget https://www.blockstars.io/projects/public-data-works/public_spending.bson https://www.blockstars.io/projects/public-data-works/public_spending.metadata.json
 ```
 
+[JSON version of the public spending data](https://www.blockstars.io/projects/public-data-works/public_spending.json)
+
 ### Import the data
 
 Ensure that your `mongo_bigchaindb` instance doesn't currently have a table `public_spending`. Drop it if necessary. Using the mongo shell:
@@ -148,8 +150,10 @@ You should see something like:
 Download the latest client spending demo data dump:
 
 ```
-wget https://www.blockstars.io/projects/public-data-works/client-spending-demo/client_spending.bson https://www.blockstars.io/projects/public-data-works/client-spending-demo/client_spending.metadata.json
+wget https://www.blockstars.io/projects/public-data-works/client_spending_demo/client_spending_demo.bson https://www.blockstars.io/projects/public-data-works/client_spending_demo/client_spending_demo.metadata.json
 ```
+
+[JSON version of the client spending demo data](https://www.blockstars.io/projects/public-data-works/client_spending_demo/client_spending_demo.json)
 
 ### Import the data
 
@@ -176,7 +180,7 @@ Restore the data file to the `mongo` Mongo instance. The file is in BSON format,
 When using a local MongoDB installation on the default port:
 
 ```
-mongorestore --port 3001 -d meteor client_spending.bson
+mongorestore --port 3001 -d meteor -c client_spending client_spending_demo.bson
 ```
 
 You should see something like:
