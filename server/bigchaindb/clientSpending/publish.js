@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Config } from '../config';
 
-let database = new MongoInternals.RemoteCollectionDriver(Config.bigchainDb.database.url);
-
-export const ClientSpending = new Mongo.Collection('client_spending_demo', { _driver: database });
+// Client spending data is stored in the normal Meteor MongoDB, not in the public ledger.
+export const ClientSpending = new Mongo.Collection('client_spending');
 
 const collectionName = "client_spending";
 
