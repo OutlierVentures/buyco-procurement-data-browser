@@ -88,12 +88,6 @@ class SpendingPerTimePage {
                     return cs[0];
                 return null;
             },
-            firstClientId: function () {
-                var fc = $scope.getReactively('firstClient');
-                if (fc)
-                    return fc.client_id;
-                return null;
-            },
             clients: function () {
                 return Clients.find({});
             },
@@ -160,14 +154,14 @@ class SpendingPerTimePage {
                     color: '#ffaa66'
                 }];
 
-                let fc = $scope.getReactively("firstClient");
+                let sc = $scope.getReactively("selectedClient");
 
                 // Add client series if we have data for it
-                if (allowedClients.length > 0 && fc) {
+                if (allowedClients.length > 0 && sc) {
                     series.push({
                         argumentField: "xAxis",
                         valueField: "clientValue",
-                        name: fc.name,
+                        name: sc.name,
                         type: "bar",
                         color: '#543996'
                     })
@@ -216,7 +210,7 @@ class SpendingPerTimePage {
         // TODO: remove this hardcoded default option, just use the first item in the list
         $scope.selectedOrganisation = "Wakefield MDC";
 
-        $scope.subscribe('clients');
+        let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
             return [{
@@ -246,7 +240,7 @@ class SpendingPerTimePage {
 
         $scope.subscribe('clientSpendingPerTime', function () {
             return [{
-                client_id: $scope.getReactively("firstClientId"),
+                client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
@@ -255,6 +249,13 @@ class SpendingPerTimePage {
             {
                 period: $scope.getReactively("period")
             }];
+        });
+
+        this.autorun(() => {
+            // Select the first client option by default when the subscription is ready.
+            if (clientSub.ready()) {
+                $scope.selectedClient = $scope.getReactively("firstClient");
+            }
         });
     }
 }

@@ -3,7 +3,7 @@ import { Config } from '../config';
 
 let database = new MongoInternals.RemoteCollectionDriver(Config.bigchainDb.database.url);
 
-export const ClientSpending = new Mongo.Collection('client_spending', { _driver: database });
+export const ClientSpending = new Mongo.Collection('client_spending_demo', { _driver: database });
 
 const collectionName = "client_spending";
 
