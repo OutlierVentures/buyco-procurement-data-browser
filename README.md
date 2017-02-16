@@ -91,11 +91,16 @@ source ./set-env.sh
 BPDB_PORT=8888 make build-app
 ```
 
-# Importing open spending data
+# Importing spending data
 
-Spending data currently lives in a table `public_spending` in the `mongo_bigchaindb` MongoDB instance.
+Spending data currently lives in two tables:
 
-## Get the data
+- `public_spending` in the `mongo_bigchaindb` MongoDB instance
+- `client_spending` in the Meteor `mongo` MongoDB instance
+
+## Public spending data
+
+### Get the data
 
 Download the latest public spending data dump:
 
@@ -103,7 +108,7 @@ Download the latest public spending data dump:
 wget https://www.blockstars.io/projects/public-data-works/public_spending.bson https://www.blockstars.io/projects/public-data-works/public_spending.metadata.json
 ```
 
-## Import the data
+### Import the data
 
 Ensure that your `mongo_bigchaindb` instance doesn't currently have a table `public_spending`. Drop it if necessary. Using the mongo shell:
 
@@ -136,6 +141,85 @@ You should see something like:
 2017-02-09T20:42:22.868+0000    done
 ```
 
+## Client spending demo data
+
+### Get the data
+
+Download the latest client spending demo data dump:
+
+```
+wget https://www.blockstars.io/projects/public-data-works/client-spending-demo/client_spending.bson https://www.blockstars.io/projects/public-data-works/client-spending-demo/client_spending.metadata.json
+```
+
+### Import the data
+
+We assume you're using the Meteor built-in Mongo instance which runs on port 3001 by default. First, start Meteor so the Meteor mongo instance is running:
+
+```
+meteor run
+```
+
+Ensure that your `mongo` instance doesn't currently have a table `client_spending`. Drop it if necessary. Using the mongo shell:
+
+```
+# mongo --port 3001
+MongoDB shell version v3.4.0
+(...)
+> use meteor
+switched to db meteor
+> db.client_spending.drop()
+true
+```
+
+Restore the data file to the `mongo` Mongo instance. The file is in BSON format, so we have to use `mongorestore` to import it.
+
+When using a local MongoDB installation on the default port:
+
+```
+mongorestore --port 3001 -d meteor client_spending.bson
+```
+
+You should see something like:
+
+```
+2017-02-16T10:21:44.733+0000    checking for collection data in client_spending.bson
+2017-02-16T10:21:44.738+0000    reading metadata for meteor.client_spending from client_spending.metadata.json
+2017-02-16T10:21:44.752+0000    restoring meteor.client_spending from client_spending.bson
+2017-02-16T10:21:44.846+0000    no indexes to restore
+2017-02-16T10:21:44.847+0000    finished restoring meteor.client_spending (2568 documents)
+2017-02-16T10:21:44.847+0000    done
+```
+
+Finally, add the client organisation. We have no UX for this yet, so it's done using a Mongo query on the Meteor `mongo` instance.
+
+```
+# mongo --port 3001
+MongoDB shell version v3.4.0
+(...)
+> use meteor
+switched to db meteor
+> db.clients.insert ({client_id: "democompany.publicdata.works", "name" : "Demo company" })
+WriteResult({ "nInserted" : 1 })
+```
+
+### Give yourself access to the client data
+
+To get access to client data, you need to be logged in as a user that either has a global `admin` role, or a `viewer` or `admin` role in a client group.
+
+1. Register as a user using the frontend interface
+1. There is no user admin UX yet. Make your user global admin using a MongoDB query. Assuming your user email is `me@gmail.com`:
+    ```
+    # mongo --port 3001
+    MongoDB shell version v3.4.0
+    (...)
+    > use meteor
+    switched to db meteor
+    > db.users.update({"emails.address": "me@gmail.com"}, {$set: {"roles":{"__global_roles__": ["admin"]}}})
+    WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+    ```
+
+1. Log in again
+
 ## When using Docker
 
 When running using Docker, the data has to be restored on the container named `buyco_procurement_data_browser_mongo_bigchaindb_development`.
@@ -146,7 +230,13 @@ Start a bash shell in the running container:
 docker exec -ti buyco_procurement_data_browser_mongo_bigchaindb_development bash
 ```
 
-Install wget to download the files:
+For the Meteor container, use:
+
+```
+docker exec -ti buyco_procurement_data_browser_mongo_development bash
+```
+
+On each of these, first install wget to download the files:
 
 ```
 apt-get update
@@ -155,10 +245,9 @@ apt-get install wget
 
 Then follow the above steps.
 
-
 ## See the data in the app
 
-When you now open the app, you should see data of several UK Councils in the list of transactions under `/spending` and charts under `/spending/time`.
+When you now open the app, you should see data of several UK Councils in the list of transactions under `/spending` and charts under `/spending/time`. If you have imported client data as well, you'll see data for "Demo company" side by side.
 
 # Tools
 
