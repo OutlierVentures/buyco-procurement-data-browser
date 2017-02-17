@@ -167,7 +167,6 @@ class SpendingPerTimePage {
                     })
                 }
 
-                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
                 const options =
                     {
                         dataSource: sourceValues,

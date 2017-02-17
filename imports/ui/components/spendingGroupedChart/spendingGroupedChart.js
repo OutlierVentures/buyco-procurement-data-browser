@@ -101,8 +101,6 @@ class SpendingGroupedChart {
                     values: publicValues
                 };
 
-                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
-
                 let dataSeries = [$scope.publicSpendingData];
 
                 loadSpendingGroupChartData();
