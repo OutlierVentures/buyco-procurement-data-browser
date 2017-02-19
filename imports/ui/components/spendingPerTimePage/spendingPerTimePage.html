@@ -92,12 +92,19 @@
                                         <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
                                         <th ng-show="selectedClient">%</th>
                                     </tr>
-                                    <tr ng-repeat="spendGroup in mergedSpendingPerTime">
+                                    <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
                                         <td>{{ spendGroup._group.year }}</td>
                                         <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
                                         <td>&pound; {{spendGroup.totalAmount | number: 2}} </td>
                                         <td ng-show="selectedClient">&pound; {{spendGroup.client_amount_net | number: 2}}</td>
                                         <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td>&pound; {{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
+                                        <td ng-show="selectedClient">&pound; {{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</td>
+                                        <td ng-show="selectedClient">{{mergedSpendingPerTime.totalValues.client_amount_net_percent | number: 1}}</td>
                                     </tr>
                                 </table>
                             </div>
