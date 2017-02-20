@@ -51,6 +51,8 @@ class SpendingPerTimePage {
             endDate: end
         };
 
+        $scope.filterName = '';
+
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -124,8 +126,11 @@ class SpendingPerTimePage {
                 });
             },
             selectedPeriod: function () {
-                // console.log('changed FilterDate');
+                $scope.filterName = $scope.filterDate.startDate.toDate().toDateString() + '-' + $scope.filterDate.endDate.toDate().toDateString();
                 return $scope.getReactively("filterDate");
+            },
+            filterPeriodName: function () {
+                return $scope.getReactively("filterName");
             },
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
@@ -246,6 +251,7 @@ class SpendingPerTimePage {
             let selectedMonth;
             var index = 0;
             var startDate, endDate;
+            $scope.filterName = period;
 
             if($scope.period === 'quarter') {
                 index = period.search('Q');
@@ -266,7 +272,6 @@ class SpendingPerTimePage {
                 startDate: moment(new Date(startDate)), 
                 endDate: moment(new Date(endDate))
             };
-            console.log('filterPeriod = ', $scope.selectedPeriod);
         }
 
         let clientSub = $scope.subscribe('clients');

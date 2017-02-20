@@ -100,8 +100,10 @@ class SpendingGroupedChart {
 
                 loadSpendingGroupChartData();
                 return dataSeries;
+            },
+            filterPeriodName: () => {
+                return this.getReactively("filterName");
             }
-
         });
 
         function loadSpendingGroupChartData() {
@@ -227,7 +229,8 @@ export default angular.module(name, [
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
         groupField: '<',
         filterDate: '<',
-        selDate: '<'
+        selDate: '<',
+        filterName: '<'
     },
     controller: SpendingGroupedChart
 });
