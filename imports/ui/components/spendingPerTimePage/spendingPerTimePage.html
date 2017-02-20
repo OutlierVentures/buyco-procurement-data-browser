@@ -70,7 +70,7 @@
                                 </div>
                             </div>
 
-                            <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, 
+                            <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
                                     bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
                             
                             <div ng-show="spendingPerTime.length === 0">
@@ -128,7 +128,7 @@
             <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>-->
             <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate"></spending-grouped>
+                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
             </div>
             <div>
                 <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate"></spending-grouped>

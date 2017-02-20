@@ -15,8 +15,8 @@ Meteor.publish(collectionName, function (filters, options) {
     var self = this;
 
     // console.log("spendingGrouped");
-    // console.log("filters", filters);
-    // console.log("options", options);
+    console.log("filters", filters);
+    console.log("options", options);
 
     let groupField;
 
@@ -59,7 +59,7 @@ Meteor.publish(collectionName, function (filters, options) {
     }
     pipeLine.push(limitClause);
 
-    // console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
+    console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = Spending.aggregate(
