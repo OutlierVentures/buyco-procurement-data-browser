@@ -1,6 +1,6 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
-import angularNvd3 from 'angular-nvd3';
+// import angularNvd3 from 'angular-nvd3';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingGroupedChart.html';
@@ -34,7 +34,6 @@ class SpendingGroupedChart {
                filterOptions.effective_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
             }
 
-            console.log('spendingGroupChart-filterOptions = ', filterOptions);
             return [
                 filterOptions,
             {
@@ -62,10 +61,6 @@ class SpendingGroupedChart {
                 filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             if (this.getReactively("filters.sercop_service"))
                 filters.sercop_service = this.getReactively("filters.sercop_service");
-
-            // if (this.getReactively('selDate')) {
-            //    filters.effective_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
-            // }
 
             return SpendingGrouped.find(filters);
         };

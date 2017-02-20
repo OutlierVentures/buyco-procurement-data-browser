@@ -242,7 +242,6 @@ class SpendingPerTimePage {
         $scope.selectedOrganisation = "Wakefield MDC";
 
         function filterPeriod(period) {
-            console.log(period);
             let selectedYear;
             let selectedMonth;
             var index = 0;
@@ -253,20 +252,20 @@ class SpendingPerTimePage {
                 selectedYear = period.substring(0, index - 1);
                 selectedMonth = period.substring(index + 1) * 3;
                 startDate = selectedYear + '-' + (selectedMonth - 2) + '-01';
-                endDate = selectedYear + '-' + selectedMonth + '-31';
+                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
             } else { // if month
                 index = period.search('-');
-                selectedYear = period.substring(0, index - 1);
+                selectedYear = period.substring(0, index);
                 selectedMonth = period.substring(index + 1);
+                selectedMonth = Number(selectedMonth);
                 startDate = selectedYear + '-' + selectedMonth + '-01';
-                endDate = selectedYear + '-' + selectedMonth + '-31';
+                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
             }
 
             $scope.selectedPeriod = {
                 startDate: moment(new Date(startDate)), 
                 endDate: moment(new Date(endDate))
             };
-            console.log('selected Period = ', $scope.selectedPeriod);
         }
 
         let clientSub = $scope.subscribe('clients');
