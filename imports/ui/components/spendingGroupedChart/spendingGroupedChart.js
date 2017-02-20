@@ -27,11 +27,11 @@ class SpendingGroupedChart {
             };
 
             if(this.getReactively('filterDate')) {
-               filterOptions.effective_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
+               filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
             }
 
             if(this.getReactively('selDate')) {
-               filterOptions.effective_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
+               filterOptions.payment_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
             }
 
             return [
