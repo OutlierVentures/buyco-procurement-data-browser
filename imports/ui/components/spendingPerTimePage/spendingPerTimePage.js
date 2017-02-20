@@ -31,6 +31,14 @@ class SpendingPerTimePage {
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
+        $scope.example14model = [];
+        $scope.selectedOrganisation = [];
+        $scope.example14settings = {
+            scrollableHeight: '200px',
+            scrollable: true,
+            enableSearch: false
+        };
+
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
@@ -111,33 +119,41 @@ class SpendingPerTimePage {
                 return Clients.find({});
             },
             spendingOrganisations: function () {
-                return SpendingOrganisations.find({});
+                var organisationsBuffer = [];
+                var organisations = SpendingOrganisations.find({});
+                organisations.forEach((organisation) => {
+                    organisationsBuffer.push({
+                        id: organisation._id,
+                        label: organisation.organisation_name
+                    });
+                });
+                $scope.selectedOrganisation = organisationsBuffer[0];
+                console.log('spendingOrganisations = ', organisationsBuffer);
+                return organisationsBuffer;
             },
             spendingServices: function () {
+                console.log('spendingServices');
                 return SpendingServices.find({
                     organisation_name: $scope.getReactively("selectedOrganisation")
                 });
             },
             spendingCategories: function () {
+                console.log('spendingCategories');
                 return SpendingCategories.find({
                     organisation_name: $scope.getReactively("selectedOrganisation")
                 });
             },
             selectedPeriod: function () {
-                // console.log('changed FilterDate');
                 return $scope.getReactively("filterDate");
             },
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
-
                 var allowedClients = $scope.getReactively("clients");
-
                 var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
-
                 var publicValues = [];
-
                 let i = 0;
                 let sourceValues = [];
+
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -221,6 +237,7 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
+                console.log('subChartFilters');
                 return {
                     organisation_name: $scope.getReactively("selectedOrganisation"),
                     procurement_classification_1: $scope.getReactively("category"),
@@ -239,7 +256,7 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         // TODO: remove this hardcoded default option, just use the first item in the list
-        $scope.selectedOrganisation = "Wakefield MDC";
+        // $scope.selectedOrganisation = "Wakefield MDC";
 
         function filterPeriod(period) {
             let selectedYear;
@@ -271,17 +288,20 @@ class SpendingPerTimePage {
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
+            console.log('spendingServices - subscribe');
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation")
             }];
         });
         $scope.subscribe('spendingCategories', function () {
+            console.log('subChartFilters - subscribe');
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation")
             }];
         });
 
         $scope.subscribe('spendingPerTime', function () {
+            console.log('spendingPerTime - subscribe');
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
@@ -297,6 +317,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            console.log('clientSpendingPerTime - subscribe');
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: $scope.getReactively("selectedOrganisation"),
