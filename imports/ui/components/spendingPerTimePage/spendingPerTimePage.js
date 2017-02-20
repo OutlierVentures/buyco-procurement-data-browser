@@ -226,10 +226,13 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
+                $scope.filterName = '';
+                $scope.selectedPeriod = '';
                 return {
                     organisation_name: $scope.getReactively("selectedOrganisation"),
                     procurement_classification_1: $scope.getReactively("category"),
-                    sercop_service: $scope.getReactively("service")
+                    sercop_service: $scope.getReactively("service"),
+                    period: $scope.getReactively("period")
                 };
             }
         });
@@ -288,6 +291,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('spendingPerTime', function () {
+            $scope.filterName = '';
             return [{
                 organisation_name: $scope.getReactively("selectedOrganisation"),
                 procurement_classification_1: $scope.getReactively("category"),
@@ -303,6 +307,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            $scope.filterName = '';
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: $scope.getReactively("selectedOrganisation"),
@@ -318,6 +323,7 @@ class SpendingPerTimePage {
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
+                $scope.filterName = '';
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });

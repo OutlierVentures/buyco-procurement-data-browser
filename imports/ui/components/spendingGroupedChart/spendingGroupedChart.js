@@ -20,10 +20,12 @@ class SpendingGroupedChart {
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
         $scope.subscribe('spendingGrouped', () => {
+            console.log('grouped chart');
+            var temp = this.getReactively("filters.period");
             let filterOptions = {
-                    organisation_name: this.getReactively("filters.organisation_name"),
-                    procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                    sercop_service: this.getReactively("filters.sercop_service")
+                organisation_name: this.getReactively("filters.organisation_name"),
+                procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
+                sercop_service: this.getReactively("filters.sercop_service")
             };
 
             if(this.getReactively('filterDate')) {
@@ -62,6 +64,7 @@ class SpendingGroupedChart {
             if (this.getReactively("filters.sercop_service"))
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
+                var temp = this.getReactively("filters.period");
             return SpendingGrouped.find(filters);
         };
 
