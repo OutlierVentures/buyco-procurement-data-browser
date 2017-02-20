@@ -46,6 +46,11 @@ class SpendingPerTimePage {
             endDate: end
         };
 
+        $scope.selectedPeriod = {
+            startDate: start,
+            endDate: end
+        };
+
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -110,13 +115,17 @@ class SpendingPerTimePage {
             },
             spendingServices: function () {
                 return SpendingServices.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    organisation_name: $scope.getReactively("selectedOrganisation")
                 });
             },
             spendingCategories: function () {
                 return SpendingCategories.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    organisation_name: $scope.getReactively("selectedOrganisation")
                 });
+            },
+            selectedPeriod: function () {
+                // console.log('changed FilterDate');
+                return $scope.getReactively("filterDate");
             },
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
@@ -181,6 +190,8 @@ class SpendingPerTimePage {
                     })
                 }
 
+                let selectedArgument = 0;
+
                 const options =
                     {
                         dataSource: sourceValues,
@@ -193,6 +204,12 @@ class SpendingPerTimePage {
                         legend: {
                             verticalAlignment: "bottom",
                             horizontalAlignment: "center"
+                        },
+                        onPointClick: function(e) {
+                            var target = e.target;
+                            target.select();
+                            selectedArgument = target.originalArgument;
+                            filterPeriod(selectedArgument);
                         }
                     };
 
@@ -222,6 +239,33 @@ class SpendingPerTimePage {
 
         // TODO: remove this hardcoded default option, just use the first item in the list
         $scope.selectedOrganisation = "Wakefield MDC";
+
+        function filterPeriod(period) {
+            let selectedYear;
+            let selectedMonth;
+            var index = 0;
+            var startDate, endDate;
+
+            if($scope.period === 'quarter') {
+                index = period.search('Q');
+                selectedYear = period.substring(0, index - 1);
+                selectedMonth = period.substring(index + 1) * 3;
+                startDate = selectedYear + '-' + (selectedMonth - 2) + '-01';
+                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
+            } else { // if month
+                index = period.search('-');
+                selectedYear = period.substring(0, index);
+                selectedMonth = period.substring(index + 1);
+                selectedMonth = Number(selectedMonth);
+                startDate = selectedYear + '-' + selectedMonth + '-01';
+                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
+            }
+
+            $scope.selectedPeriod = {
+                startDate: moment(new Date(startDate)), 
+                endDate: moment(new Date(endDate))
+            };
+        }
 
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');

@@ -1,6 +1,6 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
-import angularNvd3 from 'angular-nvd3';
+// import angularNvd3 from 'angular-nvd3';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingGroupedChart.html';
@@ -24,10 +24,16 @@ class SpendingGroupedChart {
                     organisation_name: this.getReactively("filters.organisation_name"),
                     procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
                     sercop_service: this.getReactively("filters.sercop_service")
-                };
+            };
+
             if(this.getReactively('filterDate')) {
-               filterOptions.effective_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
+               filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
             }
+
+            if(this.getReactively('selDate')) {
+               filterOptions.payment_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
+            }
+
             return [
                 filterOptions,
             {
@@ -47,7 +53,6 @@ class SpendingGroupedChart {
             let filters = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 groupField: this.getReactively("groupField")
-                // filterDate: this.getReactively("filterDate"),
             };
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
@@ -72,21 +77,9 @@ class SpendingGroupedChart {
             },
             chartData: () => {
                 var publicValues = [];
-
-                // console.log("spendingGroupChart '" + this.groupField + "': processing chart data. Filters are:", this.filters);
-
                 let i = 0;
                 this.spendingGrouped().forEach((spendThisGroup) => {
                     let xLabel;
-
-                    // For grouped data, the data will look like this:
-                    // {
-                    //     "group": "CAPITAL PROGRAMME HRA",
-                    //     "reduction": 59610752.69999999,
-                    //     "organisation_name": "...",
-                    //     ...
-                    // }
-                    // For the label we just use the "group" field.
                     xLabel = spendThisGroup._group;
 
                     let yVal = spendThisGroup.totalAmount;
@@ -222,8 +215,7 @@ const name = 'spendingGrouped';
 // create a module
 export default angular.module(name, [
     angularMeteor,
-    uiRouter,
-    angularNvd3
+    uiRouter
 ]).component(name, {
     template,
     controllerAs: name,
@@ -232,7 +224,8 @@ export default angular.module(name, [
         filters: '<',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
         groupField: '<',
-        filterDate: '<'
+        filterDate: '<',
+        selDate: '<'
     },
     controller: SpendingGroupedChart
 });
