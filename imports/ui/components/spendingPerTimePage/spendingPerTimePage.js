@@ -32,8 +32,6 @@ class SpendingPerTimePage {
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
         $scope.ranges = {
-            // 'Today': [moment(), moment()],
-            // 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
@@ -64,9 +62,16 @@ class SpendingPerTimePage {
                 var ps = SpendingPerTime.find({});
                 var cs = ClientSpendingPerTime.find({});
 
+                var totalValues = {
+                    total: 0,
+                    client_amount_net: 0,
+                    client_amount_net_percent: 0
+                };
+
                 var merged = [];
                 ps.forEach((spendThisPeriod) => {
                     let mergedItem = spendThisPeriod;
+                    totalValues.total += mergedItem.totalAmount;
                     merged.push(mergedItem);
 
                     cs.forEach((clientSpendThisPeriod) => {
@@ -75,12 +80,21 @@ class SpendingPerTimePage {
 
                             mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
                             mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.totalAmount * 100;
+                            totalValues.client_amount_net += mergedItem.client_amount_net;
                         }
                     });
-
                 });
 
-                return merged;
+                if(totalValues.client_amount_net != 0) {
+                    totalValues.client_amount_net_percent = totalValues.client_amount_net / totalValues.total * 100;
+                }
+
+                var mergedData = {
+                    totalValues: totalValues,
+                    merged: merged
+                }
+
+                return mergedData;
             },
             firstClient: function () {
                 var cs = $scope.getReactively('clients');
