@@ -31,12 +31,20 @@ class SpendingPerTimePage {
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
-        $scope.example14model = [];
         $scope.selectedOrganisation = [];
-        $scope.example14settings = {
+        $scope.filteredOrganisations = [];
+        $scope.organisationCount = 0;
+        $scope.organisationSettings = {
             scrollableHeight: '200px',
             scrollable: true,
-            enableSearch: false
+            enableSearch: false,
+            externalIdProp: "id",
+            showUncheckAll: false,
+            selectionLimit: $scope.organisationCount
+        };
+        $scope.organisationEventSetting = {
+            onSelectAll: selectAllOrganisation,
+            onMaxSelectionReached: reachedMaxSelection
         };
 
         $scope.ranges = {
@@ -126,21 +134,23 @@ class SpendingPerTimePage {
                         id: organisation._id,
                         label: organisation.organisation_name
                     });
+
+                    $scope.selectedOrganisation = [{
+                        id: organisationsBuffer[0].id
+                    }];
                 });
-                $scope.selectedOrganisation = organisationsBuffer[0];
-                console.log('spendingOrganisations = ', organisationsBuffer);
+                $scope.organisationCount = organisationsBuffer.length;
+                console.log($scope.organisationCount);
                 return organisationsBuffer;
             },
             spendingServices: function () {
-                console.log('spendingServices');
                 return SpendingServices.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation")
+                    organisation_name: { $in : $scope.getReactively("filteredOrganisations") }
                 });
             },
             spendingCategories: function () {
-                console.log('spendingCategories');
                 return SpendingCategories.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation")
+                    organisation_name: { $in : $scope.getReactively("filteredOrganisations") }
                 });
             },
             selectedPeriod: function () {
@@ -237,17 +247,22 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
-                console.log('subChartFilters');
                 return {
-                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    organisation_name: { $in : $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service")
                 };
+            },
+            filterSelectedOrganisation: function() {
+                var organisations = $scope.getCollectionReactively("selectedOrganisation");
+                $scope.filteredOrganisations = [];
+                organisations.forEach((organisation) => {
+                    $scope.filteredOrganisations.push(organisation.id);
+                });
             }
         });
 
         // UX defaults on component open
-
         // Show details and drilldown by default. If we start them as collapsed, nvd3 initialises their
         // charts only several pixels wide and doesn't correct when uncollapsed.
         $scope.detailsVisible = true;
@@ -285,25 +300,30 @@ class SpendingPerTimePage {
             };
         }
 
+        function selectAllOrganisation() {
+            console.log('selected All');
+        }
+
+        function reachedMaxSelection() {
+            console.log('reached Max Selection');
+        }
+
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices', function () {
-            console.log('spendingServices - subscribe');
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation")
+                organisation_name: { $in : $scope.getReactively("filteredOrganisations") }
             }];
         });
         $scope.subscribe('spendingCategories', function () {
-            console.log('subChartFilters - subscribe');
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation")
+                organisation_name: { $in : $scope.getReactively("filteredOrganisations") }
             }];
         });
 
         $scope.subscribe('spendingPerTime', function () {
-            console.log('spendingPerTime - subscribe');
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: { $in : $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
@@ -317,10 +337,9 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
-            console.log('clientSpendingPerTime - subscribe');
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: { $in : $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }

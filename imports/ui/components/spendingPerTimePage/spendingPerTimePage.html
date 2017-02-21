@@ -16,7 +16,9 @@
                                             <option default value="">-- select --</option>
                                             <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.label}}">{{spendingOrg.label}}</option>
                                         </select>-->
-                                        <div ng-dropdown-multiselect="" options="spendingOrganisations" selected-model="selectedOrganisation" extra-settings="example14settings"></div>
+                                        <div ng-dropdown-multiselect="" options="spendingOrganisations" selected-model="selectedOrganisation" 
+                                            extra-settings="organisationSettings" events="organisationEventSetting"></div>
+                                        <!--<pre>Selected Model: {{selectedOrganisation}} </pre>-->
                                     </div>
                                 </div>
                                 <div class="col-md-4 pull-right">
