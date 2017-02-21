@@ -1,141 +1,136 @@
 <div class="row">
-    <div class="col-md-6">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="widget">
-                    <div class="activity-sec">
-                        <div class="widget-title">
-                            <h3>Amounts over time</h3>
-                        </div>
-                        <div>
-                            <div class="row">
-                                <div class="col-md-4 col-xs-12">
-                                    <div class="form-group">
-                                        <label for="selectedOrganisation">Organisation</label>
-                                        <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
+    <div class="col-md-12">
+        <div class="widget">
+            <div class="activity-sec">
+                <div class="widget-title">
+                    <h3>Amounts over time</h3>
+                </div>
+                <div>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="selectedOrganisation">Organisation</label>
+                                <select class="form-control" name="selectedOrganisation" ng-model="selectedOrganisation">
                                             <option default value="">-- select --</option>
                                             <option ng-repeat="spendingOrg in spendingOrganisations" value="{{spendingOrg.organisation_name}}">{{spendingOrg.organisation_name}}</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 pull-right">
-                                    <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right">
+                            </div>
+                        </div>
+                        <div class="col-md-4 pull-right">
+                            <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right">
                                         <span ng-show="!filtersVisible">Filter</span>
                                         <span ng-show="filtersVisible">Hide filter</span>
                                     </button>
-                                </div>
-                            </div>
-                            <div class="row" ng-show="filtersVisible">
-                                <div class="col-md-4 col-xs-12">
-                                    <div class="form-group">
-                                        <label for="category">Category</label>
-                                        <select class="form-control" name="category" ng-model="category">
+                        </div>
+                    </div>
+                    <div class="row" ng-show="filtersVisible">
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select class="form-control" name="category" ng-model="category">
                                             <option default value="">-- select --</option>
                                             <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 col-xs-12">
-                                    <div class="form-group">
-                                        <label for="service">Service</label>
-                                        <select class="form-control" name="service" ng-model="service">
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="service">Service</label>
+                                <select class="form-control" name="service" ng-model="service">
                                             <option default value="">-- select --</option>
                                             <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 col-xs-12">
-                                    <div class="form-group">
-                                        <label for="filterDate">Date range</label>
-                                        <input date-range-picker name="filterDate" class="form-control date-picker" type="text" ng-model="filterDate" 
-                                            options="{ranges: ranges, alwaysShowCalendars: true}"/>
-                                    </div>
-                                </div>                           
-                                <div class="col-md-4 col-xs-12">
-                                    <div class="form-group">
-                                        <label for="service">Group by period</label>
-                                        <select class="form-control" name="period" ng-model="period">
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="filterDate">Date range</label>
+                                <input date-range-picker name="filterDate" class="form-control date-picker" type="text" ng-model="filterDate" options="{ranges: ranges, alwaysShowCalendars: true}"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="service">Group by period</label>
+                                <select class="form-control" name="period" ng-model="period">
                                             <option value="quarter">Quarter</option>
                                             <option value="month">Month</option>
                                         </select>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
 
-                                <div class="col-md-4 col-xs-12" ng-show="clients.length">
-                                    <div class="form-group">
-                                        <label for="service">Compare your data</label>
-                                        <select class="form-control" name="selectedClient" ng-model="selectedClient" ng-options="client as client.name for client in clients">
+                        <div class="col-md-4 col-xs-12" ng-show="clients.length">
+                            <div class="form-group">
+                                <label for="service">Compare your data</label>
+                                <select class="form-control" name="selectedClient" ng-model="selectedClient" ng-options="client as client.name for client in clients">
                                         </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
-                                    bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource' } }" ng-show="spendingPerTime.length"></div>
-                            
-                            <div ng-show="spendingPerTime.length === 0">
-                                <p>Loading...</p>
-                            </div>
-                            <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
-                                <span ng-show="!detailsVisible">Show details</span>
-                                <span ng-show="detailsVisible">Hide details</span>
-                            </button>
-                            <div ng-show="detailsVisible">
-                                <table class="table table-striped">
-                                    <tr>
-                                        <th>Year</th>
-                                        <th>
-                                            <span ng-show="period=='month'">Month</span>
-                                            <span ng-show="period=='quarter'">Quarter</span>
-                                        </th>
-                                        <th>Total</th>
-                                        <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
-                                        <th ng-show="selectedClient">%</th>
-                                    </tr>
-                                    <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
-                                        <td>{{ spendGroup._group.year }}</td>
-                                        <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
-                                        <td>&pound; {{spendGroup.totalAmount | number: 2}} </td>
-                                        <td ng-show="selectedClient">&pound; {{spendGroup.client_amount_net | number: 2}}</td>
-                                        <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Total</strong></td>
-                                        <td></td>
-                                        <td>&pound; {{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
-                                        <td ng-show="selectedClient">&pound; {{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</td>
-                                        <td ng-show="selectedClient">{{mergedSpendingPerTime.totalValues.client_amount_net_percent | number: 1}}</td>
-                                    </tr>
-                                </table>
                             </div>
                         </div>
                     </div>
+
+                    <div id="chart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
+                                    bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource' } }"
+                        ng-show="spendingPerTime.length"></div>
+
+                <div ng-show="spendingPerTime.length === 0">
+                    <p>Loading...</p>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div ng-show="selectedOrganisation=='Wakefield MDC'">
-                    <!--<button type="button" ng-click="performanceIndicatorsVisible = !performanceIndicatorsVisible" class="btn btn-default pull-right">
-        <span ng-show="!performanceIndicatorsVisible">Show performance indicators</span><span ng-show="performanceIndicatorsVisible">Hide performance indicators</span></button>-->
-                    <spending-performance spending-data="publicSpendingData" organisation-name="selectedOrganisation" ng-show="performanceIndicatorsVisible"></spending-performance>
+                <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+                                <span ng-show="!detailsVisible">Show details</span>
+                                <span ng-show="detailsVisible">Hide details</span>
+                            </button>
+                <div ng-show="detailsVisible">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Year</th>
+                            <th>
+                                <span ng-show="period=='month'">Month</span>
+                                <span ng-show="period=='quarter'">Quarter</span>
+                            </th>
+                            <th>Total</th>
+                            <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
+                            <th ng-show="selectedClient">%</th>
+                        </tr>
+                        <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
+                            <td>{{ spendGroup._group.year }}</td>
+                            <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
+                            <td>£{{spendGroup.totalAmount | number: 2}} </td>
+                            <td ng-show="selectedClient"><span ng-show="spendGroup.client_amount_net">£{{spendGroup.client_amount_net | number: 2}}</span></td>
+                            <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td></td>
+                            <td>£{{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
+                            <td ng-show="selectedClient"><span ng-show="mergedSpendingPerTime.totalValues.client_amount_net">£{{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</span></td>
+                            <td ng-show="selectedClient">{{mergedSpendingPerTime.totalValues.client_amount_net_percent | number: 1}}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div>
-            <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
+</div>
+<div class="row">
+    <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>-->
-            <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
-            </div>
-            <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
-            </div>
-            <div>
-                <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
-            </div>
+    <div class="col-lg-4 col-md-6">
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-lg-6">
+        <div ng-show="selectedOrganisation=='Wakefield MDC'">
+            <!--<button type="button" ng-click="performanceIndicatorsVisible = !performanceIndicatorsVisible" class="btn btn-default pull-right">
+        <span ng-show="!performanceIndicatorsVisible">Show performance indicators</span><span ng-show="performanceIndicatorsVisible">Hide performance indicators</span></button>-->
+            <spending-performance spending-data="publicSpendingData" organisation-name="selectedOrganisation" ng-show="performanceIndicatorsVisible"></spending-performance>
+
         </div>
     </div>
 </div>
