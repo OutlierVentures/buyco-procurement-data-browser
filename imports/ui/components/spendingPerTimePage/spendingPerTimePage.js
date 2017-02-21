@@ -92,7 +92,7 @@ class SpendingPerTimePage {
                     });
                 });
 
-                if(totalValues.client_amount_net != 0) {
+                if (totalValues.client_amount_net != 0) {
                     totalValues.client_amount_net_percent = totalValues.client_amount_net / totalValues.total * 100;
                 }
 
@@ -210,11 +210,16 @@ class SpendingPerTimePage {
                             verticalAlignment: "bottom",
                             horizontalAlignment: "center"
                         },
-                        onPointClick: function(e) {
+                        onPointClick: function (e) {
                             var target = e.target;
-                            target.select();
-                            selectedArgument = target.originalArgument;
-                            filterPeriod(selectedArgument);
+                            if (!target.isSelected()) {
+                                target.select();
+                                selectedArgument = target.originalArgument;
+                                filterPeriod(selectedArgument);
+                            } else {
+                                target.clearSelection();
+                                filterPeriod(null);
+                            }
                         }
                     };
 
@@ -255,7 +260,13 @@ class SpendingPerTimePage {
             var startDate, endDate;
             $scope.filterName = period;
 
-            if($scope.period === 'quarter') {
+            // Clear filter
+            if (period == null) {
+                $scope.selectedPeriod = null;
+                return;
+            }
+
+            if ($scope.period === 'quarter') {
                 index = period.search('Q');
                 selectedYear = period.substring(0, index - 1);
                 selectedMonth = period.substring(index + 1) * 3;
@@ -271,7 +282,7 @@ class SpendingPerTimePage {
             }
 
             $scope.selectedPeriod = {
-                startDate: moment(new Date(startDate)), 
+                startDate: moment(new Date(startDate)),
                 endDate: moment(new Date(endDate))
             };
         }
