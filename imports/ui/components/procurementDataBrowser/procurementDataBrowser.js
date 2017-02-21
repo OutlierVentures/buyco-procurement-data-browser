@@ -1,7 +1,7 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
-import dx from '../../../../node_modules/devextreme/dist/js/dx.all.js';
+import dx from '../../../../node_modules/devextreme/dist/js/dx.viz.js';
 import bootstrapdaterangepicker from '/node_modules/bootstrap-daterangepicker/daterangepicker.js';
 import daterangepicker from '/node_modules/angular-daterangepicker/index.js';
 
