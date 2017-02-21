@@ -29,6 +29,11 @@ Meteor.publish(collectionName, function (filters, options) {
     else if (period == "quarter")
         groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$payment_date" }, 3] } };
 
+    // Group by organisation_name. In case of a single organisation, will give one
+    // record per period. In case of N organisations, max N records per period (depending
+    // on whether that organisation has data in the period).
+    groupClause.$group._id.organisation_name = "$organisation_name";
+
     pipeLine.push(groupClause);
 
     let sortClause = {
