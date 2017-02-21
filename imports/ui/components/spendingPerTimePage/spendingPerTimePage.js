@@ -66,6 +66,8 @@ class SpendingPerTimePage {
             endDate: end
         };
 
+        $scope.filterName = '';
+
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -154,6 +156,9 @@ class SpendingPerTimePage {
             },
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
+            },
+            filterPeriodName: function () {
+                return $scope.getReactively("filterName");
             },
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
@@ -269,9 +274,14 @@ class SpendingPerTimePage {
                         },
                         onPointClick: function (e) {
                             var target = e.target;
-                            target.select();
-                            selectedArgument = target.originalArgument;
-                            filterPeriod(selectedArgument);
+                            if (!target.isSelected()) {
+                                target.select();
+                                selectedArgument = target.originalArgument;
+                                filterPeriod(selectedArgument);
+                            } else {
+                                target.clearSelection();
+                                filterPeriod(null);
+                            }
                         }
                     };
 
@@ -282,10 +292,13 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
+                $scope.filterName = '';
+                $scope.selectedPeriod = '';
                 return {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
-                    sercop_service: $scope.getReactively("service")
+                    sercop_service: $scope.getReactively("service"),
+                    period: $scope.getReactively("period")
                 };
             },
             filterSelectedOrganisation: function () {
@@ -313,20 +326,27 @@ class SpendingPerTimePage {
             let selectedMonth;
             var index = 0;
             var startDate, endDate;
+            $scope.filterName = period;
+
+            // Clear filter
+            if (period == null) {
+                $scope.selectedPeriod = null;
+                return;
+            }
 
             if ($scope.period === 'quarter') {
                 index = period.search('Q');
                 selectedYear = period.substring(0, index - 1);
                 selectedMonth = period.substring(index + 1) * 3;
                 startDate = selectedYear + '-' + (selectedMonth - 2) + '-01';
-                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
+                endDate = selectedYear + '-' + (selectedMonth) + '-31';
             } else { // if month
                 index = period.search('-');
                 selectedYear = period.substring(0, index);
                 selectedMonth = period.substring(index + 1);
                 selectedMonth = Number(selectedMonth);
                 startDate = selectedYear + '-' + selectedMonth + '-01';
-                endDate = selectedYear + '-' + (selectedMonth + 1) + '-01';
+                endDate = selectedYear + '-' + (selectedMonth) + '-31';
             }
 
             $scope.selectedPeriod = {
@@ -357,6 +377,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('spendingPerTime', function () {
+            $scope.filterName = '';
             return [{
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
@@ -372,6 +393,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            $scope.filterName = '';
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
@@ -387,6 +409,7 @@ class SpendingPerTimePage {
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
+                $scope.filterName = '';
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
