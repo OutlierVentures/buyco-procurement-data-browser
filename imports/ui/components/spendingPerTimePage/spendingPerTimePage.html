@@ -115,16 +115,13 @@
     <!--<button type="button" ng-click="drillDownVisible = !drillDownVisible" class="btn btn-default pull-right">
         <span ng-show="!drillDownVisible">Show drill down</span><span ng-show="drillDownVisible">Hide drill down</span></button>-->
     <div class="col-lg-4 col-md-6">
-        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate"
-            sel-date="selectedPeriod"></spending-grouped>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
     </div>
     <div class="col-lg-4 col-md-6">
-        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate"
-            sel-date="selectedPeriod"></spending-grouped>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
     </div>
     <div class="col-lg-4 col-md-6">
-        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate"
-            sel-date="selectedPeriod"></spending-grouped>
+        <spending-grouped ng-show="drillDownVisible" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod"></spending-grouped>
     </div>
 </div>
 <div class="row">
@@ -133,6 +130,7 @@
             <!--<button type="button" ng-click="performanceIndicatorsVisible = !performanceIndicatorsVisible" class="btn btn-default pull-right">
         <span ng-show="!performanceIndicatorsVisible">Show performance indicators</span><span ng-show="performanceIndicatorsVisible">Hide performance indicators</span></button>-->
             <spending-performance spending-data="publicSpendingData" organisation-name="selectedOrganisation" ng-show="performanceIndicatorsVisible"></spending-performance>
+
         </div>
     </div>
 </div>
