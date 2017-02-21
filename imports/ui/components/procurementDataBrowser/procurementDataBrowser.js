@@ -10,8 +10,6 @@ import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
 
 
 import template from './procurementDataBrowser.html';
-import { name as ChartTest } from '../chartTest/chartTest';
-import { name as LineBarChartTest } from '../lineBarChartTest/lineBarChartTest';
 import { name as SpendingList } from '../spendingList/spendingList';
 import { name as SpendingPerTimePage } from '../spendingPerTimePage/spendingPerTimePage';
 import { name as Importer } from '../importer/importer';
@@ -25,8 +23,6 @@ const name = 'procurementDataBrowser';
 export default angular.module(name, [
   angularMeteor,
   uiRouter,
-  ChartTest,
-  LineBarChartTest,
   SpendingList,
   SpendingPerTimePage,
   Importer,

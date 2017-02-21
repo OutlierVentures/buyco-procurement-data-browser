@@ -1,6 +1,5 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
-// import angularNvd3 from 'angular-nvd3';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingGroupedChart.html';

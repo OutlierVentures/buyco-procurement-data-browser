@@ -1,6 +1,5 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
-import angularNvd3 from 'angular-nvd3';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingPerformance.html';
@@ -150,8 +149,7 @@ const name = 'spendingPerformance';
 // create a module
 export default angular.module(name, [
     angularMeteor,
-    uiRouter,
-    angularNvd3
+    uiRouter
 ]).component(name, {
     template,
     controllerAs: name,

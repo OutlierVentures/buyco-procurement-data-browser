@@ -243,8 +243,6 @@ class SpendingPerTimePage {
 
         // UX defaults on component open
 
-        // Show details and drilldown by default. If we start them as collapsed, nvd3 initialises their
-        // charts only several pixels wide and doesn't correct when uncollapsed.
         $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
