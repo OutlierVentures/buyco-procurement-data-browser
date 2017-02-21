@@ -252,7 +252,6 @@ class SpendingPerTimePage {
 
                 });
 
-                $scope.$broadcast('chartRefresh', $scope.publicSpendingData);
                 let selectedArgument = 0;
 
                 const options =
