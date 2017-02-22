@@ -295,7 +295,7 @@ class SpendingPerTimePage {
                 $scope.filterName = '';
                 $scope.selectedPeriod = '';
                 return {
-                    organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                    organisation_name: $scope.getReactively("filteredOrganisations"),
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period")

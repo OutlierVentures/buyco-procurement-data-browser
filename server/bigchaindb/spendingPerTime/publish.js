@@ -7,9 +7,6 @@ console.log("spendingPerTime publish.js");
 const collectionName = "spendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("spendingPerTime");
-    console.log(filters);
-
     let period = "quarter";
     if (options && options.period)
         period = options.period;

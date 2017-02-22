@@ -20,13 +20,21 @@ class SpendingGroupedChart {
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
         $scope.subscribe('spendingGrouped', () => {
-            console.log('grouped chart');
-            var temp = this.getReactively("filters.period");
             let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
                 sercop_service: this.getReactively("filters.sercop_service")
             };
+
+            if(this.getReactively("filters.organisation_name")) {
+                if(this.getReactively("filters.organisation_name").length > 1) {
+                    filterOptions = {
+                        organisation_name: { $in: this.getReactively("filters.organisation_name") },
+                        procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
+                        sercop_service: this.getReactively("filters.sercop_service")
+                    };
+                }
+            }
 
             if(this.getReactively('filterDate')) {
                filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
@@ -35,7 +43,7 @@ class SpendingGroupedChart {
             if(this.getReactively('selDate')) {
                filterOptions.payment_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
             }
-
+            
             return [
                 filterOptions,
             {
@@ -57,6 +65,15 @@ class SpendingGroupedChart {
                 groupField: this.getReactively("groupField")
             };
 
+            if(this.getReactively("filters.organisation_name")) {
+                if(this.getReactively("filters.organisation_name").length > 1) {
+                    filters = {
+                        organisation_name: { $in: this.getReactively("filters.organisation_name") },
+                        groupField: this.getReactively("groupField")
+                    };
+                }
+            }
+
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
             if (this.getReactively("filters.procurement_classification_1"))
@@ -64,7 +81,7 @@ class SpendingGroupedChart {
             if (this.getReactively("filters.sercop_service"))
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
-                var temp = this.getReactively("filters.period");
+            var temp = this.getReactively("filters.period");
             return SpendingGrouped.find(filters);
         };
 
