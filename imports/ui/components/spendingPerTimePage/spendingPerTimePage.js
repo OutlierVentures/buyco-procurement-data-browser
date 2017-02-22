@@ -137,11 +137,10 @@ class SpendingPerTimePage {
                     });
 
                     $scope.selectedOrganisation = [{
-                        id: organisationsBuffer[0].id
+                        id: organisation._id
                     }];
                 });
                 $scope.organisationCount = organisationsBuffer.length;
-                console.log($scope.organisationCount);
                 return organisationsBuffer;
             },
             spendingServices: function () {
@@ -295,7 +294,7 @@ class SpendingPerTimePage {
                 $scope.filterName = '';
                 $scope.selectedPeriod = '';
                 return {
-                    organisation_name: $scope.getReactively("filteredOrganisations"),
+                    organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period")

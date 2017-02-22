@@ -41,6 +41,8 @@ Meteor.publish(collectionName, function (filters, options) {
                 groupClause.$group[k] = { $first: '$' + k };
         }
     }
+    
+    groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);
 
