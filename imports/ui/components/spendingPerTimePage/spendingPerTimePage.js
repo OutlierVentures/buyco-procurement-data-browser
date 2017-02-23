@@ -24,12 +24,27 @@ class SpendingPerTimePage {
         $reactive(this).attach($scope);
 
         var that = this;
-        $scope.dataSource = [];
 
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+
+        $scope.selectedOrganisation = [];
+        $scope.filteredOrganisations = [];
+        $scope.organisationCount = 0;
+        $scope.organisationSettings = {
+            scrollableHeight: '200px',
+            scrollable: true,
+            enableSearch: false,
+            externalIdProp: "id",
+            showUncheckAll: false,
+            selectionLimit: $scope.organisationCount
+        };
+        $scope.organisationEventSetting = {
+            onSelectAll: selectAllOrganisation,
+            onMaxSelectionReached: reachedMaxSelection
+        };
 
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -113,20 +128,32 @@ class SpendingPerTimePage {
                 return Clients.find({});
             },
             spendingOrganisations: function () {
-                return SpendingOrganisations.find({});
+                var organisationsBuffer = [];
+                var organisations = SpendingOrganisations.find({});
+                organisations.forEach((organisation) => {
+                    organisationsBuffer.push({
+                        id: organisation._id,
+                        label: organisation.organisation_name
+                    });
+
+                    $scope.selectedOrganisation = [{
+                        id: organisation._id
+                    }];
+                });
+                $scope.organisationCount = organisationsBuffer.length;
+                return organisationsBuffer;
             },
             spendingServices: function () {
                 return SpendingServices.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation")
+                    organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 });
             },
             spendingCategories: function () {
                 return SpendingCategories.find({
-                    organisation_name: $scope.getReactively("selectedOrganisation")
+                    organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 });
             },
             selectedPeriod: function () {
-                $scope.filterName = $scope.filterDate.startDate.toDate().toDateString() + '-' + $scope.filterDate.endDate.toDate().toDateString();
                 return $scope.getReactively("filterDate");
             },
             filterPeriodName: function () {
@@ -134,15 +161,26 @@ class SpendingPerTimePage {
             },
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
-
                 var allowedClients = $scope.getReactively("clients");
-
                 var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
-
                 var publicValues = [];
-
                 let i = 0;
-                let sourceValues = [];
+
+                let pointsByPeriod = [];
+
+                // The grouped records look like this:
+                // { _group: { year: 2016, quarter: "2016 Q1", organisation_name: "Some Council"}, totalAmount: 12345},
+                // { _group: { year: 2016, quarter: "2016 Q1", organisation_name: "Another Council"}, totalAmount: 54321},
+                // ...
+                // Furthermore we might have clientData which has the same structure.
+                // We loop through them and create points like this:
+                // {
+                //      "xAxis": "2016 Q1"
+                //      "Some Council": 12345,
+                //      "Another Council": 54321,
+                //      "clientValue_Some Council": 1234,
+                //      "clientValue_Another Council": 4321
+                // }                
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -151,22 +189,38 @@ class SpendingPerTimePage {
                     else
                         // E.g. "2016-05" for May 2016
                         xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
-                    let yVal = spendThisPeriod.totalAmount;
-                    publicValues.push({ x: i, label: xLabel, y: yVal, source: spendThisPeriod });
-                    dataPoint = { xAxis: xLabel, yAxis: yVal };
+
+                    let dataPoint = pointsByPeriod[xLabel];
+                    if (!dataPoint) {
+                        dataPoint = { xAxis: xLabel };
+                        pointsByPeriod[xLabel] = dataPoint;
+                    }
+
+                    let amount = spendThisPeriod.totalAmount;
+                    dataPoint[spendThisPeriod._group.organisation_name] = amount;
 
                     let clientVal = _(clientSpendingPerTime).find((v) => {
                         return v._group
                             && v._group.year == spendThisPeriod._group.year
-                            && v._group[$scope.period] === spendThisPeriod._group[$scope.period];
+                            && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
+                            && v._group.organisation_name === spendThisPeriod._group.organisation_name;
                     });
 
-                    if (clientVal !== undefined)
-                        dataPoint.clientValue = clientVal.totalAmount;
+                    if (clientVal !== undefined) {
+                        let clientPointKey = "clientValue_" + spendThisPeriod._group.organisation_name;
+                        dataPoint[clientPointKey] = clientVal.totalAmount;
+                    }
 
-                    sourceValues.push(dataPoint);
+                    // Fill tabular data. Only works for a single organisation.
+                    if ($scope.selectedOrganisation.length == 1)
+                        publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
+
                     i++;
                 });
+
+                // pointsByPeriod looks like this: [ "2016 Q1": {...}, "2016 Q2": {...}] with {...} being data points.
+                // dxCharts wants a numeric array.
+                let sourceValues = _.values(pointsByPeriod);
 
                 $scope.publicSpendingData = {
                     key: $scope.selectedOrganisation,
@@ -174,26 +228,33 @@ class SpendingPerTimePage {
                     values: publicValues
                 };
 
-                let series = [{
-                    argumentField: "xAxis",
-                    valueField: "yAxis",
-                    name: $scope.selectedOrganisation,
-                    type: "bar",
-                    color: '#ffaa66'
-                }];
+                let series = [];
 
                 let sc = $scope.getReactively("selectedClient");
 
-                // Add client series if we have data for it
-                if (allowedClients.length > 0 && sc) {
+                // Create series for each selected organisation, and if client data is shown,
+                // another series for client data for each organisation.
+                _($scope.selectedOrganisation).each((org) => {
                     series.push({
                         argumentField: "xAxis",
-                        valueField: "clientValue",
-                        name: sc.name,
+                        valueField: org.id,
+                        name: org.id,
                         type: "bar",
-                        color: '#543996'
-                    })
-                }
+                        //color: '#ffaa66'
+                    });
+
+                    // Add client series if we have data for it
+                    if (allowedClients.length > 0 && sc) {
+                        series.push({
+                            argumentField: "xAxis",
+                            valueField: "clientValue_" + org.id,
+                            name: sc.name + " - " + org.id,
+                            type: "bar",
+                            color: '#543996'
+                        })
+                    }
+
+                });
 
                 let selectedArgument = 0;
 
@@ -233,23 +294,29 @@ class SpendingPerTimePage {
                 $scope.filterName = '';
                 $scope.selectedPeriod = '';
                 return {
-                    organisation_name: $scope.getReactively("selectedOrganisation"),
+                    organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period")
                 };
+            },
+            filterSelectedOrganisation: function () {
+                var organisations = $scope.getCollectionReactively("selectedOrganisation");
+                $scope.filteredOrganisations = [];
+                organisations.forEach((organisation) => {
+                    $scope.filteredOrganisations.push(organisation.id);
+                });
             }
         });
 
         // UX defaults on component open
-
         $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
 
         // TODO: remove this hardcoded default option, just use the first item in the list
-        $scope.selectedOrganisation = "Wakefield MDC";
+        // $scope.selectedOrganisation = "Wakefield MDC";
 
         function filterPeriod(period) {
             let selectedYear;
@@ -285,23 +352,33 @@ class SpendingPerTimePage {
             };
         }
 
+        function selectAllOrganisation() {
+            console.log('selected All');
+        }
+
+        function reachedMaxSelection() {
+            console.log('reached Max Selection');
+        }
+
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
-        $scope.subscribe('spendingServices', function () {
-            return [{
-                organisation_name: $scope.getReactively("selectedOrganisation")
-            }];
-        });
-        $scope.subscribe('spendingCategories', function () {
-            return [{
-                organisation_name: $scope.getReactively("selectedOrganisation")
-            }];
-        });
+        $scope.subscribe('spendingServices');
+        $scope.subscribe('spendingCategories');
+        // $scope.subscribe('spendingServices', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
+        // $scope.subscribe('spendingCategories', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
 
         $scope.subscribe('spendingPerTime', function () {
             $scope.filterName = '';
             return [{
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
@@ -318,7 +395,7 @@ class SpendingPerTimePage {
             $scope.filterName = '';
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
-                organisation_name: $scope.getReactively("selectedOrganisation"),
+                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }

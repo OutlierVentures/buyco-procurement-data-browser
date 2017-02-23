@@ -31,3 +31,4 @@ less@2.7.8
 alanning:roles
 meteorhacks:aggregate
 momentjs:moment
+erasaur:meteor-lodash

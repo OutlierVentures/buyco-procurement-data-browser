@@ -30,6 +30,7 @@ String.prototype.hashCode = function () {
  * @param sourceFieldName The field in the datasource to take the unique values form, for example "lastName"
  * @param targetFieldName Optional alternative field name to be used in the collection docs, for example "name"
  */
+
 export const publishUniqueValues = (publishFunction, collectionName, sourceCollection, filters, sourceFieldName, targetFieldName) => {
     let pipeLine = [];
 
@@ -68,7 +69,67 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
     let sortClause = { "$sort": { [sourceFieldName]: 1 } };
     pipeLine.push(sortClause);
 
-    // console.log("publishUniqueValues pipeLine", JSON.stringify(pipeLine));
+    // Call the aggregate
+    let cursor = sourceCollection.aggregate(
+        pipeLine
+    ).forEach((doc) => {
+        // Prepare the document for publishing. Start with a clone.
+        let addedDoc = JSON.parse(JSON.stringify(doc));
+
+        if (targetFieldName && targetFieldName != sourceFieldName) {
+            delete addedDoc[sourceFieldName];
+            addedDoc[targetFieldName] = doc[sourceFieldName];
+        }
+
+        // We add each document to the published collection so the subscribing client receives them.
+        publishFunction.added(collectionName, doc[sourceFieldName], addedDoc);
+    });
+
+    // Stop observing the cursor when client unsubs.
+    // Stopping a subscription automatically takes
+    // care of sending the client any removed messages.
+    publishFunction.onStop(() => {
+        if (cursor)
+            cursor.stop();
+    });
+
+    publishFunction.ready();
+}
+
+
+
+export const publishUniqueValuesForOrganisation = (publishFunction, collectionName, sourceCollection, groupbyField, sourceFieldName, targetFieldName) => {
+    let pipeLine = [];
+
+    let matchClause = {};
+
+    if (!matchClause.$match || !matchClause.$match[sourceFieldName])
+    {
+        if(!matchClause.$match)
+        {
+            matchClause.$match = {};
+        }
+        matchClause.$match[sourceFieldName] = { $exists: true };
+    }
+
+    pipeLine.push(matchClause);
+
+    let groupClause = {
+        $group: {
+            _id: {
+                sourceFieldName: '$' + sourceFieldName,
+                groupbyField: '$' + groupbyField,
+            }
+        }
+    }
+
+    groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
+    groupClause.$group[groupbyField] = { $first: '$' + groupbyField };
+
+    pipeLine.push(groupClause);
+
+    let sortClause = { "$sort": { [sourceFieldName]: 1 } };
+    pipeLine.push(sortClause);
 
     // Call the aggregate
     let cursor = sourceCollection.aggregate(

@@ -1,13 +1,13 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
-import dx from '../../../../node_modules/devextreme/dist/js/dx.viz.js';
+import dx from '/node_modules/devextreme/dist/js/dx.viz.js';
 import bootstrapdaterangepicker from '/node_modules/bootstrap-daterangepicker/daterangepicker.js';
 import daterangepicker from '/node_modules/angular-daterangepicker/index.js';
+import 'angularjs-dropdown-multiselect';
 
 import '/node_modules/bootstrap/dist/css/bootstrap.css';
 import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
-
 
 import template from './procurementDataBrowser.html';
 import { name as SpendingList } from '../spendingList/spendingList';
@@ -27,9 +27,10 @@ export default angular.module(name, [
   SpendingPerTimePage,
   Importer,
   Navigation,
+  daterangepicker,
   'accounts.ui',
-  'dx',
-  daterangepicker
+  'dx',  
+  'angularjs-dropdown-multiselect'
 ]).component(name, {
   template,
   controllerAs: name,

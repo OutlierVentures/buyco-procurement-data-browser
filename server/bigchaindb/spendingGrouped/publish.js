@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("spendingGrouped publish.js");
+// console.log("spendingGrouped publish.js");
 
 const collectionName = "spendingGrouped";
 
@@ -13,11 +13,6 @@ const collectionName = "spendingGrouped";
  */
 Meteor.publish(collectionName, function (filters, options) {
     var self = this;
-
-    // console.log("spendingGrouped");
-    console.log("filters", filters);
-    console.log("options", options);
-
     let groupField;
 
     // We allow grouping by these fields
@@ -46,6 +41,8 @@ Meteor.publish(collectionName, function (filters, options) {
                 groupClause.$group[k] = { $first: '$' + k };
         }
     }
+    
+    groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);
 
@@ -55,11 +52,14 @@ Meteor.publish(collectionName, function (filters, options) {
     pipeLine.push(sortClause);
 
     let limitClause = {
-        $limit: 20
+        // Limit to 10 visible items. For 1 organisation, 10 items. For 2 orgs, 5 items, etc.
+        // TODO: increase height of charts, ensure minimum height of bars for proper display.
+        // Then increase this amount.
+        $limit: Math.round(10 / (filters.organisation_name.$in.length || 1))
     }
     pipeLine.push(limitClause);
 
-    console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
+    // console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = Spending.aggregate(

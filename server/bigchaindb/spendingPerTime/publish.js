@@ -2,14 +2,11 @@ import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("spendingPerTime publish.js");
+// console.log("spendingPerTime publish.js");
 
 const collectionName = "spendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("spendingPerTime");
-    console.log(filters);
-
     let period = "quarter";
     if (options && options.period)
         period = options.period;
@@ -28,6 +25,11 @@ Meteor.publish(collectionName, function (filters, options) {
         groupClause.$group._id.month = { $month: "$payment_date" };
     else if (period == "quarter")
         groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$payment_date" }, 3] } };
+
+    // Group by organisation_name. In case of a single organisation, will give one
+    // record per period. In case of N organisations, max N records per period (depending
+    // on whether that organisation has data in the period).
+    groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);
 
