@@ -78,6 +78,7 @@
                 <div ng-show="detailsVisible">
                     <table class="table table-striped">
                         <tr>
+                            <th>Organisation</th>
                             <th>Year</th>
                             <th>
                                 <span ng-show="period=='month'">Month</span>
@@ -88,6 +89,7 @@
                             <th ng-show="selectedClient">%</th>
                         </tr>
                         <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
+                            <td>{{ spendGroup._group.organisation_name }}</td>
                             <td>{{ spendGroup._group.year }}</td>
                             <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
                             <td>£{{spendGroup.totalAmount | number: 2}} </td>
@@ -96,6 +98,7 @@
                         </tr>
                         <tr>
                             <td><strong>Total</strong></td>
+                            <td></td>
                             <td></td>
                             <td>£{{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
                             <td ng-show="selectedClient"><span ng-show="mergedSpendingPerTime.totalValues.client_amount_net">£{{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</span></td>

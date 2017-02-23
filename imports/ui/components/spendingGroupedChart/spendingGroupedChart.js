@@ -107,6 +107,7 @@ class SpendingGroupedChart {
                         font: {
                             color: 'gray'
                         },
+                        backgroundColor: "rgba(224,224,224,0.5)",
                         customizeText: function(e) {
                             return e.argumentText;
                         }
