@@ -2,13 +2,11 @@ import { Meteor } from 'meteor/meteor';
 import { ClientSpending } from '../clientSpending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("clientSpendingPerTime publish.js");
+// console.log("clientSpendingPerTime publish.js");
 
 const collectionName = "clientSpendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("clientSpendingPerTime");
-    console.log(filters);
 
     removeEmptyFilters(filters);
 

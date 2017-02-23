@@ -39,7 +39,7 @@ class SpendingGroupedChart {
                 filterOptions,
             {
                 groupField: this.getReactively("groupField")
-            }];             
+            }];
         });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions

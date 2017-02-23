@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("spendingPerTime publish.js");
+// console.log("spendingPerTime publish.js");
 
 const collectionName = "spendingPerTime";
 

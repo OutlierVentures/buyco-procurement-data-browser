@@ -364,16 +364,18 @@ class SpendingPerTimePage {
 
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
-        $scope.subscribe('spendingServices', function () {
-            return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-            }];
-        });
-        $scope.subscribe('spendingCategories', function () {
-            return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-            }];
-        });
+        $scope.subscribe('spendingServices');
+        $scope.subscribe('spendingCategories');
+        // $scope.subscribe('spendingServices', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
+        // $scope.subscribe('spendingCategories', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
 
         $scope.subscribe('spendingPerTime', function () {
             $scope.filterName = '';
