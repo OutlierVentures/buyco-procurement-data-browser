@@ -7,8 +7,8 @@ console.log("clientSpendingPerTime publish.js");
 const collectionName = "clientSpendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("clientSpendingPerTime");
-    console.log(filters);
+    // console.log("clientSpendingPerTime");
+    // console.log(filters);
 
     removeEmptyFilters(filters);
 
@@ -43,6 +43,7 @@ Meteor.publish(collectionName, function (filters, options) {
     // record per period. In case of N organisations, max N records per period (depending
     // on whether that organisation has data in the period).
     groupClause.$group._id.organisation_name = "$organisation_name";
+    // groupClause.$group._id.grouped = "$procurement_classification_1";
 
     pipeLine.push(groupClause);
 

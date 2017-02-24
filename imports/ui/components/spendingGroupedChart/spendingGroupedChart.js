@@ -6,6 +6,7 @@ import uiRouter from 'angular-ui-router';
 import template from './spendingGroupedChart.html';
 
 import { SpendingGrouped } from '../../../api/spendingGrouped';
+import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { MetaDataHelper } from '../../../utils';
 
 class SpendingGroupedChart {
@@ -39,8 +40,27 @@ class SpendingGroupedChart {
                 filterOptions,
             {
                 groupField: this.getReactively("groupField")
-            }];             
+            }];
         });
+
+        // $scope.subscribe('clientSpendingPerTime', function () {
+        //     let filterOptions = {
+        //         client_id: $scope.getReactively("filters.client_id"),
+        //         organisation_name: this.getReactively("filters.organisation_name"),
+        //         procurement_classification_1: $scope.getReactively("filters.procurement_classification_1"),
+        //         sercop_service: $scope.getReactively("filters.sercop_service")
+        //     };
+
+        //     if(this.getReactively('filterDate')) {
+        //        filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
+        //     }
+
+        //     return [
+        //         filterOptions,
+        //     {
+        //         period: $scope.getReactively("filters.period")
+        //     }];
+        // });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
@@ -81,6 +101,13 @@ class SpendingGroupedChart {
             spendingGrouped: () => {
                 return this.spendingGrouped();
             },
+            // clientSpendingPerTime: function () {
+            //     let buffer = ClientSpendingPerTime.find({});
+            //     console.log('========================');
+            //     console.log(buffer);
+            //     console.log('========================');
+            //     return buffer;
+            // },
             chartData: () => {
                 let publicValues = [];
 
@@ -107,6 +134,7 @@ class SpendingGroupedChart {
                         font: {
                             color: 'gray'
                         },
+                        backgroundColor: "rgba(224,224,224,0.6)",
                         customizeText: function(e) {
                             return e.argumentText;
                         }

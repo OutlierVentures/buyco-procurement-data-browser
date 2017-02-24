@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '../utils';
 
-console.log("spendingGrouped publish.js");
+// console.log("spendingGrouped publish.js");
 
 const collectionName = "spendingGrouped";
 
@@ -56,7 +56,7 @@ Meteor.publish(collectionName, function (filters, options) {
     }
     pipeLine.push(limitClause);
 
-    console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
+    // console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = Spending.aggregate(
