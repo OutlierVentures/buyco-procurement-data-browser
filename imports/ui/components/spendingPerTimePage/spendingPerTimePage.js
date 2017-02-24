@@ -97,6 +97,7 @@ class SpendingPerTimePage {
                     merged.push(mergedItem);
 
                     cs.forEach((clientSpendThisPeriod) => {
+                        // console.log(clientSpendThisPeriod);
                         if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
                             && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
 
@@ -298,6 +299,7 @@ class SpendingPerTimePage {
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period")
+                    //client_id: $scope.getReactively("selectedClient.client_id")
                 };
             },
             filterSelectedOrganisation: function () {
