@@ -1,6 +1,5 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
-// import angularNvd3 from 'angular-nvd3';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingGroupedChart.html';
@@ -136,7 +135,7 @@ class SpendingGroupedChart {
                         font: {
                             color: 'gray'
                         },
-                        backgroundColor: "rgba(224,224,224,0.6)",
+                        backgroundColor: "rgba(224,224,224,0.5)",
                         customizeText: function(e) {
                             return e.argumentText;
                         }

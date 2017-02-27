@@ -311,8 +311,6 @@ class SpendingPerTimePage {
         });
 
         // UX defaults on component open
-        // Show details and drilldown by default. If we start them as collapsed, nvd3 initialises their
-        // charts only several pixels wide and doesn't correct when uncollapsed.
         $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
@@ -365,16 +363,18 @@ class SpendingPerTimePage {
 
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
-        $scope.subscribe('spendingServices', function () {
-            return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-            }];
-        });
-        $scope.subscribe('spendingCategories', function () {
-            return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-            }];
-        });
+        $scope.subscribe('spendingServices');
+        $scope.subscribe('spendingCategories');
+        // $scope.subscribe('spendingServices', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
+        // $scope.subscribe('spendingCategories', function () {
+        //     return [{
+        //         organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+        //     }];
+        // });
 
         $scope.subscribe('spendingPerTime', function () {
             $scope.filterName = '';
