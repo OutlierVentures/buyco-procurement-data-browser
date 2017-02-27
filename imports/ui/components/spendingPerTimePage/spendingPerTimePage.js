@@ -240,7 +240,7 @@ class SpendingPerTimePage {
                         valueField: org.id,
                         name: org.id,
                         type: "bar",
-                        //color: '#ffaa66'
+                        color: getColor(org.id)
                     });
 
                     // Add client series if we have data for it
@@ -298,6 +298,7 @@ class SpendingPerTimePage {
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period")
+                    //client_id: $scope.getReactively("selectedClient.client_id")
                 };
             },
             filterSelectedOrganisation: function () {
@@ -412,6 +413,25 @@ class SpendingPerTimePage {
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
+
+        let stringToColour = function(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var colour = '#';
+            for (var i = 0; i < 3; i++) {
+                var value = (hash >> (i * 8)) & 0xFF;
+                colour += ('00' + value.toString(16)).substr(-2);
+            }
+            return colour;
+        }
+        /**
+         * Return the color for an organisation series
+         */
+        let getColor = (organisationName) => {
+            return stringToColour(organisationName);
+        };
     }
 }
 
