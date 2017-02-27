@@ -109,11 +109,7 @@ class SpendingGroupedChart {
             //     return buffer;
             // },
             chartData: () => {
-                let publicValues = [];
-
-                let clientDataSource = [];
                 let dataSeries = [];
-                // let dataSource = [];
                 $scope.dataSource = [];
 
                 dataSeries.push({
@@ -122,19 +118,6 @@ class SpendingGroupedChart {
                     showInLegend: false
                 });
 
-                $scope.organisation_names.forEach((organisation_name) => {
-                    dataSeries.push({
-                        valueField: 'zero',
-                        type: 'scatter',
-                        name: organisation_name,
-                        color: getColor(organisation_name),
-                        showInLegend: true,
-                        point: {
-                            color: 'none'
-                        }
-                    });
-                });
-                
                 dataSeries.push({
                     // name: 'Public spending through Demo Company',
                     name: 'Demo Company',
@@ -161,6 +144,19 @@ class SpendingGroupedChart {
                     }
                 });
 
+                $scope.organisation_names.forEach((organisation_name) => {
+                    dataSeries.push({
+                        valueField: 'zero',
+                        type: 'scatter',
+                        name: organisation_name,
+                        color: getColor(organisation_name),
+                        showInLegend: true,
+                        point: {
+                            color: 'none'
+                        }
+                    });
+                });
+
                 // this.spendingGrouped().forEach((clientData) => {
                 //     let tempObj = {
                 //         organisationAndGroup: clientData._group,
@@ -171,7 +167,6 @@ class SpendingGroupedChart {
                 // });
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
-                    console.log(spendThisGroup._group);
                     let tempObj = {
                         organisationAndGroup: spendThisGroup.organisation_name + '-' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
@@ -229,18 +224,14 @@ class SpendingGroupedChart {
                             precision: 1
                         },
                         customizeTooltip: function (arg) {
-                            let items = arg.points[0].valueText.split("\n"),
-                                color = arg.point.getColor();
+                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + arg.value).split("\n"), color = arg.point.getColor();
                             let tempItem = '';
-                            tempItem += arg.argument + ' ';
                             tempItem += items;
                             $.each(items, function(index, item) {
-                                if(item.indexOf(arg.points[0].valueText) === 0) {
-                                    items[index] = $("<b>")
-                                                    .text(tempItem)
-                                                    .css("color", color)
-                                                    .prop("outerHTML");
-                                }
+                                items[index] = $("<b>")
+                                                .text(tempItem)
+                                                .css("color", color)
+                                                .prop("outerHTML");
                             });
                             return { text: items.join("\n") };
                         }
