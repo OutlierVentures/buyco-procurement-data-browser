@@ -111,18 +111,17 @@ class SpendingGroupedChart {
             chartData: () => {
                 let dataSeries = [];
                 $scope.dataSource = [];
-
-                dataSeries.push({
-                    valueField: "publicValue",
-                    name: "Public spending",
-                    showInLegend: false
-                });
-
                 dataSeries.push({
                     // name: 'Public spending through Demo Company',
                     name: 'Demo Company',
                     valueField: 'clientValue',
                     color: '#543996'
+                });
+
+                dataSeries.push({
+                    valueField: "publicValue",
+                    name: "Public spending",
+                    showInLegend: false
                 });
 
                 dataSeries.push({
@@ -224,7 +223,8 @@ class SpendingGroupedChart {
                             precision: 1
                         },
                         customizeTooltip: function (arg) {
-                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + arg.value).split("\n"), color = arg.point.getColor();
+                            let newValue = abbreviate_number(arg.value, 0);
+                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
                             let tempItem = '';
                             tempItem += items;
                             $.each(items, function(index, item) {
@@ -276,6 +276,18 @@ class SpendingGroupedChart {
         let getColor = (organisationName) => {
             return stringToColour(organisationName);
         };
+
+        let abbreviate_number = function(num, fixed) {
+            if (num === null) { return null; } // terminate early
+            if (num === 0) { return '0'; } // terminate early
+            fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
+            var b = (num).toPrecision(2).split("e"), // get power
+                k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
+                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3) ).toFixed(1 + fixed), // divide by power
+                d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
+                e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
+            return e;
+        }
     }
 }
 
