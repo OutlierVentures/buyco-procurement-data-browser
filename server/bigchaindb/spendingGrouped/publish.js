@@ -53,7 +53,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     let limitAmount = 10;
 
-    if(filters.organisation_name && filters.organisation_name.$in)
+    if(filters.organisation_name && filters.organisation_name.$in && filters.organisation_name.$in.length)
         limitAmount = Math.round(10 / filters.organisation_name.$in.length);
 
     let limitClause = {
