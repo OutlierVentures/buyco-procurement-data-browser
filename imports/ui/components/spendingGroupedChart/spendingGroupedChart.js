@@ -111,15 +111,35 @@ class SpendingGroupedChart {
             chartData: () => {
                 let publicValues = [];
 
-                let pointsByPeriod = [];
+                let clientDataSource = [];
                 let dataSeries = [];
-                let dataSource = [];
+                // let dataSource = [];
+                $scope.dataSource = [];
+
+                dataSeries.push({
+                    valueField: "publicValue",
+                    name: "Public spending",
+                    showInLegend: false
+                });
+
                 $scope.organisation_names.forEach((organisation_name) => {
                     dataSeries.push({
+                        valueField: 'zero',
+                        type: 'scatter',
                         name: organisation_name,
-                        valueField: organisation_name + '_totalAmount'
-                        // color: 'rgb(255, 170, 102)'
-                    })
+                        color: getColor(organisation_name),
+                        showInLegend: true,
+                        point: {
+                            color: 'none'
+                        }
+                    });
+                });
+                
+                dataSeries.push({
+                    // name: 'Public spending through Demo Company',
+                    name: 'Demo Company',
+                    valueField: 'clientValue',
+                    color: '#543996'
                 });
 
                 dataSeries.push({
@@ -141,21 +161,32 @@ class SpendingGroupedChart {
                     }
                 });
 
+                // this.spendingGrouped().forEach((clientData) => {
+                //     let tempObj = {
+                //         organisationAndGroup: clientData._group,
+                //         clientValue: clientData.totalAmount * 0.7,
+                //     };
+                //     // tempObj[clientData.organisation_name + '_clientData'] = clientData.totalAmount * 0.7;
+                //     dataSource.push(tempObj);
+                // });
+
                 this.spendingGrouped().forEach((spendThisGroup) => {
+                    console.log(spendThisGroup._group);
                     let tempObj = {
-                        service_name: spendThisGroup._group,
-                        totalAmount: spendThisGroup.totalAmount,
+                        organisationAndGroup: spendThisGroup.organisation_name + '-' + spendThisGroup._group,
+                        publicValue: spendThisGroup.totalAmount,
+                        clientValue: spendThisGroup.totalAmount * 0.7,
+                        organisationName: spendThisGroup.organisation_name
                     };
-                    tempObj[spendThisGroup.organisation_name + '_totalAmount'] = spendThisGroup.totalAmount;
-                    tempObj[spendThisGroup.organisation_name] = spendThisGroup.organisation_name;
-                    dataSource.push(tempObj);
+                    // tempObj[spendThisGroup.organisation_name + '_totalAmount'] = spendThisGroup.totalAmount;
+                    $scope.dataSource.push(tempObj);
                 });
 
-                dataSource.sort(function (a, b) {
-                    return a.totalAmount - b.totalAmount;
+                $scope.dataSource.sort(function (a, b) {
+                    return a.publicValue - b.publicValue;
                 });
 
-                if(dataSource.length > 10) {
+                if($scope.dataSource.length > 10) {
                     $scope.chartSize = {
                         height: 700
                     }
@@ -166,12 +197,12 @@ class SpendingGroupedChart {
                 }
 
                 $scope.chartOptions = {
-                    dataSource: dataSource.map(function(i){
+                    dataSource: $scope.dataSource.map(function(i){
                         i.zero = 0;
                         return i;
                     }),                
                     commonSeriesSettings: {
-                        argumentField: "service_name",
+                        argumentField: "organisationAndGroup",
                         type: "bar"
                     },
                     argumentAxis: {            
@@ -219,7 +250,15 @@ class SpendingGroupedChart {
                             format: "largeNumber"
                         }
                     }],
-                    size: $scope.chartSize
+                    size: $scope.chartSize,
+                    customizePoint: function() {
+                        if (this.series.name == "Public spending") {
+                            let sourcePoint = $scope.dataSource[this.index];
+                            return {
+                                color: getColor(sourcePoint.organisationName)
+                            };
+                        }
+                    }
                 };
                 return dataSeries;
             },
@@ -227,6 +266,25 @@ class SpendingGroupedChart {
                 return this.getReactively("filterName");
             }
         });
+
+        let stringToColour = function(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var colour = '#';
+            for (var i = 0; i < 3; i++) {
+                var value = (hash >> (i * 8)) & 0xFF;
+                colour += ('00' + value.toString(16)).substr(-2);
+            }
+            return colour;
+        }
+        /**
+         * Return the color for an organisation series
+         */
+        let getColor = (organisationName) => {
+            return stringToColour(organisationName);
+        };
     }
 }
 

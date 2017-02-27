@@ -5,7 +5,8 @@
             <span ng-if="filterPeriodName">Filter Applied : {{filterPeriodName}}</span>
             <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
                 rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
-                valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size'} }"></div>
+                valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size', 
+                customizePoint: 'chartOptions.customizePoint'} }"></div>
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
                 <span ng-show="!detailsVisible">Show details</span>
                 <span ng-show="detailsVisible">Hide details</span>
