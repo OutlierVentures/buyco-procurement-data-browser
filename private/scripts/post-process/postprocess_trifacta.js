@@ -23,6 +23,9 @@
 * COPY/PASTE THE BELOW IN MONGO SHELL *
 **************************************/
 function updateTrifactaData() {
+    // We find values by string type (https://docs.mongodb.com/manual/reference/operator/query/type/#available-types)
+    // and then replace them with a typed value.
+
     // Convert effective_date to date
     db.public_spending
         .find({ effective_date: { $type: "string" } })
