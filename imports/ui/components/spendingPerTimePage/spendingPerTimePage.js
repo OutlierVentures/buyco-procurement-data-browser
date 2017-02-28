@@ -15,6 +15,8 @@ import { Clients } from '../../../api/clients';
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
+import {CHART_FONT} from '../../stylesheet/config';
+
 import template from './spendingPerTimePage.html';
 
 class SpendingPerTimePage {
