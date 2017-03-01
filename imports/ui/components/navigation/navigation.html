@@ -120,7 +120,85 @@
             $(".main-content").toggleClass('wide-content');
             $("footer").toggleClass('wide-footer');
             $(".menu-options").toggleClass('active');
+
+            resizeCharts();
         });
+
+        $(window).resize(function(){
+            var timeChart = $('#timeChart').dxChart('instance');
+            var category = $('#category').dxChart('instance');
+            var supplier = $('#supplier').dxChart('instance');
+            var service = $('#service').dxChart('instance');
+
+            $('#timeChart').width('100%');
+            $('#category').width('100%');
+            $('#supplier').width('100%');
+            $('#service').width('100%');
+
+            timeChart.render({ animate: false });
+            category.render({ animate: false });
+            supplier.render({ animate: false });
+            service.render({ animate: false });
+        });
+
+        function resizeCharts() {
+            var window_Width = $( window ).width();
+
+            var timeChart = $('#timeChart').dxChart('instance');
+            var time_chart_width = $('#timeChart').width();
+
+            var category = $('#category').dxChart('instance');
+            var category_width = $('#category').width();
+
+            var supplier = $('#supplier').dxChart('instance');
+            var supplier_width = $('#supplier').width();
+
+            var service = $('#service').dxChart('instance');
+            var service_width = $('#service').width();
+
+            if($('.main-content').hasClass('wide-content')) {
+                $('#timeChart').width(time_chart_width - 220);
+            } else {
+                $('#timeChart').width(time_chart_width + 220);
+            }
+            
+            if(window_Width > 1200) {//col-lg------3 charts
+                if($('.main-content').hasClass('wide-content')) {
+                    $('#category').width(category_width - 80);
+                    $('#supplier').width(supplier_width - 80);
+                    $('#service').width(service_width - 80);
+                } else {
+                    $('#category').width(category_width + 80);
+                    $('#supplier').width(supplier_width + 80);
+                    $('#service').width(service_width + 80);
+                }
+            } else if(window_Width > 992) {//col-md------2 charts
+                if($('.main-content').hasClass('wide-content')) {
+                    $('#category').width(category_width - 120);
+                    $('#supplier').width(supplier_width - 120);
+                    $('#service').width(service_width - 120);
+                } else {
+                    $('#category').width(category_width + 120);
+                    $('#supplier').width(supplier_width + 120);
+                    $('#service').width(service_width + 120);
+                }
+            } else {//col-sm, col-xs-------1 chart
+                if($('.main-content').hasClass('wide-content')) {
+                    $('#category').width(category_width - 220);
+                    $('#supplier').width(supplier_width - 220);
+                    $('#service').width(service_width - 220);
+                } else {
+                    $('#category').width(category_width + 220);
+                    $('#supplier').width(supplier_width + 220);
+                    $('#service').width(service_width + 220);
+                }
+            }
+
+            timeChart.render({ animate: false });
+            category.render({ animate: false });
+            supplier.render({ animate: false });
+            service.render({ animate: false });
+        }
 
         /*** FIXED Menu APPEARS ON SCROLL DOWN ***/
         $(window).scroll(function () {
