@@ -184,7 +184,7 @@ class SpendingGroupedChart {
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
                     let tempObj = {
-                        organisationAndGroup: spendThisGroup.organisation_name + '-' + spendThisGroup._group,
+                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
                         clientValue: spendThisGroup.totalAmount * 0.7,
                         organisationName: spendThisGroup.organisation_name
@@ -197,7 +197,9 @@ class SpendingGroupedChart {
                     return a.publicValue - b.publicValue;
                 });
 
-                if ($scope.dataSource.length > 10) {
+                let numBars = $scope.dataSource.length * dataSeries.length;                
+
+                if (numBars > 10) {
                     $scope.chartSize = {
                         height: 700
                     }
