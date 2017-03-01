@@ -7,15 +7,21 @@ import template from './navigation.html';
 const name = 'navigation';
 
 class NavigationController {
-  constructor($scope, $reactive) {
+  constructor($scope, $reactive, $rootScope) {
     'ngInject';
 
     $reactive(this).attach($scope);
 
+    $scope.requestResize = () => {
+      // Inform other components that the page / main container has been resized, so any
+      // redrawing that's not automatic should be done now.
+      $rootScope.$emit('resizeRequested');
+    }
+
     $scope.helpers({
       isLoggedIn: function () {
         return Meteor.userId() != null;
-      }
+      },
     });
   }
 }

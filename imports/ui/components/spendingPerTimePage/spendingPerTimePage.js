@@ -20,8 +20,23 @@ import {CHART_FONT} from '../../stylesheet/config';
 import template from './spendingPerTimePage.html';
 
 class SpendingPerTimePage {
-    constructor($scope, $reactive) {
+    constructor($scope, $reactive, $rootScope) {
         'ngInject';
+
+        $rootScope.$on('resizeRequested', function (e) {
+            // A page resize has been requested by another component. The chart object
+            // needs to re-render to properly size.
+
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            var chartComponent = $('#timeChart');
+            if (!chartComponent.data("dxChart"))
+                return;
+
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timeChart = chartComponent.dxChart('instance');
+            timeChart.render();
+        });
 
         $reactive(this).attach($scope);
 
@@ -439,7 +454,7 @@ class SpendingPerTimePage {
             }
         });
 
-        let stringToColour = function(str) {
+        let stringToColour = function (str) {
             var hash = 0;
             for (var i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
