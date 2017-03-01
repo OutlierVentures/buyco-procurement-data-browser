@@ -7,6 +7,7 @@ import template from './spendingGroupedChart.html';
 import { SpendingGrouped } from '../../../api/spendingGrouped';
 import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { MetaDataHelper } from '../../../utils';
+import {CHART_FONT} from '../../stylesheet/config';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
@@ -149,6 +150,7 @@ class SpendingGroupedChart {
                     label: {
                         visible: true,
                         font: {
+                            family: CHART_FONT.FONT_NAME,
                             color: 'gray'
                         },
                         backgroundColor: "rgba(224,224,224,0.5)",
