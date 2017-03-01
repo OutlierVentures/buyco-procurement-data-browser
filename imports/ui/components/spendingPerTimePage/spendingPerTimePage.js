@@ -15,7 +15,7 @@ import { Clients } from '../../../api/clients';
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
-import {CHART_FONT} from '../../stylesheet/config';
+import { CHART_FONT } from '../../stylesheet/config';
 
 import template from './spendingPerTimePage.html';
 
@@ -30,6 +30,7 @@ class SpendingPerTimePage {
         var start = moment().subtract(1, 'year').startOf('year');
         var end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
+        lastTwoYearsLabel = 'Last Two Years (' + moment().subtract(2, 'year').startOf('year').year() + '-' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
         $scope.selectedOrganisation = [];
@@ -54,6 +55,7 @@ class SpendingPerTimePage {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
             [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            [lastTwoYearsLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
             [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
             'This Year': [moment().startOf('year'), moment().endOf('year')]
         };
@@ -296,11 +298,11 @@ class SpendingPerTimePage {
                                 let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
                                 let tempItem = '';
                                 tempItem += items;
-                                $.each(items, function(index, item) {
+                                $.each(items, function (index, item) {
                                     items[index] = $("<b>")
-                                                    .text(tempItem)
-                                                    .css("color", color)
-                                                    .prop("outerHTML");
+                                        .text(tempItem)
+                                        .css("color", color)
+                                        .prop("outerHTML");
                                 });
                                 return { text: items.join("\n") };
                             }
@@ -384,13 +386,13 @@ class SpendingPerTimePage {
             console.log('reached Max Selection');
         };
 
-        let abbreviate_number = function(num, fixed) {
+        let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early
             if (num === 0) { return '0'; } // terminate early
             fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
             var b = (num).toPrecision(2).split("e"), // get power
                 k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
-                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3) ).toFixed(1 + fixed), // divide by power
+                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
                 d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
                 e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
             return e;
@@ -439,7 +441,7 @@ class SpendingPerTimePage {
             }
         });
 
-        let stringToColour = function(str) {
+        let stringToColour = function (str) {
             var hash = 0;
             for (var i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
