@@ -76,7 +76,7 @@
 <div class="top-bar">
   <div class="logo">
     <a href="/" title=""><img src="/images/logo-graphic.png"> PublicData.Works</a>
-    <div class="menu-options"><span class="menu-action"><i></i></span></div>
+    <div class="menu-options" id="menu-options"><span class="menu-action"><i></i></span></div>
   </div>
   <div class="quick-links">
     <ul>
@@ -121,84 +121,24 @@
             $("footer").toggleClass('wide-footer');
             $(".menu-options").toggleClass('active');
 
-            resizeCharts();
-        });
-
-        $(window).resize(function(){
-            var timeChart = $('#timeChart').dxChart('instance');
-            var category = $('#category').dxChart('instance');
-            var supplier = $('#supplier').dxChart('instance');
-            var service = $('#service').dxChart('instance');
-
-            $('#timeChart').width('100%');
-            $('#category').width('100%');
-            $('#supplier').width('100%');
-            $('#service').width('100%');
-
-            timeChart.render({ animate: false });
-            category.render({ animate: false });
-            supplier.render({ animate: false });
-            service.render({ animate: false });
-        });
-
-        function resizeCharts() {
-            var window_Width = $( window ).width();
-
-            var timeChart = $('#timeChart').dxChart('instance');
-            var time_chart_width = $('#timeChart').width();
-
-            var category = $('#category').dxChart('instance');
-            var category_width = $('#category').width();
-
-            var supplier = $('#supplier').dxChart('instance');
-            var supplier_width = $('#supplier').width();
-
-            var service = $('#service').dxChart('instance');
-            var service_width = $('#service').width();
-
-            if($('.main-content').hasClass('wide-content')) {
-                $('#timeChart').width(time_chart_width - 220);
-            } else {
-                $('#timeChart').width(time_chart_width + 220);
-            }
+            // The menu collapse/expand resizes the main container. We need to inform
+            // components that they should do any resize operations.
             
-            if(window_Width > 1200) {//col-lg------3 charts
-                if($('.main-content').hasClass('wide-content')) {
-                    $('#category').width(category_width - 80);
-                    $('#supplier').width(supplier_width - 80);
-                    $('#service').width(service_width - 80);
-                } else {
-                    $('#category').width(category_width + 80);
-                    $('#supplier').width(supplier_width + 80);
-                    $('#service').width(service_width + 80);
-                }
-            } else if(window_Width > 992) {//col-md------2 charts
-                if($('.main-content').hasClass('wide-content')) {
-                    $('#category').width(category_width - 120);
-                    $('#supplier').width(supplier_width - 120);
-                    $('#service').width(service_width - 120);
-                } else {
-                    $('#category').width(category_width + 120);
-                    $('#supplier').width(supplier_width + 120);
-                    $('#service').width(service_width + 120);
-                }
-            } else {//col-sm, col-xs-------1 chart
-                if($('.main-content').hasClass('wide-content')) {
-                    $('#category').width(category_width - 220);
-                    $('#supplier').width(supplier_width - 220);
-                    $('#service').width(service_width - 220);
-                } else {
-                    $('#category').width(category_width + 220);
-                    $('#supplier').width(supplier_width + 220);
-                    $('#service').width(service_width + 220);
-                }
-            }
+            let requestResize = () => {
+                // Call angular functions from outside the controller
+                angular.element('#menu-options').scope().requestResize();
+                angular.element('#menu-options').scope().$apply();
+            };
 
-            timeChart.render({ animate: false });
-            category.render({ animate: false });
-            supplier.render({ animate: false });
-            service.render({ animate: false });
-        }
+            // The menu resize uses an animation. The event should only be emitted when the animation
+            // has finished and the components have taken their final size. Use setTimeout as a workaround.
+
+            // TODO: properly detect when the menu animation has finished, don't rely on an arbitrary
+            // timeout.
+            setTimeout(() => {
+                requestResize();
+            }, 500);
+        });
 
         /*** FIXED Menu APPEARS ON SCROLL DOWN ***/
         $(window).scroll(function () {
