@@ -7,12 +7,29 @@ import template from './spendingGroupedChart.html';
 import { SpendingGrouped } from '../../../api/spendingGrouped';
 import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { MetaDataHelper } from '../../../utils';
+import {CHART_FONT} from '../../stylesheet/config';
 
 class SpendingGroupedChart {
-    constructor($scope, $reactive) {
+    constructor($scope, $reactive, $element, $rootScope) {
         'ngInject';
 
         $reactive(this).attach($scope);
+
+        $rootScope.$on('resizeRequested', function (e) {
+            // A page resize has been requested by another component. The chart object
+            // needs to re-render to properly size.
+            // $element is the DOM element for the controller. The dx-chart is nested in it.
+            var chartDiv = angular.element($element).find("#chart");
+
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            if (!chartDiv.data("dxChart"))
+                return;
+
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timeChart = chartDiv.dxChart('instance');
+            timeChart.render();
+        });
 
         $scope.dataSource = [];
         $scope.organisation_names = [];
@@ -28,19 +45,19 @@ class SpendingGroupedChart {
                 sercop_service: this.getReactively("filters.sercop_service")
             };
 
-            if(this.getReactively('filterDate')) {
-               filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
+            if (this.getReactively('filterDate')) {
+                filterOptions.payment_date = { $gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate() };
             }
 
-            if(this.getReactively('selDate')) {
-               filterOptions.payment_date = {$gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate()};
+            if (this.getReactively('selDate')) {
+                filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
             }
 
             return [
                 filterOptions,
-            {
-                groupField: this.getReactively("groupField")
-            }];
+                {
+                    groupField: this.getReactively("groupField")
+                }];
         });
 
         // $scope.subscribe('clientSpendingPerTime', function () {
@@ -76,7 +93,7 @@ class SpendingGroupedChart {
                 groupField: this.getReactively("groupField")
             };
 
-            if(filters.organisation_name) {
+            if (filters.organisation_name) {
                 $scope.organisation_names = filters.organisation_name.$in;
             }
 
@@ -134,6 +151,7 @@ class SpendingGroupedChart {
                     label: {
                         visible: true,
                         font: {
+                            family: CHART_FONT.FONT_NAME,
                             color: 'gray'
                         },
                         backgroundColor: "rgba(224, 224, 224, 0.6)",
@@ -167,7 +185,7 @@ class SpendingGroupedChart {
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
                     let tempObj = {
-                        organisationAndGroup: spendThisGroup.organisation_name + '-' + spendThisGroup._group,
+                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
                         clientValue: spendThisGroup.totalAmount * 0.7,
                         organisationName: spendThisGroup.organisation_name
@@ -180,7 +198,9 @@ class SpendingGroupedChart {
                     return a.publicValue - b.publicValue;
                 });
 
-                if($scope.dataSource.length > 10) {
+                let numBars = $scope.dataSource.length * dataSeries.length;                
+
+                if (numBars > 10) {
                     $scope.chartSize = {
                         height: 700
                     }
@@ -191,15 +211,15 @@ class SpendingGroupedChart {
                 }
 
                 $scope.chartOptions = {
-                    dataSource: $scope.dataSource.map(function(i){
+                    dataSource: $scope.dataSource.map(function (i) {
                         i.zero = 0;
                         return i;
-                    }),                
+                    }),
                     commonSeriesSettings: {
                         argumentField: "organisationAndGroup",
                         type: "bar"
                     },
-                    argumentAxis: {            
+                    argumentAxis: {
                         label: {
                             visible: false,
                             format: "largeNumber"
@@ -227,11 +247,11 @@ class SpendingGroupedChart {
                             let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
                             let tempItem = '';
                             tempItem += items;
-                            $.each(items, function(index, item) {
+                            $.each(items, function (index, item) {
                                 items[index] = $("<b>")
-                                                .text(tempItem)
-                                                .css("color", color)
-                                                .prop("outerHTML");
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
                             });
                             return { text: items.join("\n") };
                         }
@@ -242,7 +262,7 @@ class SpendingGroupedChart {
                         }
                     }],
                     size: $scope.chartSize,
-                    customizePoint: function() {
+                    customizePoint: function () {
                         if (this.series.name == "Public spending") {
                             let sourcePoint = $scope.dataSource[this.index];
                             return {
@@ -258,7 +278,7 @@ class SpendingGroupedChart {
             }
         });
 
-        let stringToColour = function(str) {
+        let stringToColour = function (str) {
             var hash = 0;
             for (var i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -277,13 +297,13 @@ class SpendingGroupedChart {
             return stringToColour(organisationName);
         };
 
-        let abbreviate_number = function(num, fixed) {
+        let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early
             if (num === 0) { return '0'; } // terminate early
             fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
             var b = (num).toPrecision(2).split("e"), // get power
                 k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
-                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3) ).toFixed(1 + fixed), // divide by power
+                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
                 d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
                 e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
             return e;

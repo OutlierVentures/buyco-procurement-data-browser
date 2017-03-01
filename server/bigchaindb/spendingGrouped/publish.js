@@ -53,13 +53,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     let limitAmount = 10;
 
-    if(filters.organisation_name && filters.organisation_name.$in && filters.organisation_name.$in.length)
-        limitAmount = Math.round(10 / filters.organisation_name.$in.length);
-
     let limitClause = {
-        // Limit to 10 visible items. For 1 organisation, 10 items. For 2 orgs, 5 items, etc.
-        // TODO: increase height of charts, ensure minimum height of bars for proper display.
-        // Then increase this amount.
         $limit: limitAmount
     }
     pipeLine.push(limitClause);

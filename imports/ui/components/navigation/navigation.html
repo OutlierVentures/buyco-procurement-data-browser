@@ -76,7 +76,7 @@
 <div class="top-bar">
   <div class="logo">
     <a href="/" title=""><img src="/images/logo-graphic.png"> PublicData.Works</a>
-    <div class="menu-options"><span class="menu-action"><i></i></span></div>
+    <div class="menu-options" id="menu-options"><span class="menu-action"><i></i></span></div>
   </div>
   <div class="quick-links">
     <ul>
@@ -120,6 +120,24 @@
             $(".main-content").toggleClass('wide-content');
             $("footer").toggleClass('wide-footer');
             $(".menu-options").toggleClass('active');
+
+            // The menu collapse/expand resizes the main container. We need to inform
+            // components that they should do any resize operations.
+            
+            let requestResize = () => {
+                // Call angular functions from outside the controller
+                angular.element('#menu-options').scope().requestResize();
+                angular.element('#menu-options').scope().$apply();
+            };
+
+            // The menu resize uses an animation. The event should only be emitted when the animation
+            // has finished and the components have taken their final size. Use setTimeout as a workaround.
+
+            // TODO: properly detect when the menu animation has finished, don't rely on an arbitrary
+            // timeout.
+            setTimeout(() => {
+                requestResize();
+            }, 500);
         });
 
         /*** FIXED Menu APPEARS ON SCROLL DOWN ***/
