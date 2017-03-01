@@ -86,6 +86,7 @@ class SpendingPerTimePage {
         };
 
         $scope.filterName = '';
+        $scope.fullScreen = false;
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -347,6 +348,14 @@ class SpendingPerTimePage {
                 organisations.forEach((organisation) => {
                     $scope.filteredOrganisations.push(organisation.id);
                 });
+            },
+            // fullScreenMode: function() {
+            //     console.log('timechart-fullScreen', $scope.fullScreen);
+            //     return $scope.getReactively("fullScreen");
+            // },
+            temp: function() {
+                console.log('bacdafjdsklfjaklf = ', $scope.fullScreen);
+                return $scope.getReactively("fullScreen");
             }
         });
 
@@ -491,7 +500,7 @@ export default angular.module(name, [
     controllerAs: name,
     controller: SpendingPerTimePage
 })
-    .config(config);
+.config(config);
 
 function config($stateProvider) {
     'ngInject';

@@ -1,7 +1,8 @@
-<div class="widget">
+<div class="widget" ng-class="{'full-screen': fullScreenMode}">
     <div class="activity-sec">
         <div class="widget-title">
             <h3>Spend by {{groupDisplayName}}</h3>
+            <button class="btn btn-default pull-right" ng-click="fullScreenMode = !fullScreenMode"><i class="fa fa-expand"></i></button>
             <span ng-if="filterPeriodName">Filter Applied: {{filterPeriodName}}</span>
             <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
                 rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 

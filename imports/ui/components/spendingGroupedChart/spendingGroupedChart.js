@@ -33,6 +33,7 @@ class SpendingGroupedChart {
 
         $scope.dataSource = [];
         $scope.organisation_names = [];
+        $scope.fullScreenMode = false;
 
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
@@ -153,7 +154,7 @@ class SpendingGroupedChart {
                             family: CHART_FONT.FONT_NAME,
                             color: 'gray'
                         },
-                        backgroundColor: "rgba(224,224,224,0.6)",
+                        backgroundColor: "rgba(224, 224, 224, 0.6)",
                         customizeText: function(e) {
                             return e.argumentText;
                         }
@@ -326,7 +327,8 @@ export default angular.module(name, [
         groupField: '<',
         filterDate: '<',
         selDate: '<',
-        filterName: '<'
+        filterName: '<',
+        fullScreen: '='
     },
     controller: SpendingGroupedChart
 });
