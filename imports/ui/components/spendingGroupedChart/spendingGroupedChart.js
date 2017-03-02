@@ -16,19 +16,7 @@ class SpendingGroupedChart {
         $reactive(this).attach($scope);
 
         $rootScope.$on('resizeRequested', function (e) {
-            // A page resize has been requested by another component. The chart object
-            // needs to re-render to properly size.
-            // $element is the DOM element for the controller. The dx-chart is nested in it.
-            var chartDiv = angular.element($element).find("#chart");
-
-            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            if (!chartDiv.data("dxChart"))
-                return;
-
-            // Re-render the chart. This will correctly resize for the new size of the surrounding
-            // div.
-            var timeChart = chartDiv.dxChart('instance');
-            timeChart.render();
+            resizeChart();
         });
 
         $scope.dataSource = [];
@@ -190,7 +178,6 @@ class SpendingGroupedChart {
                         clientValue: spendThisGroup.totalAmount * 0.7,
                         organisationName: spendThisGroup.organisation_name
                     };
-                    // tempObj[spendThisGroup.organisation_name + '_totalAmount'] = spendThisGroup.totalAmount;
                     $scope.dataSource.push(tempObj);
                 });
 
@@ -278,6 +265,28 @@ class SpendingGroupedChart {
             }
         });
 
+        function resizeChart () {
+            // A page resize has been requested by another component. The chart object
+            // needs to re-render to properly size.
+            // $element is the DOM element for the controller. The dx-chart is nested in it.
+            var chartDiv = angular.element($element).find("#chart");
+
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            if (!chartDiv.data("dxChart"))
+                return;
+
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timeChart = chartDiv.dxChart('instance');
+            timeChart.render();
+        }
+
+        $scope.$watch('fullScreenMode', function () {
+            setTimeout(() => {
+                resizeChart();
+            }, 100);
+        });
+
         let stringToColour = function (str) {
             var hash = 0;
             for (var i = 0; i < str.length; i++) {
@@ -327,8 +336,7 @@ export default angular.module(name, [
         groupField: '<',
         filterDate: '<',
         selDate: '<',
-        filterName: '<',
-        fullScreen: '='
+        filterName: '<'
     },
     controller: SpendingGroupedChart
 });
