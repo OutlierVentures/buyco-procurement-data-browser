@@ -338,8 +338,9 @@ class SpendingPerTimePage {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
-                    period: $scope.getReactively("period")
-                    //client_id: $scope.getReactively("selectedClient.client_id")
+                    period: $scope.getReactively("period"),
+                    client_id: $scope.getReactively("selectedClient.client_id")
+                    
                 };
             },
             filterSelectedOrganisation: function () {

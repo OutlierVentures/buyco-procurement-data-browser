@@ -60,24 +60,24 @@ class SpendingGroupedChart {
                 }];
         });
 
-        // $scope.subscribe('clientSpendingPerTime', function () {
-        //     let filterOptions = {
-        //         client_id: $scope.getReactively("filters.client_id"),
-        //         organisation_name: this.getReactively("filters.organisation_name"),
-        //         procurement_classification_1: $scope.getReactively("filters.procurement_classification_1"),
-        //         sercop_service: $scope.getReactively("filters.sercop_service")
-        //     };
+        $scope.subscribe('clientSpendingPerTime', function () {
+            let filterOptions = {
+                client_id: $scope.getReactively("filters.client_id"),
+                organisation_name: this.getReactively("filters.organisation_name"),
+                procurement_classification_1: $scope.getReactively("filters.procurement_classification_1"),
+                sercop_service: $scope.getReactively("filters.sercop_service")
+            };
 
-        //     if(this.getReactively('filterDate')) {
-        //        filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
-        //     }
+            if(this.getReactively('filterDate')) {
+               filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
+            }
 
-        //     return [
-        //         filterOptions,
-        //     {
-        //         period: $scope.getReactively("filters.period")
-        //     }];
-        // });
+            return [
+                filterOptions,
+            {
+                period: $scope.getReactively("filters.period")
+            }];
+        });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
@@ -118,13 +118,6 @@ class SpendingGroupedChart {
             spendingGrouped: () => {
                 return this.spendingGrouped();
             },
-            // clientSpendingPerTime: function () {
-            //     let buffer = ClientSpendingPerTime.find({});
-            //     console.log('========================');
-            //     console.log(buffer);
-            //     console.log('========================');
-            //     return buffer;
-            // },
             chartData: () => {
                 let dataSeries = [];
                 $scope.dataSource = [];
@@ -174,16 +167,17 @@ class SpendingGroupedChart {
                     });
                 });
 
-                // this.spendingGrouped().forEach((clientData) => {
-                //     let tempObj = {
-                //         organisationAndGroup: clientData._group,
-                //         clientValue: clientData.totalAmount * 0.7,
-                //     };
-                //     // tempObj[clientData.organisation_name + '_clientData'] = clientData.totalAmount * 0.7;
-                //     dataSource.push(tempObj);
-                // });
+                let clientSpendingPerTime = ClientSpendingPerTime.find({});
+                // console.log(clientSpendingPerTime.length);
+                let i = 0;
+                clientSpendingPerTime.forEach((client) => {
+                    // console.log(client);
+                    i++
+                });
+                console.log(i);
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
+                    console.log(spendThisGroup);
                     let tempObj = {
                         organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
