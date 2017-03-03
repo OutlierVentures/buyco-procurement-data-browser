@@ -68,43 +68,44 @@
                                     bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource', tooltip: 'chartData.tooltip' } }"
                         ng-show="spendingPerTime.length"></div>
 
-                <div ng-show="spendingPerTime.length === 0">
-                    <p>Loading...</p>
-                </div>
-                <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
-                    <span ng-show="!detailsVisible">Show details</span>
-                    <span ng-show="detailsVisible">Hide details</span>
-                </button>
-                <div ng-show="detailsVisible">
-                    <table class="table table-striped">
-                        <tr>
-                            <th>Organisation</th>
-                            <th>Year</th>
-                            <th>
-                                <span ng-show="period=='month'">Month</span>
-                                <span ng-show="period=='quarter'">Quarter</span>
-                            </th>
-                            <th>Total</th>
-                            <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
-                            <th ng-show="selectedClient">%</th>
-                        </tr>
-                        <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
-                            <td>{{ spendGroup._group.organisation_name }}</td>
-                            <td>{{ spendGroup._group.year }}</td>
-                            <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
-                            <td>£{{spendGroup.totalAmount | number: 2}} </td>
-                            <td ng-show="selectedClient"><span ng-show="spendGroup.client_amount_net">£{{spendGroup.client_amount_net | number: 2}}</span></td>
-                            <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Total</strong></td>
-                            <td></td>
-                            <td></td>
-                            <td>£{{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
-                            <td ng-show="selectedClient"><span ng-show="mergedSpendingPerTime.totalValues.client_amount_net">£{{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</span></td>
-                            <td ng-show="selectedClient">{{mergedSpendingPerTime.totalValues.client_amount_net_percent | number: 1}}</td>
-                        </tr>
-                    </table>
+                    <div ng-show="spendingPerTime.length === 0">
+                        <p>Loading...</p>
+                    </div>
+                    <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+                        <span ng-show="!detailsVisible">Show details</span>
+                        <span ng-show="detailsVisible">Hide details</span>
+                    </button>
+                    <div ng-show="detailsVisible">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Organisation</th>
+                                <th>Year</th>
+                                <th>
+                                    <span ng-show="period=='month'">Month</span>
+                                    <span ng-show="period=='quarter'">Quarter</span>
+                                </th>
+                                <th>Total</th>
+                                <th ng-show="selectedClient">Through {{selectedClient.name}}</th>
+                                <th ng-show="selectedClient">%</th>
+                            </tr>
+                            <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
+                                <td>{{ spendGroup._group.organisation_name }}</td>
+                                <td>{{ spendGroup._group.year }}</td>
+                                <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
+                                <td>£{{spendGroup.totalAmount | number: 2}} </td>
+                                <td ng-show="selectedClient"><span ng-show="spendGroup.client_amount_net">£{{spendGroup.client_amount_net | number: 2}}</span></td>
+                                <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td></td>
+                                <td></td>
+                                <td>£{{mergedSpendingPerTime.totalValues.total | number: 2}} </td>
+                                <td ng-show="selectedClient"><span ng-show="mergedSpendingPerTime.totalValues.client_amount_net">£{{mergedSpendingPerTime.totalValues.client_amount_net | number: 2}}</span></td>
+                                <td ng-show="selectedClient">{{mergedSpendingPerTime.totalValues.client_amount_net_percent | number: 1}}</td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
