@@ -62,7 +62,7 @@ class SpendingGroupedChart {
 
         $scope.subscribe('clientSpendingPerTime', function () {
             let filterOptions = {
-                client_id: $scope.getReactively("filters.client_id"),
+                client_id: $scope.getReactively("filters.client.client_id"),
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: $scope.getReactively("filters.procurement_classification_1"),
                 sercop_service: $scope.getReactively("filters.sercop_service")
@@ -71,7 +71,7 @@ class SpendingGroupedChart {
             if(this.getReactively('filterDate')) {
                filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
             }
-
+            
             return [
                 filterOptions,
             {
@@ -96,7 +96,6 @@ class SpendingGroupedChart {
             if (filters.organisation_name) {
                 $scope.organisation_names = filters.organisation_name.$in;
             }
-
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
             if (this.getReactively("filters.procurement_classification_1"))
@@ -105,6 +104,7 @@ class SpendingGroupedChart {
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
             let temp = this.getReactively("filters.period");
+            $scope.clientName = this.getReactively("filters.client.name");
             return SpendingGrouped.find(filters);
         };
 
@@ -118,12 +118,14 @@ class SpendingGroupedChart {
             spendingGrouped: () => {
                 return this.spendingGrouped();
             },
+            clientSpendingPerTime: function () {
+                return ClientSpendingPerTime.find({});
+            },
             chartData: () => {
                 let dataSeries = [];
                 $scope.dataSource = [];
                 dataSeries.push({
-                    // name: 'Public spending through Demo Company',
-                    name: 'Demo Company',
+                    name: $scope.clientName,
                     valueField: 'clientValue',
                     color: '#543996'
                 });
@@ -168,24 +170,15 @@ class SpendingGroupedChart {
                 });
 
                 let clientSpendingPerTime = ClientSpendingPerTime.find({});
-                // console.log("HALA MADRID");
-                // console.log(clientSpendingPerTime.fetch());
-                // let i = 0;
-                // clientSpendingPerTime.forEach((client) => {
-                //     // console.log(client);
-                //     i++
-                // });
-                // console.log(i);
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
-                    // console.log(spendThisGroup);
+                    let clientValue = filterClientSpendingDatabySpendingGroup(spendThisGroup, clientSpendingPerTime);
                     let tempObj = {
                         organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
-                        clientValue: spendThisGroup.totalAmount * 0.7,
+                        clientValue: clientValue,
                         organisationName: spendThisGroup.organisation_name
                     };
-                    // tempObj[spendThisGroup.organisation_name + '_totalAmount'] = spendThisGroup.totalAmount;
                     $scope.dataSource.push(tempObj);
                 });
 
@@ -272,6 +265,16 @@ class SpendingGroupedChart {
                 return this.getReactively("filterName");
             }
         });
+
+        function filterClientSpendingDatabySpendingGroup(spendThisGroup, clientSpendingPerTime) {
+            let clientValue = 0;
+            clientSpendingPerTime.forEach((clientData) => {
+                if (clientData._group.organisation_name == spendThisGroup.organisation_name && clientData._group.service == spendThisGroup._group) {
+                    clientValue += clientData.totalAmount;
+                }
+            });
+            return clientValue;
+        }
 
         let stringToColour = function (str) {
             var hash = 0;

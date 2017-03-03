@@ -136,7 +136,6 @@ class SpendingPerTimePage {
                     merged: merged
                 }
 
-console.log(mergedData);
                 return mergedData;
             },
             firstClient: function () {
@@ -232,43 +231,6 @@ console.log(mergedData);
                     if ($scope.selectedOrganisation.length == 1)
                         publicValues.push({ x: i, label: xLabel, y: amount, source: unit });
                 });
-
-                // spendingPerTime.forEach((spendThisPeriod) => {
-                //     let xLabel;
-                //     if ($scope.period == "quarter")
-                //         // "2016 Q2"
-                //         xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
-                //     else
-                //         // E.g. "2016-05" for May 2016
-                //         xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
-
-                //     let dataPoint = pointsByPeriod[xLabel];
-                //     if (!dataPoint) {
-                //         dataPoint = { xAxis: xLabel };
-                //         pointsByPeriod[xLabel] = dataPoint;
-                //     }
-
-                //     let amount = spendThisPeriod.totalAmount;
-                //     dataPoint[spendThisPeriod._group.organisation_name] = amount;
-
-                //     let clientVal = _(clientSpendingPerTime).find((v) => {
-                //         return v._group
-                //             && v._group.year == spendThisPeriod._group.year
-                //             && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
-                //             && v._group.organisation_name === spendThisPeriod._group.organisation_name;
-                //     });
-
-                //     if (clientVal !== undefined) {
-                //         let clientPointKey = "clientValue_" + spendThisPeriod._group.organisation_name;
-                //         dataPoint[clientPointKey] = clientVal.totalAmount;
-                //     }
-
-                //     // Fill tabular data. Only works for a single organisation.
-                //     if ($scope.selectedOrganisation.length == 1)
-                //         publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
-
-                //     i++;
-                // });
 
                 // pointsByPeriod looks like this: [ "2016 Q1": {...}, "2016 Q2": {...}] with {...} being data points.
                 // dxCharts wants a numeric array.
@@ -371,8 +333,7 @@ console.log(mergedData);
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period"),
-                    client_id: $scope.getReactively("selectedClient.client_id")
-                    
+                    client: $scope.getReactively("selectedClient")
                 };
             },
             filterSelectedOrganisation: function () {
