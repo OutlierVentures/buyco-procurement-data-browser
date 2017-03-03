@@ -135,9 +135,10 @@
 
             // TODO: properly detect when the menu animation has finished, don't rely on an arbitrary
             // timeout.
-            setTimeout(() => {
-                requestResize();
-            }, 500);
+            $(".main-content").one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',   
+                function(e) {
+                    requestResize();
+            });
         });
 
         /*** FIXED Menu APPEARS ON SCROLL DOWN ***/

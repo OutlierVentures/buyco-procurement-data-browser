@@ -6,7 +6,7 @@ export BASEDIR=data/$BASENAME
 # Delete previously downloaded files
 #rm $BASEDIR/*.csv
 
-# ./download-csvs.sh $BASEDIR 1 https://www.bradford.gov.uk/open-data/our-datasets/expenditure-greater-than-500-in-value/
+./download-csvs.sh $BASEDIR 1 https://www.bradford.gov.uk/open-data/our-datasets/expenditure-greater-than-500-in-value/
 
 # Move to the directory to make the rename command work on local file names
 cd $BASEDIR
