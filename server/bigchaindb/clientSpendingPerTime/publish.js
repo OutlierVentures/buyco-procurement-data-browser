@@ -28,9 +28,9 @@ Meteor.publish(collectionName, function (filters, options) {
 
     removeEmptyFilters(filters);
 
-    if (filters) {
-        pipeLine.push({ $match: filters });
-    }
+    // if (filters) {
+    //     pipeLine.push({ $match: filters });
+    // }
 
     let groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
 
@@ -43,7 +43,7 @@ Meteor.publish(collectionName, function (filters, options) {
     // record per period. In case of N organisations, max N records per period (depending
     // on whether that organisation has data in the period).
     groupClause.$group._id.organisation_name = "$organisation_name";
-    groupClause.$group._id.grouped = "$procurement_classification_1";
+    groupClause.$group._id.procurement_classification_1 = "$procurement_classification_1";
 
     pipeLine.push(groupClause);
 

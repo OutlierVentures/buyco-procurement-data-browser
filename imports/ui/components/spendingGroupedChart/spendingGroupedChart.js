@@ -168,16 +168,17 @@ class SpendingGroupedChart {
                 });
 
                 let clientSpendingPerTime = ClientSpendingPerTime.find({});
-                // console.log(clientSpendingPerTime.length);
-                let i = 0;
-                clientSpendingPerTime.forEach((client) => {
-                    // console.log(client);
-                    i++
-                });
-                console.log(i);
+                // console.log("HALA MADRID");
+                // console.log(clientSpendingPerTime.fetch());
+                // let i = 0;
+                // clientSpendingPerTime.forEach((client) => {
+                //     // console.log(client);
+                //     i++
+                // });
+                // console.log(i);
 
                 this.spendingGrouped().forEach((spendThisGroup) => {
-                    console.log(spendThisGroup);
+                    // console.log(spendThisGroup);
                     let tempObj = {
                         organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
