@@ -114,16 +114,16 @@ class SpendingPerTimePage {
                     let mergedItem = spendThisPeriod;
                     totalValues.total += mergedItem.totalAmount;
                     merged.push(mergedItem);
+                    mergedItem.client_amount_net = 0;
 
                     cs.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                        if (clientSpendThisPeriod._group.organisation_name == spendThisPeriod._group.organisation_name && clientSpendThisPeriod._group.year == spendThisPeriod._group.year
                             && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
-
-                            mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
-                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.totalAmount * 100;
-                            totalValues.client_amount_net += mergedItem.client_amount_net;
+                            mergedItem.client_amount_net += clientSpendThisPeriod.totalAmount;
+                            mergedItem.client_amount_net_percent = mergedItem.client_amount_net / spendThisPeriod.totalAmount * 100;
                         }
                     });
+                    totalValues.client_amount_net += mergedItem.client_amount_net;
                 });
 
                 if (totalValues.client_amount_net != 0) {
@@ -181,7 +181,7 @@ class SpendingPerTimePage {
             chartData: function () {
                 var spendingPerTime = $scope.getReactively("spendingPerTime");
                 var allowedClients = $scope.getReactively("clients");
-                var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
+                var mergedSpendingPerTime = $scope.getReactively("mergedSpendingPerTime");
                 var publicValues = [];
                 let i = 0;
 
@@ -199,15 +199,16 @@ class SpendingPerTimePage {
                 //      "Another Council": 54321,
                 //      "clientValue_Some Council": 1234,
                 //      "clientValue_Another Council": 4321
-                // }                
-                spendingPerTime.forEach((spendThisPeriod) => {
+                // }
+
+                mergedSpendingPerTime.merged.forEach((unit) => {
                     let xLabel;
                     if ($scope.period == "quarter")
                         // "2016 Q2"
-                        xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
+                        xLabel = unit._group.year + " Q" + unit._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
+                        xLabel = unit._group.year + "-" + ("00" + unit._group.month).slice(-2);
 
                     let dataPoint = pointsByPeriod[xLabel];
                     if (!dataPoint) {
@@ -215,26 +216,19 @@ class SpendingPerTimePage {
                         pointsByPeriod[xLabel] = dataPoint;
                     }
 
-                    let amount = spendThisPeriod.totalAmount;
-                    dataPoint[spendThisPeriod._group.organisation_name] = amount;
+                    let amount = unit.totalAmount;
+                    dataPoint[unit._group.organisation_name] = amount;
 
-                    let clientVal = _(clientSpendingPerTime).find((v) => {
-                        return v._group
-                            && v._group.year == spendThisPeriod._group.year
-                            && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
-                            && v._group.organisation_name === spendThisPeriod._group.organisation_name;
-                    });
+                    let clientVal = unit.client_amount_net;
 
                     if (clientVal !== undefined) {
-                        let clientPointKey = "clientValue_" + spendThisPeriod._group.organisation_name;
-                        dataPoint[clientPointKey] = clientVal.totalAmount;
+                        let clientPointKey = "clientValue_" + unit._group.organisation_name;
+                        dataPoint[clientPointKey] = clientVal;
                     }
 
                     // Fill tabular data. Only works for a single organisation.
                     if ($scope.selectedOrganisation.length == 1)
-                        publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
-
-                    i++;
+                        publicValues.push({ x: i, label: xLabel, y: amount, source: unit });
                 });
 
                 // pointsByPeriod looks like this: [ "2016 Q1": {...}, "2016 Q2": {...}] with {...} being data points.
@@ -337,8 +331,8 @@ class SpendingPerTimePage {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
-                    period: $scope.getReactively("period")
-                    //client_id: $scope.getReactively("selectedClient.client_id")
+                    period: $scope.getReactively("period"),
+                    client: $scope.getReactively("selectedClient")
                 };
             },
             filterSelectedOrganisation: function () {
