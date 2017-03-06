@@ -12,6 +12,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     removeEmptyFilters(filters);
 
+    // Only deliver data when a client is selected that the user has permission to.
     if (!filters.client_id)
         return;
 

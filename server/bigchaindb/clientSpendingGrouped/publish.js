@@ -15,6 +15,14 @@ Meteor.publish(collectionName, function (filters, options) {
     var self = this;
     let groupField;
 
+    if (!filters.client_id)
+        return;
+
+    // Only users with viewer/admin role for this org are allowed to access.
+    if (!(Roles.userIsInRole(this.userId, 'viewer', filters.client_id)
+        || Roles.userIsInRole(this.userId, 'admin', filters.client_id)))
+        throw new Meteor.Error(403);
+
     // We allow grouping by these fields
     if (options.groupField == "procurement_classification_1"
         || options.groupField == "supplier_name"
@@ -41,7 +49,7 @@ Meteor.publish(collectionName, function (filters, options) {
                 groupClause.$group[k] = { $first: '$' + k };
         }
     }
-    
+
     groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);

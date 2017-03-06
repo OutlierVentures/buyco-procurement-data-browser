@@ -52,7 +52,8 @@ class SpendingGroupedChart {
             let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                sercop_service: this.getReactively("filters.sercop_service")
+                sercop_service: this.getReactively("filters.sercop_service"),
+                client_id: this.getReactively("filters.client.client_id")
             };
 
             if (this.getReactively('filterDate')) {
@@ -96,7 +97,7 @@ class SpendingGroupedChart {
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
             let temp = this.getReactively("filters.period");
-            $scope.clientName = this.getReactively("filters.client.name");
+
             return SpendingGrouped.find(filters);
         };
 
@@ -112,6 +113,8 @@ class SpendingGroupedChart {
                 filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             if (this.getReactively("filters.sercop_service"))
                 filters.sercop_service = this.getReactively("filters.sercop_service");
+            if (this.getReactively("filters.client"))
+                filters.client_id = this.getReactively("filters.client.client_id");
 
             let temp = this.getReactively("filters.period");
             return ClientSpendingGrouped.find(filters);
@@ -130,11 +133,14 @@ class SpendingGroupedChart {
             chartData: () => {
                 let dataSeries = [];
                 $scope.dataSource = [];
-                dataSeries.push({
-                    name: $scope.clientName,
-                    valueField: 'clientValue',
-                    color: '#543996'
-                });
+
+                if (this.getReactively("filters.client")) {
+                    dataSeries.push({
+                        name: this.getReactively("filters.client.name"),
+                        valueField: 'clientValue',
+                        color: '#543996'
+                    });
+                }
 
                 dataSeries.push({
                     valueField: "publicValue",
@@ -142,6 +148,7 @@ class SpendingGroupedChart {
                     showInLegend: false
                 });
 
+                // Add gray transparent block behind label text to improve readability
                 dataSeries.push({
                     valueField: 'zero',
                     type: 'scatter',
@@ -156,7 +163,7 @@ class SpendingGroupedChart {
                             color: 'gray'
                         },
                         backgroundColor: "rgba(224, 224, 224, 0.6)",
-                        customizeText: function(e) {
+                        customizeText: function (e) {
                             return e.argumentText;
                         }
                     }
@@ -178,10 +185,10 @@ class SpendingGroupedChart {
                 this.spendingGrouped().forEach((spendThisGroup) => {
                     let clientValue;
                     this.clientSpendingGrouped().forEach((clientData) => {
-                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField 
+                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
                             && spendThisGroup._group == clientData._group) {
-                                clientValue = clientData.totalAmount;
-                            }
+                            clientValue = clientData.totalAmount;
+                        }
                     });
 
                     let tempObj = {
@@ -197,7 +204,7 @@ class SpendingGroupedChart {
                     return a.publicValue - b.publicValue;
                 });
 
-                let numBars = $scope.dataSource.length * dataSeries.length;                
+                let numBars = $scope.dataSource.length * dataSeries.length;
 
                 if (numBars > 10) {
                     $scope.chartSize = {
@@ -277,7 +284,7 @@ class SpendingGroupedChart {
             }
         });
 
-        function resizeChart () {
+        function resizeChart() {
             // A page resize has been requested by another component. The chart object
             // needs to re-render to properly size.
             // $element is the DOM element for the controller. The dx-chart is nested in it.
