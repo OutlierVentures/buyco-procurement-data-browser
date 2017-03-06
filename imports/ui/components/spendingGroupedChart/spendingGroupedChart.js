@@ -6,8 +6,9 @@ import template from './spendingGroupedChart.html';
 
 import { SpendingGrouped } from '../../../api/spendingGrouped';
 import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
+import { ClientSpendingGrouped } from '../../../api/clientSpendingGrouped';
 import { MetaDataHelper } from '../../../utils';
-import {CHART_FONT} from '../../stylesheet/config';
+import { CHART_FONT } from '../../stylesheet/config';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
@@ -47,25 +48,28 @@ class SpendingGroupedChart {
                     groupField: this.getReactively("groupField")
                 }];
         });
+        $scope.subscribe('clientSpendingGrouped', () => {
+            let filterOptions = {
+                organisation_name: this.getReactively("filters.organisation_name"),
+                procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
+                sercop_service: this.getReactively("filters.sercop_service"),
+                client_id: this.getReactively("filters.client.client_id")
+            };
 
-        // $scope.subscribe('clientSpendingPerTime', function () {
-        //     let filterOptions = {
-        //         client_id: $scope.getReactively("filters.client_id"),
-        //         organisation_name: this.getReactively("filters.organisation_name"),
-        //         procurement_classification_1: $scope.getReactively("filters.procurement_classification_1"),
-        //         sercop_service: $scope.getReactively("filters.sercop_service")
-        //     };
+            if (this.getReactively('filterDate')) {
+                filterOptions.payment_date = { $gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate() };
+            }
 
-        //     if(this.getReactively('filterDate')) {
-        //        filterOptions.payment_date = {$gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate()};
-        //     }
+            if (this.getReactively('selDate')) {
+                filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
+            }
 
-        //     return [
-        //         filterOptions,
-        //     {
-        //         period: $scope.getReactively("filters.period")
-        //     }];
-        // });
+            return [
+                filterOptions,
+                {
+                    groupField: this.getReactively("groupField")
+                }];
+        });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
@@ -93,7 +97,27 @@ class SpendingGroupedChart {
                 filters.sercop_service = this.getReactively("filters.sercop_service");
 
             let temp = this.getReactively("filters.period");
+
             return SpendingGrouped.find(filters);
+        };
+
+        this.clientSpendingGrouped = () => {
+            let filters = {
+                organisation_name: this.getReactively("filters.organisation_name"),
+                groupField: this.getReactively("groupField")
+            };
+
+            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
+            // while all rows should be shown. Hence we only add them if they have a non-empty value.
+            if (this.getReactively("filters.procurement_classification_1"))
+                filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+            if (this.getReactively("filters.sercop_service"))
+                filters.sercop_service = this.getReactively("filters.sercop_service");
+            if (this.getReactively("filters.client"))
+                filters.client_id = this.getReactively("filters.client.client_id");
+
+            let temp = this.getReactively("filters.period");
+            return ClientSpendingGrouped.find(filters);
         };
 
         $scope.helpers({
@@ -106,22 +130,17 @@ class SpendingGroupedChart {
             spendingGrouped: () => {
                 return this.spendingGrouped();
             },
-            // clientSpendingPerTime: function () {
-            //     let buffer = ClientSpendingPerTime.find({});
-            //     console.log('========================');
-            //     console.log(buffer);
-            //     console.log('========================');
-            //     return buffer;
-            // },
             chartData: () => {
                 let dataSeries = [];
                 $scope.dataSource = [];
-                dataSeries.push({
-                    // name: 'Public spending through Demo Company',
-                    name: 'Demo Company',
-                    valueField: 'clientValue',
-                    color: '#543996'
-                });
+
+                if (this.getReactively("filters.client")) {
+                    dataSeries.push({
+                        name: this.getReactively("filters.client.name"),
+                        valueField: 'clientValue',
+                        color: '#543996'
+                    });
+                }
 
                 dataSeries.push({
                     valueField: "publicValue",
@@ -129,6 +148,7 @@ class SpendingGroupedChart {
                     showInLegend: false
                 });
 
+                // Add gray transparent block behind label text to improve readability
                 dataSeries.push({
                     valueField: 'zero',
                     type: 'scatter',
@@ -143,7 +163,7 @@ class SpendingGroupedChart {
                             color: 'gray'
                         },
                         backgroundColor: "rgba(224, 224, 224, 0.6)",
-                        customizeText: function(e) {
+                        customizeText: function (e) {
                             return e.argumentText;
                         }
                     }
@@ -162,20 +182,19 @@ class SpendingGroupedChart {
                     });
                 });
 
-                // this.spendingGrouped().forEach((clientData) => {
-                //     let tempObj = {
-                //         organisationAndGroup: clientData._group,
-                //         clientValue: clientData.totalAmount * 0.7,
-                //     };
-                //     // tempObj[clientData.organisation_name + '_clientData'] = clientData.totalAmount * 0.7;
-                //     dataSource.push(tempObj);
-                // });
-
                 this.spendingGrouped().forEach((spendThisGroup) => {
+                    let clientValue;
+                    this.clientSpendingGrouped().forEach((clientData) => {
+                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
+                            && spendThisGroup._group == clientData._group) {
+                            clientValue = clientData.totalAmount;
+                        }
+                    });
+
                     let tempObj = {
                         organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
                         publicValue: spendThisGroup.totalAmount,
-                        clientValue: spendThisGroup.totalAmount * 0.7,
+                        clientValue: clientValue,
                         organisationName: spendThisGroup.organisation_name
                     };
                     $scope.dataSource.push(tempObj);
@@ -185,7 +204,7 @@ class SpendingGroupedChart {
                     return a.publicValue - b.publicValue;
                 });
 
-                let numBars = $scope.dataSource.length * dataSeries.length;                
+                let numBars = $scope.dataSource.length * dataSeries.length;
 
                 if (numBars > 10) {
                     $scope.chartSize = {
@@ -265,7 +284,7 @@ class SpendingGroupedChart {
             }
         });
 
-        function resizeChart () {
+        function resizeChart() {
             // A page resize has been requested by another component. The chart object
             // needs to re-render to properly size.
             // $element is the DOM element for the controller. The dx-chart is nested in it.
