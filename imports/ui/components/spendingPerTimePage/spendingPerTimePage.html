@@ -12,11 +12,15 @@
                                 <label for="selectedOrganisation">Organisation</label>
                                 <!--<div ng-dropdown-multiselect="" options="spendingOrganisations" selected-model="selectedOrganisation" 
                                     extra-settings="organisationSettings" events="organisationEventSetting"></div>-->
-                                    <select name="organisation" multiple chosen ng-model="selectedOrganisations"
+                                    <!--<select name="organisation" multiple chosen ng-model="selectedOrganisations"
                                             placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()" 
                                             ng-options="t.name group by t.group.name for t in organisations">
-                                    <option value=""></option>
-                                </select>
+                                        <option value=""></option>
+                                    </select>-->
+                                    <select name="organisation" multiple chosen ng-model="selectedOrganisations"
+                                            placeholder-text-multiple="'Select organisations'">
+                                        <option value=""></option>
+                                    </select>
                             </div>
                         </div>
                         <div class="col-md-4 pull-right">
