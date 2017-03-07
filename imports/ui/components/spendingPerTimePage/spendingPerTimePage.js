@@ -156,7 +156,8 @@ class SpendingPerTimePage {
                     });
 
                     $scope.selectedOrganisation = [{
-                        id: organisation._id
+                        id: organisation._id,
+                        label: organisation.organisation_name
                     }];
                 });
                 $scope.organisationCount = organisationsBuffer.length;
@@ -357,7 +358,7 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         // TODO: remove this hardcoded default option, just use the first item in the list
-        // $scope.selectedOrganisation = "Wakefield MDC";
+        $scope.selectedOrganisation = "Wakefield MDC";
 
         function filterPeriod(period) {
             let selectedYear;

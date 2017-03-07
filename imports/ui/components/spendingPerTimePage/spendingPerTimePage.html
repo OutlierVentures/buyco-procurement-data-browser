@@ -17,10 +17,10 @@
                                             ng-options="t.name group by t.group.name for t in organisations">
                                         <option value=""></option>
                                     </select>-->
-                                    <select name="organisation" multiple chosen ng-model="selectedOrganisations"
-                                            placeholder-text-multiple="'Select organisations'">
-                                        <option value=""></option>
-                                    </select>
+                                <select class="form-control" name="organisation" multiple chosen ng-model="selectedOrganisation"
+                                        placeholder-text-multiple="'Select organisations'" ng-options="t.label for t in spendingOrganisations">
+                                    <option value=""></option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-4 pull-right">
