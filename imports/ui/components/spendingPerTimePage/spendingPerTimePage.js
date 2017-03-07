@@ -100,27 +100,29 @@ class SpendingPerTimePage {
             mergedSpendingPerTime: function () {
                 // Prepare a joined collection with the percentage of client trade.
                 // TODO: this is business logic, move it to an API function.
-                var ps = SpendingPerTime.find({});
-                var cs = ClientSpendingPerTime.find({});
+                let ps = SpendingPerTime.find({});
+                let cs = ClientSpendingPerTime.find({});
 
-                var totalValues = {
+                let totalValues = {
                     total: 0,
                     client_amount_net: 0,
                     client_amount_net_percent: 0
                 };
 
-                var merged = [];
+                let merged = [];
+                let mergedTable = [];
+
                 ps.forEach((spendThisPeriod) => {
-                    let mergedItem = spendThisPeriod;
+                    let mergedItem = JSON.parse(JSON.stringify(spendThisPeriod));
                     totalValues.total += mergedItem.totalAmount;
                     merged.push(mergedItem);
-
                     cs.forEach((clientSpendThisPeriod) => {
-                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year
+                        if (clientSpendThisPeriod._group.year == spendThisPeriod._group.year 
+                            && clientSpendThisPeriod._group.organisation_name == spendThisPeriod._group.organisation_name
                             && clientSpendThisPeriod._group[$scope.period] == spendThisPeriod._group[$scope.period]) {
 
-                            mergedItem.client_amount_net = clientSpendThisPeriod.totalAmount;
-                            mergedItem.client_amount_net_percent = clientSpendThisPeriod.totalAmount / spendThisPeriod.totalAmount * 100;
+                            mergedItem.client_amount_net = JSON.parse(JSON.stringify(clientSpendThisPeriod.totalAmount));
+                            mergedItem.client_amount_net_percent = mergedItem.client_amount_net / spendThisPeriod.totalAmount * 100;
                             totalValues.client_amount_net += mergedItem.client_amount_net;
                         }
                     });
@@ -130,9 +132,40 @@ class SpendingPerTimePage {
                     totalValues.client_amount_net_percent = totalValues.client_amount_net / totalValues.total * 100;
                 }
 
+                if ( merged.length ) {
+                    let subTotal = JSON.parse(JSON.stringify(merged[0]));
+                    subTotal.totalAmount = 0;
+                    subTotal.client_amount_net = 0;
+
+                    merged.forEach(function (data, i) {
+                        if (subTotal._group.organisation_name == data._group.organisation_name) {
+                            subTotal.totalAmount += data.totalAmount;
+
+                            if (data.client_amount_net) 
+                                subTotal.client_amount_net += data.client_amount_net;
+
+                            subTotal.client_amount_net_percent = subTotal.client_amount_net / subTotal.totalAmount * 100;
+                            mergedTable.push(JSON.parse(JSON.stringify(data)));
+                        } else {
+                            subTotal._group.organisation_name = 'Total - ' + subTotal._group.organisation_name;
+                            subTotal._group.year = '';
+                            subTotal._group[$scope.period] = '';
+                            mergedTable.push(JSON.parse(JSON.stringify(subTotal)));
+
+                            subTotal = JSON.parse(JSON.stringify(data));
+                            mergedTable.push(JSON.parse(JSON.stringify(data)));
+                        }
+                    });
+
+                    subTotal._group.organisation_name = 'Total - ' + subTotal._group.organisation_name;
+                    subTotal._group.year = '';
+                    subTotal._group[$scope.period] = '';
+                    mergedTable.push(JSON.parse(JSON.stringify(subTotal)));
+                }
+
                 var mergedData = {
                     totalValues: totalValues,
-                    merged: merged
+                    merged: mergedTable
                 }
 
                 return mergedData;

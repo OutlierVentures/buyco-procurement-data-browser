@@ -91,7 +91,7 @@
                         <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
                             <td>{{ spendGroup._group.organisation_name }}</td>
                             <td>{{ spendGroup._group.year }}</td>
-                            <td><span ng-show="period=='quarter'">Q</span>{{spendGroup._group[period]}}</td>
+                            <td><span ng-show="period=='quarter' && spendGroup._group[period] != ''">Q</span>{{spendGroup._group[period]}}</td>
                             <td>£{{spendGroup.totalAmount | number: 2}} </td>
                             <td ng-show="selectedClient"><span ng-show="spendGroup.client_amount_net">£{{spendGroup.client_amount_net | number: 2}}</span></td>
                             <td ng-show="selectedClient">{{spendGroup.client_amount_net_percent | number: 1}}</td>
