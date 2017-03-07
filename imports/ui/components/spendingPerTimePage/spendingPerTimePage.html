@@ -89,7 +89,10 @@
                             <th ng-show="selectedClient">%</th>
                         </tr>
                         <tr ng-repeat="spendGroup in mergedSpendingPerTime.merged">
-                            <td>{{ spendGroup._group.organisation_name }}</td>
+                            <td>
+                                <span ng-hide="spendGroup.isSubTotal">{{ spendGroup._group.organisation_name }}</span>
+                                <span ng-show="spendGroup.isSubTotal"><strong>{{ spendGroup._group.organisation_name }}</strong></span>
+                            </td>
                             <td>{{ spendGroup._group.year }}</td>
                             <td><span ng-show="period=='quarter' && spendGroup._group[period] != ''">Q</span>{{spendGroup._group[period]}}</td>
                             <td>£{{spendGroup.totalAmount | number: 2}} </td>
