@@ -100,7 +100,8 @@ class SpendingPerTimePage {
             mergedSpendingPerTime: function () {
                 // Prepare a joined collection with the percentage of client trade.
                 // TODO: this is business logic, move it to an API function.
-                let ps = SpendingPerTime.find({});
+                // Sort the data by organisation name to ensure precondition for sub total comparison.
+                let ps = SpendingPerTime.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 } });
                 let cs = ClientSpendingPerTime.find({});
 
                 let totalValues = {
