@@ -379,7 +379,6 @@ class SpendingPerTimePage {
         // TODO: remove this hardcoded default option, just use the first item in the list
 
         $scope.checkSelection = function() {
-            console.log('checkSelection()');
             let prevTotalsItemSelected;
 
             if ($scope.previousSelection && $scope.previousSelection.length == 1 && $scope.previousSelection[0].id == "All organisations") {
