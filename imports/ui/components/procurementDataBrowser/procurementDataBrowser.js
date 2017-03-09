@@ -4,7 +4,10 @@ import uiRouter from 'angular-ui-router';
 import dx from '/node_modules/devextreme/dist/js/dx.viz.js';
 import bootstrapdaterangepicker from '/node_modules/bootstrap-daterangepicker/daterangepicker.js';
 import daterangepicker from '/node_modules/angular-daterangepicker/index.js';
-import 'angularjs-dropdown-multiselect';
+import '/node_modules/angular-chosen-localytics/dist/angular-chosen.js';
+import '/node_modules/angular-chosen-localytics/chosen-spinner.css';
+import '/node_modules/chosen-js/chosen.jquery.js';
+// import '/node_modules/chosen-js/chosen.css';
 
 import '/node_modules/bootstrap/dist/css/bootstrap.css';
 import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
@@ -29,8 +32,8 @@ export default angular.module(name, [
   Navigation,
   daterangepicker,
   'accounts.ui',
-  'dx',  
-  'angularjs-dropdown-multiselect'
+  'dx',
+  'localytics.directives'
 ]).component(name, {
   template,
   controllerAs: name,

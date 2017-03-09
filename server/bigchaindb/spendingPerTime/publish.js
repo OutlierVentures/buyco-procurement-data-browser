@@ -35,6 +35,7 @@ Meteor.publish(collectionName, function (filters, options) {
 
     let sortClause = {
         "$sort": {
+            "_id.organisation_name": 1,
             "_id.year": 1,
             ["_id." + period]: 1,
         }

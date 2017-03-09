@@ -24,18 +24,7 @@ class SpendingPerTimePage {
         'ngInject';
 
         $rootScope.$on('resizeRequested', function (e) {
-            // A page resize has been requested by another component. The chart object
-            // needs to re-render to properly size.
-
-            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            var chartComponent = $('#timeChart');
-            if (!chartComponent.data("dxChart"))
-                return;
-
-            // Re-render the chart. This will correctly resize for the new size of the surrounding
-            // div.
-            var timeChart = chartComponent.dxChart('instance');
-            timeChart.render();
+            resizeTimeChart();
         });
 
         $reactive(this).attach($scope);
@@ -49,6 +38,12 @@ class SpendingPerTimePage {
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
         $scope.selectedOrganisation = [];
+        let allOrgs = {
+            label: "All organisations",
+            id: 'All organisations'
+        };
+        $scope.realOrganisations = [];
+        $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
         $scope.organisationCount = 0;
         $scope.organisationSettings = {
@@ -197,17 +192,31 @@ class SpendingPerTimePage {
             },
             spendingOrganisations: function () {
                 var organisationsBuffer = [];
+                $scope.realOrganisations = [];
                 var organisations = SpendingOrganisations.find({});
+
+                organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
                     organisationsBuffer.push({
                         id: organisation._id,
                         label: organisation.organisation_name
                     });
 
-                    $scope.selectedOrganisation = [{
-                        id: organisation._id
-                    }];
+                    $scope.realOrganisations.push({
+                        id: organisation._id,
+                        label: organisation.organisation_name
+                    });
                 });
+
+                if ( organisationsBuffer.length ) {
+                    $scope.viewOrganisations[0] = organisationsBuffer[0];
+
+                    if ($scope.viewOrganisations[0].id == 'All organisations') {
+                        $scope.selectedOrganisation = $scope.realOrganisations;
+                    }
+                    $scope.previousSelection = $scope.viewOrganisations;
+                }
+
                 $scope.organisationCount = organisationsBuffer.length;
                 return organisationsBuffer;
             },
@@ -326,52 +335,53 @@ class SpendingPerTimePage {
 
                 let selectedArgument = 0;
 
-                const options =
-                    {
-                        dataSource: sourceValues,
-                        series: series,
-                        valueAxis: [{
-                            label: {
-                                format: "largeNumber"
-                            }
-                        }],
-                        legend: {
-                            verticalAlignment: "bottom",
-                            horizontalAlignment: "center"
-                        },
-                        onPointClick: function (e) {
-                            var target = e.target;
-                            if (!target.isSelected()) {
-                                target.select();
-                                selectedArgument = target.originalArgument;
-                                filterPeriod(selectedArgument);
-                            } else {
-                                target.clearSelection();
-                                filterPeriod(null);
-                            }
-                        },
-                        tooltip: {
-                            enabled: true,
-                            shared: true,
-                            format: {
-                                type: "largeNumber",
-                                precision: 1
-                            },
-                            customizeTooltip: function (arg) {
-                                let newValue = abbreviate_number(arg.value, 0);
-                                let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
-                                let tempItem = '';
-                                tempItem += items;
-                                $.each(items, function (index, item) {
-                                    items[index] = $("<b>")
-                                        .text(tempItem)
-                                        .css("color", color)
-                                        .prop("outerHTML");
-                                });
-                                return { text: items.join("\n") };
-                            }
+                const options = {
+                    dataSource: sourceValues,
+                    series: series,
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
                         }
-                    };
+                    }],
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    },
+                    onPointClick: function (e) {
+                        var target = e.target;
+                        if (!target.isSelected()) {
+                            target.select();
+                            selectedArgument = target.originalArgument;
+                            filterPeriod(selectedArgument);
+                        } else {
+                            target.clearSelection();
+                            filterPeriod(null);
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        shared: true,
+                        format: {
+                            type: "largeNumber",
+                            precision: 1
+                        },
+                        customizeTooltip: function (arg) {
+                            let newValue = abbreviate_number(arg.value, 0);
+                            let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
+                            let tempItem = '';
+                            tempItem += items;
+                            $.each(items, function (index, item) {
+                                items[index] = $("<b>")
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
+                            });
+                            return { text: items.join("\n") };
+                        }
+                    }
+                };
+
+                resizeTimeChart();
 
                 return options;
             },
@@ -406,7 +416,49 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         // TODO: remove this hardcoded default option, just use the first item in the list
-        // $scope.selectedOrganisation = "Wakefield MDC";
+
+        $scope.checkSelection = function() {
+            let prevTotalsItemSelected;
+
+            if ($scope.previousSelection && $scope.previousSelection.length == 1 && $scope.previousSelection[0].id == "All organisations") {
+                prevTotalsItemSelected = $scope.previousSelection[0];
+            }
+
+            let totalsItemSelected = null;
+            let nonTotalsItemSelected = null;
+
+            $scope.viewOrganisations.forEach(function(selectedItem) {
+                if (selectedItem == prevTotalsItemSelected)
+                    return false;
+
+                if (totalsItemSelected)
+                    return false;
+
+                if (selectedItem.id == "All organisations") {
+                    totalsItemSelected = selectedItem;
+                } else {
+                    nonTotalsItemSelected = selectedItem;
+                }
+            });
+
+            if (totalsItemSelected) {
+                $scope.viewOrganisations = [totalsItemSelected];
+            } else if (prevTotalsItemSelected && nonTotalsItemSelected && $scope.viewOrganisations.length == 2) {
+                $scope.viewOrganisations = [nonTotalsItemSelected]
+            }
+
+            $scope.previousSelection = $scope.viewOrganisations;
+
+            if ($scope.viewOrganisations.length) {
+                if ($scope.viewOrganisations[0].id == "All organisations") {
+                    $scope.selectedOrganisation = $scope.realOrganisations;
+                } else {
+                    $scope.selectedOrganisation = $scope.viewOrganisations;
+                }
+            } else {
+                $scope.selectedOrganisation = [];
+            }
+        }
 
         function filterPeriod(period) {
             let selectedYear;
@@ -440,6 +492,21 @@ class SpendingPerTimePage {
                 startDate: moment(new Date(startDate)),
                 endDate: moment(new Date(endDate))
             };
+        }
+
+        function resizeTimeChart() {
+            // A page resize has been requested by another component. The chart object
+            // needs to re-render to properly size.
+
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            var chartComponent = $('#timeChart');
+            if (!chartComponent.data("dxChart"))
+                return;
+
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timeChart = chartComponent.dxChart('instance');
+            timeChart.render();
         }
 
         function selectAllOrganisation() {
@@ -505,7 +572,7 @@ class SpendingPerTimePage {
             }
         });
 
-        let stringToColour = function (str) {
+        function stringToColour (str) {
             var hash = 0;
             for (var i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -520,9 +587,9 @@ class SpendingPerTimePage {
         /**
          * Return the color for an organisation series
          */
-        let getColor = (organisationName) => {
+        function getColor (organisationName) {
             return stringToColour(organisationName);
-        };
+        }
     }
 }
 

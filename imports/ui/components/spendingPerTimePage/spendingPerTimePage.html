@@ -9,9 +9,12 @@
                     <div class="row">
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
-                                <label for="selectedOrganisation">Organisation</label>
-                                <div ng-dropdown-multiselect="" options="spendingOrganisations" selected-model="selectedOrganisation" 
-                                    extra-settings="organisationSettings" events="organisationEventSetting"></div>
+                                <label for="viewOrganisations">Organisation</label>
+                                <select class="form-control" name="organisation" multiple chosen ng-model="viewOrganisations"
+                                        placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()" 
+                                        ng-options="t.label for t in spendingOrganisations">
+                                    <option value=""></option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-4 pull-right">
