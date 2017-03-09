@@ -24,18 +24,7 @@ class SpendingPerTimePage {
         'ngInject';
 
         $rootScope.$on('resizeRequested', function (e) {
-            // A page resize has been requested by another component. The chart object
-            // needs to re-render to properly size.
-
-            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            var chartComponent = $('#timeChart');
-            if (!chartComponent.data("dxChart"))
-                return;
-
-            // Re-render the chart. This will correctly resize for the new size of the surrounding
-            // div.
-            var timeChart = chartComponent.dxChart('instance');
-            timeChart.render();
+            resizeTimeChart();
         });
 
         $reactive(this).attach($scope);
@@ -297,52 +286,53 @@ class SpendingPerTimePage {
 
                 let selectedArgument = 0;
 
-                const options =
-                    {
-                        dataSource: sourceValues,
-                        series: series,
-                        valueAxis: [{
-                            label: {
-                                format: "largeNumber"
-                            }
-                        }],
-                        legend: {
-                            verticalAlignment: "bottom",
-                            horizontalAlignment: "center"
-                        },
-                        onPointClick: function (e) {
-                            var target = e.target;
-                            if (!target.isSelected()) {
-                                target.select();
-                                selectedArgument = target.originalArgument;
-                                filterPeriod(selectedArgument);
-                            } else {
-                                target.clearSelection();
-                                filterPeriod(null);
-                            }
-                        },
-                        tooltip: {
-                            enabled: true,
-                            shared: true,
-                            format: {
-                                type: "largeNumber",
-                                precision: 1
-                            },
-                            customizeTooltip: function (arg) {
-                                let newValue = abbreviate_number(arg.value, 0);
-                                let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
-                                let tempItem = '';
-                                tempItem += items;
-                                $.each(items, function (index, item) {
-                                    items[index] = $("<b>")
-                                        .text(tempItem)
-                                        .css("color", color)
-                                        .prop("outerHTML");
-                                });
-                                return { text: items.join("\n") };
-                            }
+                const options = {
+                    dataSource: sourceValues,
+                    series: series,
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
                         }
-                    };
+                    }],
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    },
+                    onPointClick: function (e) {
+                        var target = e.target;
+                        if (!target.isSelected()) {
+                            target.select();
+                            selectedArgument = target.originalArgument;
+                            filterPeriod(selectedArgument);
+                        } else {
+                            target.clearSelection();
+                            filterPeriod(null);
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        shared: true,
+                        format: {
+                            type: "largeNumber",
+                            precision: 1
+                        },
+                        customizeTooltip: function (arg) {
+                            let newValue = abbreviate_number(arg.value, 0);
+                            let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
+                            let tempItem = '';
+                            tempItem += items;
+                            $.each(items, function (index, item) {
+                                items[index] = $("<b>")
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
+                            });
+                            return { text: items.join("\n") };
+                        }
+                    }
+                };
+
+                resizeTimeChart();
 
                 return options;
             },
@@ -453,6 +443,21 @@ class SpendingPerTimePage {
                 startDate: moment(new Date(startDate)),
                 endDate: moment(new Date(endDate))
             };
+        }
+
+        function resizeTimeChart() {
+            // A page resize has been requested by another component. The chart object
+            // needs to re-render to properly size.
+
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            var chartComponent = $('#timeChart');
+            if (!chartComponent.data("dxChart"))
+                return;
+
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timeChart = chartComponent.dxChart('instance');
+            timeChart.render();
         }
 
         function selectAllOrganisation() {
