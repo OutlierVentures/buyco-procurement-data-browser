@@ -86,6 +86,7 @@ class SpendingPerTimePage {
         };
 
         $scope.filterName = '';
+        $scope.subfilter = ['hahaha'];
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -495,6 +496,10 @@ class SpendingPerTimePage {
             {
                 period: $scope.getReactively("period")
             }];
+        });
+
+        $scope.$watch('subfilter', function () {
+            console.log('time chart - subfilter = ', $scope.subfilter);
         });
 
         this.autorun(() => {

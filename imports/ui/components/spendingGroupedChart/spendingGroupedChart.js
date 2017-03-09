@@ -23,6 +23,7 @@ class SpendingGroupedChart {
         $scope.dataSource = [];
         $scope.organisation_names = [];
         $scope.fullScreenMode = false;
+        $scope.subfilter = [];
 
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
@@ -275,12 +276,40 @@ class SpendingGroupedChart {
                                 color: getColor(sourcePoint.organisationName)
                             };
                         }
-                    }
+                    },
+                    onPointClick: function (e) {
+                        var target = e.target;
+                        if (!target.isSelected()) {
+                            target.select();
+                            selectedArgument = target.originalArgument;
+                            let selectedService = getSelectedService(selectedArgument);
+                            console.log('selectedService1 = ', this.subfilter);
+                            // console.log('selectedService11 = ', $scope.subFilter);
+                            // $scope.subFilter.push(selectedService);
+                            console.log('selectedService2 = ', $scope.subFilter);
+                        } else {
+                            target.clearSelection();
+                            // filterPeriod(null);
+                            console.log('released grouped chart');
+                            let selectedService = getSelectedService(selectedArgument);
+                            console.log('selectedService = ', selectedService);
+                            removeSelectedService(selectedService);
+                        }
+                    },
                 };
                 return dataSeries;
             },
             filterPeriodName: () => {
                 return this.getReactively("filterName");
+            },
+            subFilter: () => {
+                console.log('grouped subfilter = ', this.subfilter);
+                // $scope.subfilter = this.subfilter;
+                // this.subfilter = 'hehehehehe';
+                // this.subfilter.push('blablabla');
+                // console.log('grouped subfilter1111 = ', this.subfilter);
+                // console.log('grouped subfilter2222 = ', $scope.subfilter);                
+                return this.getReactively('subfilter');
             }
         });
 
@@ -305,6 +334,23 @@ class SpendingGroupedChart {
                 resizeChart();
             }, 100);
         });
+
+        function getSelectedService(selectedArgument) {
+            index = selectedArgument.search('-');
+            selectedService = selectedArgument.substring(index + 2);
+            console.log('==================', selectedService);
+            return selectedService;
+        }
+
+        function removeSelectedService(selectedArgument) {
+            this.subfilter.forEach(function(filter, index) {
+                if(filter == selectedArgument) {
+                    this.subfilter.splice(index, 1);
+                    console.log('removeSelectedService = ', this.subfilter);
+                    return;
+                }
+            });
+        }
 
         let stringToColour = function (str) {
             var hash = 0;
@@ -349,6 +395,7 @@ export default angular.module(name, [
     template,
     controllerAs: name,
     bindings: {
+        subfilter: '=?',
         // Filters should contain field names to match as equal.
         filters: '<',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
