@@ -13,9 +13,9 @@ import { CHART_FONT } from '../../stylesheet/config';
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
         'ngInject';
-
         $reactive(this).attach($scope);
 
+        var self = this;
         $rootScope.$on('resizeRequested', function (e) {
             resizeChart();
         });
@@ -23,7 +23,7 @@ class SpendingGroupedChart {
         $scope.dataSource = [];
         $scope.organisation_names = [];
         $scope.fullScreenMode = false;
-        $scope.subfilter = [];
+        $scope.preSelectedService = '';
 
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
@@ -132,6 +132,7 @@ class SpendingGroupedChart {
                 return this.spendingGrouped();
             },
             chartData: () => {
+                markSelectedSubFilter();
                 let dataSeries = [];
                 $scope.dataSource = [];
 
@@ -279,21 +280,19 @@ class SpendingGroupedChart {
                     },
                     onPointClick: function (e) {
                         var target = e.target;
+                        console.log(target);
+                        console.log(target.isSelected());
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
                             let selectedService = getSelectedService(selectedArgument);
-                            console.log('selectedService1 = ', this.subfilter);
-                            // console.log('selectedService11 = ', $scope.subFilter);
-                            // $scope.subFilter.push(selectedService);
-                            console.log('selectedService2 = ', $scope.subFilter);
+                            self.subfilter = selectedService;
+                            console.log(self.subfilter);
                         } else {
                             target.clearSelection();
-                            // filterPeriod(null);
-                            console.log('released grouped chart');
                             let selectedService = getSelectedService(selectedArgument);
-                            console.log('selectedService = ', selectedService);
-                            removeSelectedService(selectedService);
+                            self.subfilter = '';
+                            $scope.preSelectedService = '';
                         }
                     },
                 };
@@ -301,32 +300,35 @@ class SpendingGroupedChart {
             },
             filterPeriodName: () => {
                 return this.getReactively("filterName");
-            },
-            subFilter: () => {
-                console.log('grouped subfilter = ', this.subfilter);
-                // $scope.subfilter = this.subfilter;
-                // this.subfilter = 'hehehehehe';
-                // this.subfilter.push('blablabla');
-                // console.log('grouped subfilter1111 = ', this.subfilter);
-                // console.log('grouped subfilter2222 = ', $scope.subfilter);                
-                return this.getReactively('subfilter');
             }
         });
 
-        function resizeChart() {
-            // A page resize has been requested by another component. The chart object
-            // needs to re-render to properly size.
-            // $element is the DOM element for the controller. The dx-chart is nested in it.
+        function getChartHandle() {
             var chartDiv = angular.element($element).find("#chart");
-
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
             if (!chartDiv.data("dxChart"))
                 return;
-
             // Re-render the chart. This will correctly resize for the new size of the surrounding
             // div.
-            var timeChart = chartDiv.dxChart('instance');
-            timeChart.render();
+            var timechart = chartDiv.dxChart('instance');
+            return timechart;
+        }
+
+        function markSelectedSubFilter() {
+            var chartHandle = getChartHandle();
+            if(chartHandle) {
+                let series = chartHandle.getSeriesByPos(1);
+                if(series && series.getPointByPos(0))
+                {
+                    console.log('Hahahaha = ', series.getPointByPos(0));
+                    series.selectPoint(series.getPointByPos(0));
+                }
+            }
+        }
+
+        function resizeChart() {
+            var chartHandle = getChartHandle();
+            chartHandle.render();
         }
 
         $scope.$watch('fullScreenMode', function () {
@@ -338,18 +340,26 @@ class SpendingGroupedChart {
         function getSelectedService(selectedArgument) {
             index = selectedArgument.search('-');
             selectedService = selectedArgument.substring(index + 2);
-            console.log('==================', selectedService);
             return selectedService;
         }
 
         function removeSelectedService(selectedArgument) {
-            this.subfilter.forEach(function(filter, index) {
+            self.subfilter.forEach(function(filter, index) {
                 if(filter == selectedArgument) {
-                    this.subfilter.splice(index, 1);
-                    console.log('removeSelectedService = ', this.subfilter);
-                    return;
+                    self.subfilter.splice(index, 1);
                 }
             });
+        }
+
+        function addSelectedService(selectedService) {
+            let isExist = false;
+            self.subfilter.forEach(function(filter, index) {
+                if(filter == $scope.preSelectedService) {
+                    self.subfilter.splice(index, 1);
+                }
+            });
+            self.subfilter.push(selectedService);
+            $scope.preSelectedService = selectedService;
         }
 
         let stringToColour = function (str) {
@@ -383,6 +393,10 @@ class SpendingGroupedChart {
             return e;
         }
     }
+
+    $onInit = () => {
+        // console.log('subfilter = ', this.subfilter);
+    }
 }
 
 const name = 'spendingGrouped';
@@ -395,9 +409,9 @@ export default angular.module(name, [
     template,
     controllerAs: name,
     bindings: {
-        subfilter: '=?',
+        subfilter: '=',
         // Filters should contain field names to match as equal.
-        filters: '<',
+        filters: '=',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
         groupField: '<',
         filterDate: '<',

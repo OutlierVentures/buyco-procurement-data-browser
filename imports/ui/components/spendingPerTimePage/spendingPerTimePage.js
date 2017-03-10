@@ -20,7 +20,7 @@ import { CHART_FONT } from '../../stylesheet/config';
 import template from './spendingPerTimePage.html';
 
 class SpendingPerTimePage {
-    constructor($scope, $reactive, $rootScope) {
+    constructor($scope, $reactive, $rootScope, $interval) {
         'ngInject';
 
         $rootScope.$on('resizeRequested', function (e) {
@@ -86,7 +86,6 @@ class SpendingPerTimePage {
         };
 
         $scope.filterName = '';
-        $scope.subfilter = ['hahaha'];
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -405,6 +404,7 @@ class SpendingPerTimePage {
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
+        $scope.preCategory = '';
 
         // TODO: remove this hardcoded default option, just use the first item in the list
         // $scope.selectedOrganisation = "Wakefield MDC";
@@ -498,10 +498,6 @@ class SpendingPerTimePage {
             }];
         });
 
-        $scope.$watch('subfilter', function () {
-            console.log('time chart - subfilter = ', $scope.subfilter);
-        });
-
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
@@ -528,6 +524,17 @@ class SpendingPerTimePage {
         let getColor = (organisationName) => {
             return stringToColour(organisationName);
         };
+
+        function addSelectedCategory(selectedCategory) {
+
+            $scope.subfilter.forEach(function(filter, index) {
+                if(filter == $scope.preCategory) {
+                    $scope.subfilter.splice(index, 1);
+                }
+            });
+            $scope.subfilter.push(selectedCategory);
+            $scope.preCategory = selectedCategory;
+        }
     }
 }
 
