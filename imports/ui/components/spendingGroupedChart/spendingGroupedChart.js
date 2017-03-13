@@ -23,7 +23,6 @@ class SpendingGroupedChart {
         $scope.dataSource = [];
         $scope.organisation_names = [];
         $scope.fullScreenMode = false;
-        $scope.preSelectedService = '';
 
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
@@ -132,7 +131,6 @@ class SpendingGroupedChart {
                 return this.spendingGrouped();
             },
             chartData: () => {
-                markSelectedSubFilter();
                 let dataSeries = [];
                 $scope.dataSource = [];
 
@@ -280,26 +278,36 @@ class SpendingGroupedChart {
                     },
                     onPointClick: function (e) {
                         var target = e.target;
-                        console.log(target);
-                        console.log(target.isSelected());
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
                             let selectedService = getSelectedService(selectedArgument);
                             self.subfilter = selectedService;
-                            console.log(self.subfilter);
                         } else {
                             target.clearSelection();
                             let selectedService = getSelectedService(selectedArgument);
                             self.subfilter = '';
-                            $scope.preSelectedService = '';
                         }
                     },
                 };
+                markSelectedSubFilter();
                 return dataSeries;
             },
             filterPeriodName: () => {
-                return this.getReactively("filterName");
+                let filterName = this.getReactively("filterName");
+                if (filterName)
+                    filterName = 'Filter: ' + filterName + ', ';
+                else
+                    filterName = '';
+
+                let category = this.getReactively("filters.procurement_classification_1");
+                if (category)
+                    filterName += 'Category: ' + category + ', ';
+
+                let service = this.getReactively("filters.sercop_service");
+                if (service)
+                    filterName += 'Service: ' + service;
+                return filterName;
             }
         });
 
@@ -315,15 +323,21 @@ class SpendingGroupedChart {
         }
 
         function markSelectedSubFilter() {
-            var chartHandle = getChartHandle();
-            if(chartHandle) {
-                let series = chartHandle.getSeriesByPos(1);
-                if(series && series.getPointByPos(0))
-                {
-                    console.log('Hahahaha = ', series.getPointByPos(0));
-                    series.selectPoint(series.getPointByPos(0));
+            setTimeout(function () {
+                var chartHandle = getChartHandle();
+                if(chartHandle) {
+                    let series = chartHandle.getSeriesByPos(1);
+                    if(series && series.getAllPoints().length) {
+                        let allPoints = series.getAllPoints();
+                        allPoints.forEach((point) => {
+                            let serviceName = point.initialArgument;
+                            if (getSelectedService(serviceName) == self.subfilter) {
+                                series.selectPoint(point);
+                            }
+                        });
+                    }
                 }
-            }
+            }, 800);
         }
 
         function resizeChart() {
@@ -349,17 +363,6 @@ class SpendingGroupedChart {
                     self.subfilter.splice(index, 1);
                 }
             });
-        }
-
-        function addSelectedService(selectedService) {
-            let isExist = false;
-            self.subfilter.forEach(function(filter, index) {
-                if(filter == $scope.preSelectedService) {
-                    self.subfilter.splice(index, 1);
-                }
-            });
-            self.subfilter.push(selectedService);
-            $scope.preSelectedService = selectedService;
         }
 
         let stringToColour = function (str) {

@@ -380,7 +380,7 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
-                $scope.filterName = '';
+                // $scope.filterName = '';
                 $scope.selectedPeriod = '';
                 return {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
@@ -404,7 +404,6 @@ class SpendingPerTimePage {
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
-        $scope.preCategory = '';
 
         // TODO: remove this hardcoded default option, just use the first item in the list
         // $scope.selectedOrganisation = "Wakefield MDC";
@@ -469,7 +468,7 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
-            $scope.filterName = '';
+            // $scope.filterName = '';
             return [{
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
@@ -485,7 +484,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
-            $scope.filterName = '';
+            // $scope.filterName = '';
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
@@ -501,7 +500,7 @@ class SpendingPerTimePage {
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
-                $scope.filterName = '';
+                // $scope.filterName = '';
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
@@ -524,17 +523,6 @@ class SpendingPerTimePage {
         let getColor = (organisationName) => {
             return stringToColour(organisationName);
         };
-
-        function addSelectedCategory(selectedCategory) {
-
-            $scope.subfilter.forEach(function(filter, index) {
-                if(filter == $scope.preCategory) {
-                    $scope.subfilter.splice(index, 1);
-                }
-            });
-            $scope.subfilter.push(selectedCategory);
-            $scope.preCategory = selectedCategory;
-        }
     }
 }
 
