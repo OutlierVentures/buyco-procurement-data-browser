@@ -31,7 +31,8 @@ class SpendingGroupedChart {
             let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                sercop_service: this.getReactively("filters.sercop_service")
+                sercop_service: this.getReactively("filters.sercop_service"),
+                supplier_name: this.getReactively("filters.supplier_name")
             };
 
             if (this.getReactively('filterDate')) {
@@ -53,6 +54,7 @@ class SpendingGroupedChart {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
                 sercop_service: this.getReactively("filters.sercop_service"),
+                supplier_name: this.getReactively("filters.supplier_name"),
                 client_id: this.getReactively("filters.client.client_id")
             };
 
@@ -95,7 +97,8 @@ class SpendingGroupedChart {
                 filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             if (this.getReactively("filters.sercop_service"))
                 filters.sercop_service = this.getReactively("filters.sercop_service");
-
+            if (this.getReactively("filters.sercop_service"))
+                filters.supplier_name = this.getReactively("filters.supplier_name");
             let temp = this.getReactively("filters.period");
 
             return SpendingGrouped.find(filters);
@@ -115,8 +118,10 @@ class SpendingGroupedChart {
                 filters.sercop_service = this.getReactively("filters.sercop_service");
             if (this.getReactively("filters.client"))
                 filters.client_id = this.getReactively("filters.client.client_id");
+            if (this.getReactively("filters.supplier_name"))
+                filters.supplier_name = this.getReactively("filters.supplier_name");
 
-            let temp = this.getReactively("filters.period");
+            this.getReactively("filters.period");
             return ClientSpendingGrouped.find(filters);
         };
 
@@ -306,7 +311,13 @@ class SpendingGroupedChart {
 
                 let service = this.getReactively("filters.sercop_service");
                 if (service)
-                    filterName += 'Service: ' + service;
+                    filterName += 'Service: ' + service + ', ';
+
+                let supplier = this.getReactively("filters.supplier_name");
+                if (supplier)
+                    filterName += 'Supplier: ' + supplier + ', ';
+
+                filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
             }
         });
@@ -397,9 +408,7 @@ class SpendingGroupedChart {
         }
     }
 
-    $onInit = () => {
-        // console.log('subfilter = ', this.subfilter);
-    }
+    $onInit = () => {}
 }
 
 const name = 'spendingGrouped';
