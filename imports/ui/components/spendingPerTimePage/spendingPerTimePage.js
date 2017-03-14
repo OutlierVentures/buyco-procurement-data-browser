@@ -20,22 +20,11 @@ import { CHART_FONT } from '../../stylesheet/config';
 import template from './spendingPerTimePage.html';
 
 class SpendingPerTimePage {
-    constructor($scope, $reactive, $rootScope, $interval) {
+    constructor($scope, $reactive, $rootScope, $element) {
         'ngInject';
 
         $rootScope.$on('resizeRequested', function (e) {
-            // A page resize has been requested by another component. The chart object
-            // needs to re-render to properly size.
-
-            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            var chartComponent = $('#timeChart');
-            if (!chartComponent.data("dxChart"))
-                return;
-
-            // Re-render the chart. This will correctly resize for the new size of the surrounding
-            // div.
-            var timeChart = chartComponent.dxChart('instance');
-            timeChart.render();
+            resizeChart();
         });
 
         $reactive(this).attach($scope);
@@ -86,6 +75,10 @@ class SpendingPerTimePage {
         };
 
         $scope.filterName = '';
+        $scope.selectedPoint = {
+            seriesName: '',
+            pointName: ''
+        };
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -321,57 +314,60 @@ class SpendingPerTimePage {
                             color: '#543996'
                         })
                     }
-
                 });
 
                 let selectedArgument = 0;
 
-                const options =
-                    {
-                        dataSource: sourceValues,
-                        series: series,
-                        valueAxis: [{
-                            label: {
-                                format: "largeNumber"
-                            }
-                        }],
-                        legend: {
-                            verticalAlignment: "bottom",
-                            horizontalAlignment: "center"
-                        },
-                        onPointClick: function (e) {
-                            var target = e.target;
-                            if (!target.isSelected()) {
-                                target.select();
-                                selectedArgument = target.originalArgument;
-                                filterPeriod(selectedArgument);
-                            } else {
-                                target.clearSelection();
-                                filterPeriod(null);
-                            }
-                        },
-                        tooltip: {
-                            enabled: true,
-                            shared: true,
-                            format: {
-                                type: "largeNumber",
-                                precision: 1
-                            },
-                            customizeTooltip: function (arg) {
-                                let newValue = abbreviate_number(arg.value, 0);
-                                let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
-                                let tempItem = '';
-                                tempItem += items;
-                                $.each(items, function (index, item) {
-                                    items[index] = $("<b>")
-                                        .text(tempItem)
-                                        .css("color", color)
-                                        .prop("outerHTML");
-                                });
-                                return { text: items.join("\n") };
-                            }
+                const options = {
+                    dataSource: sourceValues,
+                    series: series,
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
                         }
-                    };
+                    }],
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    },
+                    onPointClick: function (e) {
+                        var target = e.target;
+                        if (!target.isSelected()) {
+                            target.select();
+                            selectedArgument = target.originalArgument;
+                            $scope.selectedPoint.seriesName = target.series.name;
+                            $scope.selectedPoint.pointName = selectedArgument;
+                            filterPeriod(selectedArgument);
+                        } else {
+                            target.clearSelection();
+                            $scope.selectedPoint.seriesName = '';
+                            $scope.selectedPoint.pointName = '';
+                            filterPeriod(null);
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        shared: true,
+                        format: {
+                            type: "largeNumber",
+                            precision: 1
+                        },
+                        customizeTooltip: function (arg) {
+                            let newValue = abbreviate_number(arg.value, 0);
+                            let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
+                            let tempItem = '';
+                            tempItem += items;
+                            $.each(items, function (index, item) {
+                                items[index] = $("<b>")
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
+                            });
+                            return { text: items.join("\n") };
+                        }
+                    }
+                };
+                markSelectedPoint();
 
                 return options;
             },
@@ -405,8 +401,39 @@ class SpendingPerTimePage {
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
 
-        // TODO: remove this hardcoded default option, just use the first item in the list
-        // $scope.selectedOrganisation = "Wakefield MDC";
+        function getChartHandle() {
+            var chartDiv = angular.element($element).find("#timeChart");
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            if (!chartDiv.data("dxChart"))
+                return;
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timechart = chartDiv.dxChart('instance');
+            return timechart;
+        }
+
+        function resizeChart() {
+            var chartHandle = getChartHandle();
+            chartHandle.render();
+        }
+
+        function markSelectedPoint() {
+            setTimeout(function () {
+                var chartHandle = getChartHandle();
+                if(chartHandle) {
+                    let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
+                    if(series && series.getAllPoints().length) {
+                        let allPoints = series.getAllPoints();
+                        allPoints.forEach((point) => {
+                            let serviceName = point.initialArgument;
+                            if (serviceName == $scope.selectedPoint.pointName) {
+                                series.selectPoint(point);
+                            }
+                        });
+                    }
+                }
+            }, 800);
+        }
 
         function filterPeriod(period) {
             let selectedYear;
