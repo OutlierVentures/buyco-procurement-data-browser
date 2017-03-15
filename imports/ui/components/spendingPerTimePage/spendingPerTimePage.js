@@ -20,7 +20,7 @@ import { CHART_FONT } from '../../stylesheet/config';
 import template from './spendingPerTimePage.html';
 
 class SpendingPerTimePage {
-    constructor($scope, $reactive, $rootScope) {
+    constructor($scope, $reactive, $rootScope, $element) {
         'ngInject';
 
         $rootScope.$on('resizeRequested', function (e) {
@@ -81,6 +81,10 @@ class SpendingPerTimePage {
         };
 
         $scope.filterName = '';
+        $scope.selectedPoint = {
+            seriesName: '',
+            pointName: ''
+        };
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -330,7 +334,6 @@ class SpendingPerTimePage {
                             color: '#543996'
                         })
                     }
-
                 });
 
                 let selectedArgument = 0;
@@ -352,9 +355,13 @@ class SpendingPerTimePage {
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
+                            $scope.selectedPoint.seriesName = target.series.name;
+                            $scope.selectedPoint.pointName = selectedArgument;
                             filterPeriod(selectedArgument);
                         } else {
                             target.clearSelection();
+                            $scope.selectedPoint.seriesName = '';
+                            $scope.selectedPoint.pointName = '';
                             filterPeriod(null);
                         }
                     },
@@ -380,6 +387,7 @@ class SpendingPerTimePage {
                         }
                     }
                 };
+                markSelectedPoint();
 
                 resizeTimeChart();
 
@@ -390,14 +398,14 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
-                $scope.filterName = '';
                 $scope.selectedPeriod = '';
                 return {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
                     sercop_service: $scope.getReactively("service"),
                     period: $scope.getReactively("period"),
-                    client: $scope.getReactively("selectedClient")
+                    client: $scope.getReactively("selectedClient"),
+                    supplier_name: $scope.getReactively('supplier_name')
                 };
             },
             filterSelectedOrganisation: function () {
@@ -415,6 +423,35 @@ class SpendingPerTimePage {
         $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
 
+        function getChartHandle() {
+            var chartDiv = angular.element($element).find("#timeChart");
+            // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
+            if (!chartDiv.data("dxChart"))
+                return;
+            // Re-render the chart. This will correctly resize for the new size of the surrounding
+            // div.
+            var timechart = chartDiv.dxChart('instance');
+            return timechart;
+        }
+
+        function markSelectedPoint() {
+            setTimeout(function () {
+                var chartHandle = getChartHandle();
+                if(chartHandle) {
+                    let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
+                    if(series && series.getAllPoints().length) {
+                        let allPoints = series.getAllPoints();
+                        allPoints.forEach((point) => {
+                            let serviceName = point.initialArgument;
+                            if (serviceName == $scope.selectedPoint.pointName) {
+                                series.selectPoint(point);
+                            }
+                        });
+                    }
+                }
+            }, 800);
+        }
+        
         // TODO: remove this hardcoded default option, just use the first item in the list
 
         $scope.checkSelection = function() {
@@ -535,11 +572,11 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
-            $scope.filterName = '';
             return [{
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
+                supplier_name: $scope.getReactively('supplier_name'),
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
@@ -551,12 +588,12 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
-            $scope.filterName = '';
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
+                supplier_name: $scope.getReactively('supplier_name'),
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
@@ -567,7 +604,6 @@ class SpendingPerTimePage {
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
-                $scope.filterName = '';
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
