@@ -29,25 +29,10 @@ class SpendingGroupedChart {
         // on the server: if groupField is empty, no data will be returned.
         $scope.subscribe('spendingGrouped', () => {
             let filterOptions = {
-                organisation_name: this.getReactively("filters.organisation_name"),
-                // procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                // sercop_service: this.getReactively("filters.sercop_service"),
-                // supplier_name: this.getReactively("filters.supplier_name")
+                organisation_name: this.getReactively("filters.organisation_name")
             };
 
-            console.log(this.groupDisplayName);
-
-            // if (this.groupDisplayName != 'category') {
-            //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // }
-
-            // if (this.groupDisplayName != 'service') {
-            //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-            // }
-
-            // if (this.groupDisplayName != 'supplier') {
-            //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-            // }
+            // console.log(this.groupDisplayName);
             switch(this.groupDisplayName) {
                 case 'category':
                     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
@@ -74,7 +59,6 @@ class SpendingGroupedChart {
             if (this.getReactively('selDate')) {
                 filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
             }
-
             return [
                 filterOptions,
                 {
@@ -84,23 +68,9 @@ class SpendingGroupedChart {
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
-                // procurement_classification_1: this.getReactively("filters.procurement_classification_1"),
-                sercop_service: this.getReactively("filters.sercop_service"),
-                supplier_name: this.getReactively("filters.supplier_name"),
                 client_id: this.getReactively("filters.client.client_id")
             };
 
-            // if (this.groupDisplayName != 'category') {
-            //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // }
-
-            // if (this.groupDisplayName != 'service') {
-            //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-            // }
-
-            // if (this.groupDisplayName != 'supplier') {
-            //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-            // }
             switch(this.groupDisplayName) {
                 case 'category':
                     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
@@ -153,21 +123,29 @@ class SpendingGroupedChart {
                 $scope.organisation_names = filters.organisation_name.$in;
             }
 
-            // if (this.groupDisplayName != 'category') {
-            //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // }
-
-            // if (this.groupDisplayName != 'service') {
-            //     filters.sercop_service = this.getReactively("filters.sercop_service");
-            // }
-
-            // if (this.groupDisplayName != 'supplier') {
-            //     filters.supplier_name = this.getReactively("filters.supplier_name");
-            // }
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
 
-            switch(this.groupDisplayName) {
+            // switch(this.groupDisplayName) {
+            //     case 'category':
+            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
+            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
+            //         break;
+            //     case 'service':
+            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
+            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
+            //         break;
+            //     case 'supplier':
+            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
+            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
+            //         break;
+            //     default:
+            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
+            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
+            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
+            // }
+
+                        switch(this.groupDisplayName) {
                 case 'category':
                     filters.sercop_service = this.getReactively("filters.sercop_service");
                     filters.supplier_name = this.getReactively("filters.supplier_name");
@@ -186,12 +164,6 @@ class SpendingGroupedChart {
                     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             }
 
-            // if (this.getReactively("filters.procurement_classification_1"))
-            //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // if (this.getReactively("filters.sercop_service"))
-            //     filters.sercop_service = this.getReactively("filters.sercop_service");
-            // if (this.getReactively("filters.sercop_service"))
-            //     filters.supplier_name = this.getReactively("filters.supplier_name");
             let temp = this.getReactively("filters.period");
 
             return SpendingGrouped.find(filters);
@@ -205,26 +177,9 @@ class SpendingGroupedChart {
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
-            // if (this.getReactively("filters.procurement_classification_1"))
-            //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // if (this.getReactively("filters.sercop_service"))
-            //     filters.sercop_service = this.getReactively("filters.sercop_service");
             if (this.getReactively("filters.client"))
                 filters.client_id = this.getReactively("filters.client.client_id");
-            // if (this.getReactively("filters.supplier_name"))
-            //     filters.supplier_name = this.getReactively("filters.supplier_name");
 
-            // if (this.groupDisplayName != 'category') {
-            //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            // }
-
-            // if (this.groupDisplayName != 'service') {
-            //     filters.sercop_service = this.getReactively("filters.sercop_service");
-            // }
-
-            // if (this.groupDisplayName != 'supplier') {
-            //     filters.supplier_name = this.getReactively("filters.supplier_name");
-            // }
             switch(this.groupDisplayName) {
                 case 'category':
                     filters.sercop_service = this.getReactively("filters.sercop_service");
@@ -415,7 +370,7 @@ class SpendingGroupedChart {
                         } else {
                             target.clearSelection();
                             let selectedService = getSelectedService(selectedArgument);
-                            self.subfilter = '';
+                            self.subfilter = null;
                         }
                     },
                 };
