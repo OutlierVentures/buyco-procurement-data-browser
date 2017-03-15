@@ -450,6 +450,8 @@ class SpendingPerTimePage {
                     }
                 }
             }, 800);
+        }
+        
         // TODO: remove this hardcoded default option, just use the first item in the list
 
         $scope.checkSelection = function() {
