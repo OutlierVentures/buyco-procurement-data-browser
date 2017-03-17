@@ -42,6 +42,7 @@ class SpendingPerTimePage {
             label: "All organisations",
             id: 'All organisations'
         };
+        let isAllClient = true;
         $scope.realOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
@@ -270,6 +271,7 @@ class SpendingPerTimePage {
                 //      "clientValue_Some Council": 1234,
                 //      "clientValue_Another Council": 4321
                 // }
+
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -286,7 +288,13 @@ class SpendingPerTimePage {
                     }
 
                     let amount = spendThisPeriod.totalAmount;
-                    dataPoint[spendThisPeriod._group.organisation_name] = amount;
+                    let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
+                    if(dataPoint[dataPointGroup]) {
+                        dataPoint[dataPointGroup] += amount;
+                    } else {
+                        dataPoint[dataPointGroup] = amount;
+                    }
+                    // dataPoint[spendThisPeriod._group.organisation_name] = amount;
 
                     let clientVal = _(clientSpendingPerTime).find((v) => {
                         return v._group
@@ -296,8 +304,13 @@ class SpendingPerTimePage {
                     });
 
                     if (clientVal !== undefined) {
-                        let clientPointKey = "clientValue_" + spendThisPeriod._group.organisation_name;
-                        dataPoint[clientPointKey] = clientVal.totalAmount;
+                        let clientPointKey = "clientValue_" + (isAllClient ? "All" : spendThisPeriod._group.organisation_name);
+                        if(dataPoint[clientPointKey]) {
+                            dataPoint[clientPointKey] += clientVal.totalAmount;
+                        } else {
+                            dataPoint[clientPointKey] = clientVal.totalAmount;
+                        }
+                        // dataPoint[clientPointKey] = clientVal.totalAmount;
                     }
 
                     // Fill tabular data.
@@ -323,26 +336,47 @@ class SpendingPerTimePage {
 
                 // Create series for each selected organisation, and if client data is shown,
                 // another series for client data for each organisation.
-                _($scope.selectedOrganisation).each((org) => {
+                if (isAllClient) {
                     series.push({
                         argumentField: "xAxis",
-                        valueField: org.id,
-                        name: org.id,
+                        valueField: "All",
+                        name: "All",
                         type: "bar",
-                        color: getColor(org.id)
+                        color: getColor("All")
                     });
 
                     // Add client series if we have data for it
                     if (allowedClients.length > 0 && sc) {
                         series.push({
                             argumentField: "xAxis",
-                            valueField: "clientValue_" + org.id,
-                            name: sc.name + " - " + org.id,
+                            valueField: "clientValue_" + "All",
+                            name: sc.name + " - " + "All",
                             type: "bar",
                             color: '#543996'
                         })
                     }
-                });
+                } else {
+                    _($scope.selectedOrganisation).each((org) => {
+                        series.push({
+                            argumentField: "xAxis",
+                            valueField: org.id,
+                            name: org.id,
+                            type: "bar",
+                            color: getColor(org.id)
+                        });
+
+                        // Add client series if we have data for it
+                        if (allowedClients.length > 0 && sc) {
+                            series.push({
+                                argumentField: "xAxis",
+                                valueField: "clientValue_" + org.id,
+                                name: sc.name + " - " + org.id,
+                                type: "bar",
+                                color: '#543996'
+                            })
+                        }
+                    });
+                }
 
                 let selectedArgument = 0;
 
@@ -497,8 +531,10 @@ class SpendingPerTimePage {
             if ($scope.viewOrganisations.length) {
                 if ($scope.viewOrganisations[0].id == "All organisations") {
                     $scope.selectedOrganisation = $scope.realOrganisations;
+                    isAllClient = true;
                 } else {
                     $scope.selectedOrganisation = $scope.viewOrganisations;
+                    isAllClient = false;
                 }
             } else {
                 $scope.selectedOrganisation = [];
