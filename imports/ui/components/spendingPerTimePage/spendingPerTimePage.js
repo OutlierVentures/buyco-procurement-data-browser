@@ -115,6 +115,7 @@ class SpendingPerTimePage {
 
                 ps.forEach((spendThisPeriod) => {
                     let mergedItem = JSON.parse(JSON.stringify(spendThisPeriod));
+
                     totalValues.total += mergedItem.totalAmount;
                     merged.push(mergedItem);
                     cs.forEach((clientSpendThisPeriod) => {
@@ -179,20 +180,37 @@ class SpendingPerTimePage {
                     }
                 }
 
-                let mergedData = {};
-                if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == "All organisations") {
-                    mergedData = {
-                        totalValues: totalValues
-                    };
-                } else {
-                    mergedData = {
-                        totalValues: totalValues,
-                        merged: mergedTable
-                    };
+                // Sum values according to year and period if All Organisation
+                if (isAllClient) {
+                    if (mergedTable && mergedTable.length) {
+                        let allMergedTable = [];
+                        mergedTable.forEach((data) => {
+                            let isExist = false;
+                            allMergedTable.forEach((table) => {
+                               if (data._group.year == table._group.year && data._group[$scope.period] == table._group[$scope.period]) {
+                                   isExist = true;
+                                   table.totalAmount += data.totalAmount;
+                                   table.client_amount_net += data.client_amount_net;
+                                   table.client_amount_net_percent = table.client_amount_net / table.totalAmount * 100;
+                               }
+                            });
+
+                            if (!isExist) {
+                                if (data._group.year != '') {
+                                    data._group.organisation_name = 'All Organisation';
+                                    allMergedTable.push(data);
+                                }
+                            }
+                        });
+
+                        mergedTable = allMergedTable;
+                    }
                 }
 
-
-                return mergedData;
+                return {
+                    totalValues: totalValues,
+                    merged: mergedTable
+                };
             },
             firstClient: function () {
                 let cs = $scope.getReactively('clients');
