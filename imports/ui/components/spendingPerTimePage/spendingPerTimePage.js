@@ -29,10 +29,10 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
-        var that = this;
+        let that = this;
 
-        var start = moment().subtract(1, 'year').startOf('year');
-        var end = moment();
+        let start = moment().subtract(1, 'year').startOf('year');
+        let end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
         lastTwoYearsLabel = 'Last Two Years (' + moment().subtract(2, 'year').startOf('year').year() + '-' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
@@ -178,15 +178,23 @@ class SpendingPerTimePage {
                     }
                 }
 
-                var mergedData = {
-                    totalValues: totalValues,
-                    merged: mergedTable
-                };
+                let mergedData = {};
+                if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == "All organisations") {
+                    mergedData = {
+                        totalValues: totalValues
+                    };
+                } else {
+                    mergedData = {
+                        totalValues: totalValues,
+                        merged: mergedTable
+                    };
+                }
+
 
                 return mergedData;
             },
             firstClient: function () {
-                var cs = $scope.getReactively('clients');
+                let cs = $scope.getReactively('clients');
                 if (cs && cs.length > 0)
                     return cs[0];
                 return null;
@@ -195,9 +203,9 @@ class SpendingPerTimePage {
                 return Clients.find({});
             },
             spendingOrganisations: function () {
-                var organisationsBuffer = [];
+                let organisationsBuffer = [];
                 $scope.realOrganisations = [];
-                var organisations = SpendingOrganisations.find({});
+                let organisations = SpendingOrganisations.find({});
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -241,10 +249,10 @@ class SpendingPerTimePage {
                 return $scope.getReactively("filterName");
             },
             chartData: function () {
-                var spendingPerTime = $scope.getReactively("spendingPerTime");
-                var allowedClients = $scope.getReactively("clients");
-                var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
-                var publicValues = [];
+                let spendingPerTime = $scope.getReactively("spendingPerTime");
+                let allowedClients = $scope.getReactively("clients");
+                let clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
+                let publicValues = [];
                 let i = 0;
 
                 let pointsByPeriod = [];
@@ -261,7 +269,7 @@ class SpendingPerTimePage {
                 //      "Another Council": 54321,
                 //      "clientValue_Some Council": 1234,
                 //      "clientValue_Another Council": 4321
-                // }                
+                // }
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -351,7 +359,7 @@ class SpendingPerTimePage {
                         horizontalAlignment: "center"
                     },
                     onPointClick: function (e) {
-                        var target = e.target;
+                        let target = e.target;
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
@@ -409,7 +417,7 @@ class SpendingPerTimePage {
                 };
             },
             filterSelectedOrganisation: function () {
-                var organisations = $scope.getCollectionReactively("selectedOrganisation");
+                let organisations = $scope.getCollectionReactively("selectedOrganisation");
                 $scope.filteredOrganisations = [];
                 organisations.forEach((organisation) => {
                     $scope.filteredOrganisations.push(organisation.id);
@@ -424,19 +432,19 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         function getChartHandle() {
-            var chartDiv = angular.element($element).find("#timeChart");
+            let chartDiv = angular.element($element).find("#timeChart");
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
             if (!chartDiv.data("dxChart"))
                 return;
             // Re-render the chart. This will correctly resize for the new size of the surrounding
             // div.
-            var timechart = chartDiv.dxChart('instance');
+            let timechart = chartDiv.dxChart('instance');
             return timechart;
         }
 
         function markSelectedPoint() {
             setTimeout(function () {
-                var chartHandle = getChartHandle();
+                let chartHandle = getChartHandle();
                 if(chartHandle) {
                     let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
                     if(series && series.getAllPoints().length) {
@@ -451,7 +459,7 @@ class SpendingPerTimePage {
                 }
             }, 800);
         }
-        
+
         // TODO: remove this hardcoded default option, just use the first item in the list
 
         $scope.checkSelection = function() {
@@ -495,13 +503,13 @@ class SpendingPerTimePage {
             } else {
                 $scope.selectedOrganisation = [];
             }
-        }
+        };
 
         function filterPeriod(period) {
             let selectedYear;
             let selectedMonth;
-            var index = 0;
-            var startDate, endDate;
+            let index = 0;
+            let startDate, endDate;
             $scope.filterName = period;
 
             // Clear filter
@@ -536,29 +544,29 @@ class SpendingPerTimePage {
             // needs to re-render to properly size.
 
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            var chartComponent = $('#timeChart');
+            let chartComponent = $('#timeChart');
             if (!chartComponent.data("dxChart"))
                 return;
 
             // Re-render the chart. This will correctly resize for the new size of the surrounding
             // div.
-            var timeChart = chartComponent.dxChart('instance');
+            let timeChart = chartComponent.dxChart('instance');
             timeChart.render();
         }
 
         function selectAllOrganisation() {
             console.log('selected All');
-        };
+        }
 
         function reachedMaxSelection() {
             console.log('reached Max Selection');
-        };
+        }
 
         let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early
             if (num === 0) { return '0'; } // terminate early
             fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
-            var b = (num).toPrecision(2).split("e"), // get power
+            let b = (num).toPrecision(2).split("e"), // get power
                 k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
                 c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
                 d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
@@ -609,13 +617,13 @@ class SpendingPerTimePage {
         });
 
         function stringToColour (str) {
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
             }
-            var colour = '#';
-            for (var i = 0; i < 3; i++) {
-                var value = (hash >> (i * 8)) & 0xFF;
+            let colour = '#';
+            for (let i = 0; i < 3; i++) {
+                let value = (hash >> (i * 8)) & 0xFF;
                 colour += ('00' + value.toString(16)).substr(-2);
             }
             return colour;
