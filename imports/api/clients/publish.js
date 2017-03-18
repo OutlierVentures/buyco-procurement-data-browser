@@ -28,6 +28,6 @@ if (Meteor.isServer) {
             return Clients.find(selector);
         }
 
-        return;
+        return this.ready();
     });
 }

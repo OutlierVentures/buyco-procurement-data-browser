@@ -128,6 +128,72 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
 
     pipeLine.push(groupClause);
 
+    // let sortClause = { "$sort": { [sourceFieldName]: 1 } };
+    // pipeLine.push(sortClause);
+
+    // Call the aggregate
+    console.log("HALA Start - Begin", sourceFieldName);
+    let cursor = sourceCollection.aggregate(
+        pipeLine
+    ).forEach((doc) => {
+        // Prepare the document for publishing. Start with a clone.
+        // let addedDoc = JSON.parse(JSON.stringify(doc));
+
+        let docSourceFieldName = doc[sourceFieldName];
+
+        if (targetFieldName && targetFieldName != sourceFieldName) {
+            doc[targetFieldName] = doc[sourceFieldName];
+            delete doc[sourceFieldName];
+        }
+        // console.log(doc);
+
+        // We add each document to the published collection so the subscribing client receives them.
+        publishFunction.added(collectionName, docSourceFieldName, doc);
+    });
+    console.log("HALA Start - End", sourceFieldName);
+
+    // Stop observing the cursor when client unsubs.
+    // Stopping a subscription automatically takes
+    // care of sending the client any removed messages.
+    publishFunction.onStop(() => {
+        if (cursor)
+            cursor.stop();
+    });
+
+    publishFunction.ready();
+}
+
+
+export const publishUniqueValuesForOrganisationBackup = (publishFunction, collectionName, sourceCollection, groupbyField, sourceFieldName, targetFieldName) => {
+    let pipeLine = [];
+
+    let matchClause = {};
+
+    if (!matchClause.$match || !matchClause.$match[sourceFieldName])
+    {
+        if(!matchClause.$match)
+        {
+            matchClause.$match = {};
+        }
+        matchClause.$match[sourceFieldName] = { $exists: true };
+    }
+
+    pipeLine.push(matchClause);
+
+    let groupClause = {
+        $group: {
+            _id: {
+                sourceFieldName: '$' + sourceFieldName,
+                groupbyField: '$' + groupbyField,
+            }
+        }
+    }
+
+    groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
+    groupClause.$group[groupbyField] = { $first: '$' + groupbyField };
+
+    pipeLine.push(groupClause);
+
     let sortClause = { "$sort": { [sourceFieldName]: 1 } };
     pipeLine.push(sortClause);
 

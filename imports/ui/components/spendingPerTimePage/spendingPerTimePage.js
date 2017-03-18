@@ -92,10 +92,10 @@ class SpendingPerTimePage {
                 return Meteor.userId() != null;
             },
             spendingPerTime: function () {
-                return SpendingPerTime.find({});
+                return SpendingPerTime.find({}).fetch();
             },
             clientSpendingPerTime: function () {
-                return ClientSpendingPerTime.find({});
+                return ClientSpendingPerTime.find({}).fetch();
             },
             mergedSpendingPerTime: function () {
                 // Prepare a joined collection with the percentage of client trade.
@@ -219,12 +219,12 @@ class SpendingPerTimePage {
                 return null;
             },
             clients: function () {
-                return Clients.find({});
+                return Clients.find({}).fetch();
             },
             spendingOrganisations: function () {
                 let organisationsBuffer = [];
                 $scope.realOrganisations = [];
-                let organisations = SpendingOrganisations.find({});
+                let organisations = SpendingOrganisations.find({}).fetch();
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -254,12 +254,12 @@ class SpendingPerTimePage {
             spendingServices: function () {
                 return SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                });
+                }).fetch();
             },
             spendingCategories: function () {
                 return SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                });
+                }).fetch();
             },
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
@@ -634,6 +634,19 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
+            console.log("spendingPerTime subscribe called", [{
+                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                procurement_classification_1: $scope.getReactively("category"),
+                sercop_service: $scope.getReactively("service"),
+                supplier_name: $scope.getReactively('supplier_name'),
+                // Use  `payment_date` for filter and group rather than `effective_date` even though
+                // the latter might be the correct one.
+                // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
+                payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
+            },
+                {
+                    period: $scope.getReactively("period")
+                }]);
             return [{
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
@@ -650,6 +663,7 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            console.log("clientSpendingPerTime subscribe called");
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
