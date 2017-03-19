@@ -7,7 +7,6 @@ import { removeEmptyFilters } from '../utils';
 const collectionName = "spendingPerTime";
 
 Meteor.publish(collectionName, function (filters, options) {
-    console.log("spendingPerTime pub start");
     let period = "quarter";
     if (options && options.period)
         period = options.period;
@@ -19,7 +18,6 @@ Meteor.publish(collectionName, function (filters, options) {
     if (filters) {
         pipeLine.push({ $match: filters });
     }
-    console.log("spendingPerTime pub start======", filters);
     let groupClause = { $group: { _id: { year: { $year: "$payment_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
 
     if (period == "month")
@@ -63,8 +61,6 @@ Meteor.publish(collectionName, function (filters, options) {
         if (cursor)
             cursor.stop();
     });
-    console.log("spendingPerTime pub end");
     this.ready();
-
 });
 

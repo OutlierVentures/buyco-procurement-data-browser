@@ -51,7 +51,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
         $group: {
             _id: '$' + sourceFieldName,
         }
-    }
+    };
 
     groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
 
@@ -94,7 +94,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
     });
 
     publishFunction.ready();
-}
+};
 
 
 
@@ -121,7 +121,7 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
                 groupbyField: '$' + groupbyField,
             }
         }
-    }
+    };
 
     groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
     groupClause.$group[groupbyField] = { $first: '$' + groupbyField };
@@ -132,7 +132,6 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
     // pipeLine.push(sortClause);
 
     // Call the aggregate
-    console.log("HALA Start - Begin", sourceFieldName);
     let cursor = sourceCollection.aggregate(
         pipeLine
     ).forEach((doc) => {
@@ -150,7 +149,6 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
         // We add each document to the published collection so the subscribing client receives them.
         publishFunction.added(collectionName, docSourceFieldName, doc);
     });
-    console.log("HALA Start - End", sourceFieldName);
 
     // Stop observing the cursor when client unsubs.
     // Stopping a subscription automatically takes
@@ -161,68 +159,7 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
     });
 
     publishFunction.ready();
-}
-
-
-export const publishUniqueValuesForOrganisationBackup = (publishFunction, collectionName, sourceCollection, groupbyField, sourceFieldName, targetFieldName) => {
-    let pipeLine = [];
-
-    let matchClause = {};
-
-    if (!matchClause.$match || !matchClause.$match[sourceFieldName])
-    {
-        if(!matchClause.$match)
-        {
-            matchClause.$match = {};
-        }
-        matchClause.$match[sourceFieldName] = { $exists: true };
-    }
-
-    pipeLine.push(matchClause);
-
-    let groupClause = {
-        $group: {
-            _id: {
-                sourceFieldName: '$' + sourceFieldName,
-                groupbyField: '$' + groupbyField,
-            }
-        }
-    }
-
-    groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
-    groupClause.$group[groupbyField] = { $first: '$' + groupbyField };
-
-    pipeLine.push(groupClause);
-
-    let sortClause = { "$sort": { [sourceFieldName]: 1 } };
-    pipeLine.push(sortClause);
-
-    // Call the aggregate
-    let cursor = sourceCollection.aggregate(
-        pipeLine
-    ).forEach((doc) => {
-        // Prepare the document for publishing. Start with a clone.
-        let addedDoc = JSON.parse(JSON.stringify(doc));
-
-        if (targetFieldName && targetFieldName != sourceFieldName) {
-            delete addedDoc[sourceFieldName];
-            addedDoc[targetFieldName] = doc[sourceFieldName];
-        }
-
-        // We add each document to the published collection so the subscribing client receives them.
-        publishFunction.added(collectionName, doc[sourceFieldName], addedDoc);
-    });
-
-    // Stop observing the cursor when client unsubs.
-    // Stopping a subscription automatically takes
-    // care of sending the client any removed messages.
-    publishFunction.onStop(() => {
-        if (cursor)
-            cursor.stop();
-    });
-
-    publishFunction.ready();
-}
+};
 
 /**
  * Remove empty filter values from a filter object.

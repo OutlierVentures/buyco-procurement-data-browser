@@ -634,19 +634,6 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
-            console.log("spendingPerTime subscribe called", [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
-                procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service"),
-                supplier_name: $scope.getReactively('supplier_name'),
-                // Use  `payment_date` for filter and group rather than `effective_date` even though
-                // the latter might be the correct one.
-                // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
-                payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
-            },
-                {
-                    period: $scope.getReactively("period")
-                }]);
             return [{
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                 procurement_classification_1: $scope.getReactively("category"),
@@ -663,7 +650,6 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
-            console.log("clientSpendingPerTime subscribe called");
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
