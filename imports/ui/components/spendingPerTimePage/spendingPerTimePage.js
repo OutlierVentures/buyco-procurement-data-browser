@@ -252,14 +252,46 @@ class SpendingPerTimePage {
                 return organisationsBuffer;
             },
             spendingServices: function () {
-                return SpendingServices.find({
+                let services = SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }).fetch();
+
+                services.sort(function(a, b) {
+                    let nameA = a.name.toUpperCase(); // ignore upper and lowercase
+                    let nameB = b.name.toUpperCase(); // ignore upper and lowercase
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    // names must be equal
+                    return 0;
+                });
+
+                return services;
             },
             spendingCategories: function () {
-                return SpendingCategories.find({
+                let categories = SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }).fetch();
+
+                categories.sort(function(a, b) {
+                    let nameA = a.name.toUpperCase(); // ignore upper and lowercase
+                    let nameB = b.name.toUpperCase(); // ignore upper and lowercase
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    // names must be equal
+                    return 0;
+                });
+
+                return categories;
             },
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
