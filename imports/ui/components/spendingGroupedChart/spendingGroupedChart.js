@@ -51,12 +51,14 @@ class SpendingGroupedChart {
                     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             }
 
+            // We use $gte and $lte to include the start and end dates. For example, when start date is "2016-11-01T00:00"
+            //  records on the 1st of November itself are included. If using $gt, they would be excluded.
             if (this.getReactively('filterDate')) {
-                filterOptions.payment_date = { $gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate() };
+                filterOptions.payment_date = { $gte: this.getReactively("filterDate").startDate.toDate(), $lte: this.getReactively("filterDate").endDate.toDate() };
             }
 
             if (this.getReactively('selDate')) {
-                filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
+                filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
             }
 
             removeEmptyFilters(filterOptions);
@@ -95,11 +97,11 @@ class SpendingGroupedChart {
             }
 
             if (this.getReactively('filterDate')) {
-                filterOptions.payment_date = { $gt: this.getReactively("filterDate").startDate.toDate(), $lt: this.getReactively("filterDate").endDate.toDate() };
+                filterOptions.payment_date = { $gte: this.getReactively("filterDate").startDate.toDate(), $lte: this.getReactively("filterDate").endDate.toDate() };
             }
 
             if (this.getReactively('selDate')) {
-                filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
+                filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
             }
 
             removeEmptyFilters(filterOptions);

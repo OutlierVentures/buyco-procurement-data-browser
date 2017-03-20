@@ -195,7 +195,7 @@ class SpendingPerTimePage {
                                         table.client_amount_net = data.client_amount_net;
                                     else
                                         table.client_amount_net += data.client_amount_net;
-                                        
+
                                     if(table.totalAmount)
                                         table.client_amount_net_percent = table.client_amount_net / table.totalAmount * 100;
                                 }
@@ -591,23 +591,37 @@ class SpendingPerTimePage {
             }
 
             if ($scope.period === 'quarter') {
+                // Example: 2015-Q2
                 index = period.search('Q');
                 selectedYear = period.substring(0, index - 1);
+                // End month, example: 6
                 selectedMonth = period.substring(index + 1) * 3;
-                startDate = selectedYear + '-' + (selectedMonth - 2) + '-01';
-                endDate = selectedYear + '-' + (selectedMonth) + '-31';
+                // First day of first month of quarter (example: 04-01)
+                startDate = new Date(selectedYear + '-' + (selectedMonth - 2) + '-01');
+                endDate = new Date(startDate);
+                endDate.setMonth(selectedMonth);
+                // End date is now "2015-07-01". Use setDate(0) to go one day back. This works well 
+                // even for December --> January.
+                endDate.setDate(0);
             } else { // if month
+                // Example: 2015-11
                 index = period.search('-');
                 selectedYear = period.substring(0, index);
+                // selectedMonth has the display value (11).
                 selectedMonth = period.substring(index + 1);
                 selectedMonth = Number(selectedMonth);
-                startDate = selectedYear + '-' + selectedMonth + '-01';
-                endDate = selectedYear + '-' + (selectedMonth) + '-31';
+                startDate = new Date(selectedYear + '-' + selectedMonth + '-01');
+                endDate = new Date(startDate);
+                // We increase the month by 1 (setMonth is 0-based and the display value is 1-based),
+                // then decrease the date by 1. 
+                // Example: setMonth(11) --> 2016-12-01, setDate(0) --> 2016-11-30
+                endDate.setMonth(selectedMonth);
+                endDate.setDate(0);
             }
 
             $scope.selectedPeriod = {
-                startDate: moment(new Date(startDate)),
-                endDate: moment(new Date(endDate))
+                startDate: moment(startDate),
+                endDate: moment(endDate)
             };
         }
 
