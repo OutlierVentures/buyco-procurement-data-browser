@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { ClientSpending } from '../clientSpending';
-import { removeEmptyFilters } from '../utils';
+import { removeEmptyFilters } from '/imports/utils';
 
 // console.log("clientSpendingPerTime publish.js");
 

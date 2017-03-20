@@ -3,11 +3,11 @@ import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
 
 import template from './spendingGroupedChart.html';
+import { removeEmptyFilters, MetaDataHelper } from "/imports/utils";
 
-import { SpendingGrouped } from '../../../api/spendingGrouped';
-import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
-import { ClientSpendingGrouped } from '../../../api/clientSpendingGrouped';
-import { MetaDataHelper } from '../../../utils';
+import { SpendingGrouped } from '/imports/api/spendingGrouped';
+import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
+import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
 
 class SpendingGroupedChart {
@@ -32,7 +32,6 @@ class SpendingGroupedChart {
                 organisation_name: this.getReactively("filters.organisation_name")
             };
 
-            // console.log(this.groupDisplayName);
             switch(this.groupDisplayName) {
                 case 'category':
                     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
@@ -59,11 +58,16 @@ class SpendingGroupedChart {
             if (this.getReactively('selDate')) {
                 filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
             }
-            return [
+
+            removeEmptyFilters(filterOptions);
+
+            var publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
                 }];
+
+            return publishParams;                
         });
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
@@ -98,11 +102,15 @@ class SpendingGroupedChart {
                 filterOptions.payment_date = { $gt: this.getReactively("selDate").startDate.toDate(), $lt: this.getReactively("selDate").endDate.toDate() };
             }
 
-            return [
+            removeEmptyFilters(filterOptions);
+
+            var publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
                 }];
+
+            return publishParams;
         });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
@@ -166,7 +174,11 @@ class SpendingGroupedChart {
 
             let temp = this.getReactively("filters.period");
 
-            return SpendingGrouped.find(filters);
+            removeEmptyFilters (filters);
+
+            var data = SpendingGrouped.find(filters).fetch();
+
+            return data;
         };
 
         this.clientSpendingGrouped = () => {
@@ -175,10 +187,7 @@ class SpendingGroupedChart {
                 groupField: this.getReactively("groupField")
             };
 
-            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
-            // while all rows should be shown. Hence we only add them if they have a non-empty value.
-            if (this.getReactively("filters.client"))
-                filters.client_id = this.getReactively("filters.client.client_id");
+            filters.client_id = this.getReactively("filters.client.client_id");
 
             switch(this.groupDisplayName) {
                 case 'category':
@@ -199,8 +208,12 @@ class SpendingGroupedChart {
                     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             }
 
+            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
+            // while all rows should be shown. Hence we only add them if they have a non-empty value.
+            removeEmptyFilters (filters);
+
             this.getReactively("filters.period");
-            return ClientSpendingGrouped.find(filters);
+            return ClientSpendingGrouped.find(filters).fetch();
         };
 
         $scope.helpers({

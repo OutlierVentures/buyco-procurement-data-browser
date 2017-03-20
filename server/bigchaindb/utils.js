@@ -1,3 +1,5 @@
+import {removeEmptyFilters} from '/imports/utils';
+
 /**
  * Javascript implementation of Java's string.hashCode()
  * Source: http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
@@ -159,16 +161,4 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
     });
 
     publishFunction.ready();
-};
-
-/**
- * Remove empty filter values from a filter object.
- */
-export const removeEmptyFilters = (filters) => {
-    for (let k in filters) {
-        // Take out empty values. We explicitly take out the empty string as a filter value,
-        // because select boxes can pass them when an empty "-- select --" option is selected.
-        if (filters[k] === null || filters[k] === "")
-            delete filters[k];
-    }
 };
