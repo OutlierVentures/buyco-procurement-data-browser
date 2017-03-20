@@ -187,12 +187,18 @@ class SpendingPerTimePage {
                         mergedTable.forEach((data) => {
                             let isExist = false;
                             allMergedTable.forEach((table) => {
-                               if (data._group.year == table._group.year && data._group[$scope.period] == table._group[$scope.period]) {
-                                   isExist = true;
-                                   table.totalAmount += data.totalAmount;
-                                   table.client_amount_net += data.client_amount_net;
-                                   table.client_amount_net_percent = table.client_amount_net / table.totalAmount * 100;
-                               }
+                                if (data._group.year == table._group.year && data._group[$scope.period] == table._group[$scope.period]) {
+                                    isExist = true;                    
+                                    table.totalAmount += data.totalAmount;
+
+                                    if(!table.client_amount_net)
+                                        table.client_amount_net = data.client_amount_net;
+                                    else
+                                        table.client_amount_net += data.client_amount_net;
+                                        
+                                    if(table.totalAmount)
+                                        table.client_amount_net_percent = table.client_amount_net / table.totalAmount * 100;
+                                }
                             });
 
                             if (!isExist) {
