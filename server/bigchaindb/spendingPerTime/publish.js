@@ -28,6 +28,8 @@ Meteor.publish(collectionName, function (filters, options) {
     // Group by organisation_name. In case of a single organisation, will give one
     // record per period. In case of N organisations, max N records per period (depending
     // on whether that organisation has data in the period).
+    // TODO: pass the field to group by as options.groupField. When that field is empty, only
+    // group by period.
     groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);
