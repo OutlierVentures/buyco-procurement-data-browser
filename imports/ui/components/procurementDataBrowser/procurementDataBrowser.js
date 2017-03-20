@@ -1,11 +1,18 @@
 import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
+import dx from '/node_modules/devextreme/dist/js/dx.viz.js';
+import bootstrapdaterangepicker from '/node_modules/bootstrap-daterangepicker/daterangepicker.js';
+import daterangepicker from '/node_modules/angular-daterangepicker/index.js';
+import '/node_modules/angular-chosen-localytics/dist/angular-chosen.js';
+import '/node_modules/angular-chosen-localytics/chosen-spinner.css';
+import '/node_modules/chosen-js/chosen.jquery.js';
+// import '/node_modules/chosen-js/chosen.css';
+
+import '/node_modules/bootstrap/dist/css/bootstrap.css';
+import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
 
 import template from './procurementDataBrowser.html';
-import { name as BlocksList } from '../blocksList/blocksList';
-import { name as ChartTest } from '../chartTest/chartTest';
-import { name as LineBarChartTest } from '../lineBarChartTest/lineBarChartTest';
 import { name as SpendingList } from '../spendingList/spendingList';
 import { name as SpendingPerTimePage } from '../spendingPerTimePage/spendingPerTimePage';
 import { name as Importer } from '../importer/importer';
@@ -19,14 +26,14 @@ const name = 'procurementDataBrowser';
 export default angular.module(name, [
   angularMeteor,
   uiRouter,
-  ChartTest,
-  LineBarChartTest,
-  BlocksList,
   SpendingList,
   SpendingPerTimePage,
   Importer,
   Navigation,
-  'accounts.ui'
+  daterangepicker,
+  'accounts.ui',
+  'dx',
+  'localytics.directives'
 ]).component(name, {
   template,
   controllerAs: name,

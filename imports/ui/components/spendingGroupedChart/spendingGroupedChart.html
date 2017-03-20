@@ -1,12 +1,20 @@
-<div class="widget">
+<div class="widget" ng-class="{'full-screen': fullScreenMode}">
     <div class="activity-sec">
         <div class="widget-title">
             <h3>Spend by {{groupDisplayName}}</h3>
-            <nvd3 options="chartOptions" data="chartData"></nvd3>
-
+            <button class="btn btn-default pull-right hidden-xs hidden-sm" ng-click="fullScreenMode = !fullScreenMode">
+                <i class="fa fa-expand" ng-if="!fullScreenMode"></i>
+                <i class="fa fa-compress" ng-if="fullScreenMode"></i>            
+            </button>
+            <span ng-if="filterPeriodName">Filter Applied: {{filterPeriodName}}</span>
+            <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
+                rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
+                valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size', 
+                customizePoint: 'chartOptions.customizePoint', onPointClick: 'chartOptions.onPointClick'} }"></div>
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
-            <span ng-show="!detailsVisible">Show details</span>
-            <span ng-show="detailsVisible">Hide details</span></button>
+                <span ng-show="!detailsVisible">Show details</span>
+                <span ng-show="detailsVisible">Hide details</span>
+            </button>
 
             <div ng-show="detailsVisible">
                 <table class="table table-striped">
@@ -15,8 +23,8 @@
                         <th>Total</th>
                     </tr>
                     <tr ng-repeat="spendGroup in spendingGrouped">
-                        <td>{{spendGroup.group}}</td>
-                        <td>&pound; {{spendGroup.reduction | number: 2}} </td>
+                        <td>{{spendGroup._group}}</td>
+                        <td>£{{spendGroup.totalAmount | number: 2}} </td>
                     </tr>
                 </table>
             </div>

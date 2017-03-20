@@ -4,6 +4,8 @@
             <h3>Performance indicators for {{spendingPerformance.organisationName}}</h3>
         </div>
 
-        <nvd3 options="options" data="data"></nvd3>
+        <div id="chart" dx-chart="{ palette: chartData.palette, commonSeriesSettings: chartData.commonSeriesSettings, series: chartData.series, valueAxis: chartData.valueAxis, 
+        tooltip: chartData.tooltip, legend: chartData.legend, export: chartData.export, title: chartData.title, size: chartData.size,
+        bindingOptions: {dataSource: 'chartData.dataSource'} }"></div>
     </div>
 </div>

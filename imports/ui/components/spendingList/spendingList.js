@@ -27,13 +27,13 @@ class SpendingList {
                 });
             },
             spendingTransactionsCount: function () {
-                // TODO: make count work.
-                return 66453;
-                // return Counts.get('spendingTransactionsCount');
+                // TODO: make counts work with large record set. Use static number for now.
+                return 212993;
+                //return Counts.get('spendingTransactionsCount');
             }
         });
 
-        $scope.subscribe('spending', function () {
+        $scope.subscribe('public_spending', function () {
             return [{
                 sort: $scope.getReactively('sort'),
                 limit: parseInt($scope.getReactively('perPage')),
