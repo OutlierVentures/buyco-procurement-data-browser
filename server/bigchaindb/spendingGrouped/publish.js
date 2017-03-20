@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
-import { removeEmptyFilters } from '../utils';
+import { removeEmptyFilters } from '/imports/utils';
 
 // console.log("spendingGrouped publish.js");
 
