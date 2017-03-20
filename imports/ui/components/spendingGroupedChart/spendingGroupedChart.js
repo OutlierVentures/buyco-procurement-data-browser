@@ -131,29 +131,7 @@ class SpendingGroupedChart {
                 $scope.organisation_names = filters.organisation_name.$in;
             }
 
-            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
-            // while all rows should be shown. Hence we only add them if they have a non-empty value.
-
-            // switch(this.groupDisplayName) {
-            //     case 'category':
-            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
-            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
-            //         break;
-            //     case 'service':
-            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
-            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
-            //         break;
-            //     case 'supplier':
-            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
-            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
-            //         break;
-            //     default:
-            //         filters.sercop_service = this.getReactively("filters.sercop_service") == "" ? null : this.getReactively("filters.sercop_service");
-            //         filters.supplier_name = this.getReactively("filters.supplier_name") == "" ? null : this.getReactively("filters.supplier_name");
-            //         filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1") == "" ? null : this.getReactively("filters.procurement_classification_1");
-            // }
-
-                        switch(this.groupDisplayName) {
+            switch(this.groupDisplayName) {
                 case 'category':
                     filters.sercop_service = this.getReactively("filters.sercop_service");
                     filters.supplier_name = this.getReactively("filters.supplier_name");
@@ -174,9 +152,11 @@ class SpendingGroupedChart {
 
             let temp = this.getReactively("filters.period");
 
+            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
+            // while all rows should be shown. Hence we only add them if they have a non-empty value.
             removeEmptyFilters (filters);
 
-            var data = SpendingGrouped.find(filters).fetch();
+            var data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
 
             return data;
         };
