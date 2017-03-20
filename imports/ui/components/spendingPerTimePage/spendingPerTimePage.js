@@ -29,10 +29,10 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
-        var that = this;
+        let that = this;
 
-        var start = moment().subtract(1, 'year').startOf('year');
-        var end = moment();
+        let start = moment().subtract(1, 'year').startOf('year');
+        let end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
         lastTwoYearsLabel = 'Last Two Years (' + moment().subtract(2, 'year').startOf('year').year() + '-' + moment().subtract(1, 'year').startOf('year').year() + ')';
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
@@ -42,6 +42,7 @@ class SpendingPerTimePage {
             label: "All organisations",
             id: 'All organisations'
         };
+        let isAllClient = true;
         $scope.realOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
@@ -114,6 +115,7 @@ class SpendingPerTimePage {
 
                 ps.forEach((spendThisPeriod) => {
                     let mergedItem = JSON.parse(JSON.stringify(spendThisPeriod));
+
                     totalValues.total += mergedItem.totalAmount;
                     merged.push(mergedItem);
                     cs.forEach((clientSpendThisPeriod) => {
@@ -178,15 +180,40 @@ class SpendingPerTimePage {
                     }
                 }
 
-                var mergedData = {
+                // Sum values according to year and period if All Organisation
+                if (isAllClient) {
+                    if (mergedTable && mergedTable.length) {
+                        let allMergedTable = [];
+                        mergedTable.forEach((data) => {
+                            let isExist = false;
+                            allMergedTable.forEach((table) => {
+                               if (data._group.year == table._group.year && data._group[$scope.period] == table._group[$scope.period]) {
+                                   isExist = true;
+                                   table.totalAmount += data.totalAmount;
+                                   table.client_amount_net += data.client_amount_net;
+                                   table.client_amount_net_percent = table.client_amount_net / table.totalAmount * 100;
+                               }
+                            });
+
+                            if (!isExist) {
+                                if (data._group.year != '') {
+                                    data._group.organisation_name = 'All Organisation';
+                                    allMergedTable.push(data);
+                                }
+                            }
+                        });
+
+                        mergedTable = allMergedTable;
+                    }
+                }
+
+                return {
                     totalValues: totalValues,
                     merged: mergedTable
                 };
-
-                return mergedData;
             },
             firstClient: function () {
-                var cs = $scope.getReactively('clients');
+                let cs = $scope.getReactively('clients');
                 if (cs && cs.length > 0)
                     return cs[0];
                 return null;
@@ -195,9 +222,9 @@ class SpendingPerTimePage {
                 return Clients.find({});
             },
             spendingOrganisations: function () {
-                var organisationsBuffer = [];
+                let organisationsBuffer = [];
                 $scope.realOrganisations = [];
-                var organisations = SpendingOrganisations.find({});
+                let organisations = SpendingOrganisations.find({});
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -241,10 +268,10 @@ class SpendingPerTimePage {
                 return $scope.getReactively("filterName");
             },
             chartData: function () {
-                var spendingPerTime = $scope.getReactively("spendingPerTime");
-                var allowedClients = $scope.getReactively("clients");
-                var clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
-                var publicValues = [];
+                let spendingPerTime = $scope.getReactively("spendingPerTime");
+                let allowedClients = $scope.getReactively("clients");
+                let clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
+                let publicValues = [];
                 let i = 0;
 
                 let pointsByPeriod = [];
@@ -261,7 +288,8 @@ class SpendingPerTimePage {
                 //      "Another Council": 54321,
                 //      "clientValue_Some Council": 1234,
                 //      "clientValue_Another Council": 4321
-                // }                
+                // }
+
                 spendingPerTime.forEach((spendThisPeriod) => {
                     let xLabel;
                     if ($scope.period == "quarter")
@@ -278,7 +306,13 @@ class SpendingPerTimePage {
                     }
 
                     let amount = spendThisPeriod.totalAmount;
-                    dataPoint[spendThisPeriod._group.organisation_name] = amount;
+                    let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
+                    if(dataPoint[dataPointGroup]) {
+                        dataPoint[dataPointGroup] += amount;
+                    } else {
+                        dataPoint[dataPointGroup] = amount;
+                    }
+                    // dataPoint[spendThisPeriod._group.organisation_name] = amount;
 
                     let clientVal = _(clientSpendingPerTime).find((v) => {
                         return v._group
@@ -288,8 +322,13 @@ class SpendingPerTimePage {
                     });
 
                     if (clientVal !== undefined) {
-                        let clientPointKey = "clientValue_" + spendThisPeriod._group.organisation_name;
-                        dataPoint[clientPointKey] = clientVal.totalAmount;
+                        let clientPointKey = "clientValue_" + (isAllClient ? "All" : spendThisPeriod._group.organisation_name);
+                        if(dataPoint[clientPointKey]) {
+                            dataPoint[clientPointKey] += clientVal.totalAmount;
+                        } else {
+                            dataPoint[clientPointKey] = clientVal.totalAmount;
+                        }
+                        // dataPoint[clientPointKey] = clientVal.totalAmount;
                     }
 
                     // Fill tabular data.
@@ -315,26 +354,47 @@ class SpendingPerTimePage {
 
                 // Create series for each selected organisation, and if client data is shown,
                 // another series for client data for each organisation.
-                _($scope.selectedOrganisation).each((org) => {
+                if (isAllClient) {
                     series.push({
                         argumentField: "xAxis",
-                        valueField: org.id,
-                        name: org.id,
+                        valueField: "All",
+                        name: "All",
                         type: "bar",
-                        color: getColor(org.id)
+                        color: getColor("All")
                     });
 
                     // Add client series if we have data for it
                     if (allowedClients.length > 0 && sc) {
                         series.push({
                             argumentField: "xAxis",
-                            valueField: "clientValue_" + org.id,
-                            name: sc.name + " - " + org.id,
+                            valueField: "clientValue_" + "All",
+                            name: sc.name + " - " + "All",
                             type: "bar",
                             color: '#543996'
                         })
                     }
-                });
+                } else {
+                    _($scope.selectedOrganisation).each((org) => {
+                        series.push({
+                            argumentField: "xAxis",
+                            valueField: org.id,
+                            name: org.id,
+                            type: "bar",
+                            color: getColor(org.id)
+                        });
+
+                        // Add client series if we have data for it
+                        if (allowedClients.length > 0 && sc) {
+                            series.push({
+                                argumentField: "xAxis",
+                                valueField: "clientValue_" + org.id,
+                                name: sc.name + " - " + org.id,
+                                type: "bar",
+                                color: '#543996'
+                            })
+                        }
+                    });
+                }
 
                 let selectedArgument = 0;
 
@@ -351,7 +411,7 @@ class SpendingPerTimePage {
                         horizontalAlignment: "center"
                     },
                     onPointClick: function (e) {
-                        var target = e.target;
+                        let target = e.target;
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
@@ -409,7 +469,7 @@ class SpendingPerTimePage {
                 };
             },
             filterSelectedOrganisation: function () {
-                var organisations = $scope.getCollectionReactively("selectedOrganisation");
+                let organisations = $scope.getCollectionReactively("selectedOrganisation");
                 $scope.filteredOrganisations = [];
                 organisations.forEach((organisation) => {
                     $scope.filteredOrganisations.push(organisation.id);
@@ -424,19 +484,19 @@ class SpendingPerTimePage {
         $scope.period = "quarter";
 
         function getChartHandle() {
-            var chartDiv = angular.element($element).find("#timeChart");
+            let chartDiv = angular.element($element).find("#timeChart");
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
             if (!chartDiv.data("dxChart"))
                 return;
             // Re-render the chart. This will correctly resize for the new size of the surrounding
             // div.
-            var timechart = chartDiv.dxChart('instance');
+            let timechart = chartDiv.dxChart('instance');
             return timechart;
         }
 
         function markSelectedPoint() {
             setTimeout(function () {
-                var chartHandle = getChartHandle();
+                let chartHandle = getChartHandle();
                 if(chartHandle) {
                     let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
                     if(series && series.getAllPoints().length) {
@@ -451,7 +511,7 @@ class SpendingPerTimePage {
                 }
             }, 800);
         }
-        
+
         // TODO: remove this hardcoded default option, just use the first item in the list
 
         $scope.checkSelection = function() {
@@ -489,19 +549,21 @@ class SpendingPerTimePage {
             if ($scope.viewOrganisations.length) {
                 if ($scope.viewOrganisations[0].id == "All organisations") {
                     $scope.selectedOrganisation = $scope.realOrganisations;
+                    isAllClient = true;
                 } else {
                     $scope.selectedOrganisation = $scope.viewOrganisations;
+                    isAllClient = false;
                 }
             } else {
                 $scope.selectedOrganisation = [];
             }
-        }
+        };
 
         function filterPeriod(period) {
             let selectedYear;
             let selectedMonth;
-            var index = 0;
-            var startDate, endDate;
+            let index = 0;
+            let startDate, endDate;
             $scope.filterName = period;
 
             // Clear filter
@@ -536,29 +598,29 @@ class SpendingPerTimePage {
             // needs to re-render to properly size.
 
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            var chartComponent = $('#timeChart');
+            let chartComponent = $('#timeChart');
             if (!chartComponent.data("dxChart"))
                 return;
 
             // Re-render the chart. This will correctly resize for the new size of the surrounding
             // div.
-            var timeChart = chartComponent.dxChart('instance');
+            let timeChart = chartComponent.dxChart('instance');
             timeChart.render();
         }
 
         function selectAllOrganisation() {
             console.log('selected All');
-        };
+        }
 
         function reachedMaxSelection() {
             console.log('reached Max Selection');
-        };
+        }
 
         let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early
             if (num === 0) { return '0'; } // terminate early
             fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
-            var b = (num).toPrecision(2).split("e"), // get power
+            let b = (num).toPrecision(2).split("e"), // get power
                 k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
                 c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
                 d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
@@ -609,13 +671,13 @@ class SpendingPerTimePage {
         });
 
         function stringToColour (str) {
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
             }
-            var colour = '#';
-            for (var i = 0; i < 3; i++) {
-                var value = (hash >> (i * 8)) & 0xFF;
+            let colour = '#';
+            for (let i = 0; i < 3; i++) {
+                let value = (hash >> (i * 8)) & 0xFF;
                 colour += ('00' + value.toString(16)).substr(-2);
             }
             return colour;
