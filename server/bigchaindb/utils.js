@@ -51,7 +51,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
         $group: {
             _id: '$' + sourceFieldName,
         }
-    }
+    };
 
     groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
 
@@ -94,7 +94,7 @@ export const publishUniqueValues = (publishFunction, collectionName, sourceColle
     });
 
     publishFunction.ready();
-}
+};
 
 
 
@@ -121,30 +121,33 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
                 groupbyField: '$' + groupbyField,
             }
         }
-    }
+    };
 
     groupClause.$group[sourceFieldName] = { $first: '$' + sourceFieldName };
     groupClause.$group[groupbyField] = { $first: '$' + groupbyField };
 
     pipeLine.push(groupClause);
 
-    let sortClause = { "$sort": { [sourceFieldName]: 1 } };
-    pipeLine.push(sortClause);
+    // let sortClause = { "$sort": { [sourceFieldName]: 1 } };
+    // pipeLine.push(sortClause);
 
     // Call the aggregate
     let cursor = sourceCollection.aggregate(
         pipeLine
     ).forEach((doc) => {
         // Prepare the document for publishing. Start with a clone.
-        let addedDoc = JSON.parse(JSON.stringify(doc));
+        // let addedDoc = JSON.parse(JSON.stringify(doc));
+
+        let docSourceFieldName = doc[sourceFieldName];
 
         if (targetFieldName && targetFieldName != sourceFieldName) {
-            delete addedDoc[sourceFieldName];
-            addedDoc[targetFieldName] = doc[sourceFieldName];
+            doc[targetFieldName] = doc[sourceFieldName];
+            delete doc[sourceFieldName];
         }
+        // console.log(doc);
 
         // We add each document to the published collection so the subscribing client receives them.
-        publishFunction.added(collectionName, doc[sourceFieldName], addedDoc);
+        publishFunction.added(collectionName, docSourceFieldName, doc);
     });
 
     // Stop observing the cursor when client unsubs.
@@ -156,7 +159,7 @@ export const publishUniqueValuesForOrganisation = (publishFunction, collectionNa
     });
 
     publishFunction.ready();
-}
+};
 
 /**
  * Remove empty filter values from a filter object.

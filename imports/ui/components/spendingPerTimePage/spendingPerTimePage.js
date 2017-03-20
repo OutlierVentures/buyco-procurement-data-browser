@@ -43,7 +43,7 @@ class SpendingPerTimePage {
             id: 'All organisations'
         };
         let isAllClient = true;
-        $scope.realOrganisations = [];
+        $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
         $scope.organisationCount = 0;
@@ -92,10 +92,10 @@ class SpendingPerTimePage {
                 return Meteor.userId() != null;
             },
             spendingPerTime: function () {
-                return SpendingPerTime.find({});
+                return SpendingPerTime.find({}).fetch();
             },
             clientSpendingPerTime: function () {
-                return ClientSpendingPerTime.find({});
+                return ClientSpendingPerTime.find({}).fetch();
             },
             mergedSpendingPerTime: function () {
                 // Prepare a joined collection with the percentage of client trade.
@@ -219,12 +219,16 @@ class SpendingPerTimePage {
                 return null;
             },
             clients: function () {
-                return Clients.find({});
+                return Clients.find({}).fetch();
             },
             spendingOrganisations: function () {
                 let organisationsBuffer = [];
-                $scope.realOrganisations = [];
-                let organisations = SpendingOrganisations.find({});
+                // Create an array with all organisations to be used when "All organisations" is selected.
+                // TODO: don't pass the individual organisations for this as a filter, just leave out the 
+                // filter for organisations.
+                $scope.allOrganisations = [];
+
+                let organisations = SpendingOrganisations.find({}).fetch();
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -233,7 +237,7 @@ class SpendingPerTimePage {
                         label: organisation.organisation_name
                     });
 
-                    $scope.realOrganisations.push({
+                    $scope.allOrganisations.push({
                         id: organisation._id,
                         label: organisation.organisation_name
                     });
@@ -242,8 +246,12 @@ class SpendingPerTimePage {
                 if ( organisationsBuffer.length ) {
                     $scope.viewOrganisations[0] = organisationsBuffer[0];
 
+                    // When the special "All organisations" item is selected, use the collection with all organisations as 
+                    // the selection filter. Effectively this causes a filter like:
+                    // "{ organisation_name: { $in : [ every, single, organisation, ...] } }"
+                    // It's more efficient to just leave out the organisation filter in that case.
                     if ($scope.viewOrganisations[0].id == 'All organisations') {
-                        $scope.selectedOrganisation = $scope.realOrganisations;
+                        $scope.selectedOrganisation = $scope.allOrganisations;
                     }
                     $scope.previousSelection = $scope.viewOrganisations;
                 }
@@ -254,12 +262,12 @@ class SpendingPerTimePage {
             spendingServices: function () {
                 return SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                });
+                }).fetch();
             },
             spendingCategories: function () {
                 return SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                });
+                }).fetch();
             },
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
@@ -307,6 +315,10 @@ class SpendingPerTimePage {
 
                     let amount = spendThisPeriod.totalAmount;
                     let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
+                    // For "All organisations", data is summed on the client.
+                    // For larger data sets that will get very inefficient.
+                    // TODO: sum data for "All organisations" on the server (`spendingPerTime/publish.js`) by using
+                    // a parameter in the subscription.
                     if(dataPoint[dataPointGroup]) {
                         dataPoint[dataPointGroup] += amount;
                     } else {
@@ -548,7 +560,7 @@ class SpendingPerTimePage {
 
             if ($scope.viewOrganisations.length) {
                 if ($scope.viewOrganisations[0].id == "All organisations") {
-                    $scope.selectedOrganisation = $scope.realOrganisations;
+                    $scope.selectedOrganisation = $scope.allOrganisations;
                     isAllClient = true;
                 } else {
                     $scope.selectedOrganisation = $scope.viewOrganisations;
