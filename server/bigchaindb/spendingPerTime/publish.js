@@ -63,6 +63,7 @@ Meteor.publish(collectionName, function (filters, options) {
         if (cursor)
             cursor.stop();
     });
+
     this.ready();
 });
 

@@ -678,8 +678,17 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
+            let organisations = '';
+
+            if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations') {// for subscribe one time
+                organisations = '';
+            } else {
+                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+            }
+
+            $scope.getReactively("filteredOrganisations");
             return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
@@ -694,9 +703,19 @@ class SpendingPerTimePage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            let organisations = '';
+
+            if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations') {
+                organisations = '';
+            } else {
+                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+            }
+
+            $scope.getReactively("filteredOrganisations");
+
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
