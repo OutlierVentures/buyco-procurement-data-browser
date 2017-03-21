@@ -228,7 +228,7 @@ class SpendingPerTimePage {
                 // filter for organisations.
                 $scope.allOrganisations = [];
 
-                let organisations = SpendingOrganisations.find({}).fetch();
+                let organisations = SpendingOrganisations.find({}, { sort: { "organisation_name": 1 }}).fetch();
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -262,42 +262,16 @@ class SpendingPerTimePage {
             spendingServices: function () {
                 let services = SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                }).fetch();
-
-                services.sort(function(a, b) {
-                    let nameA = a.name.toUpperCase(); // ignore upper and lowercase
-                    let nameB = b.name.toUpperCase(); // ignore upper and lowercase
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
-
-                    // names must be equal
-                    return 0;
-                });
+                }, { sort: { "name": 1 } }
+                ).fetch();
 
                 return services;
             },
             spendingCategories: function () {
                 let categories = SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                }).fetch();
-
-                categories.sort(function(a, b) {
-                    let nameA = a.name.toUpperCase(); // ignore upper and lowercase
-                    let nameB = b.name.toUpperCase(); // ignore upper and lowercase
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
-
-                    // names must be equal
-                    return 0;
-                });
+                }, { sort: { "name": 1 } }
+                ).fetch();
 
                 return categories;
             },
