@@ -144,7 +144,7 @@ class SpendingPerTimePage {
                         subTotal.client_amount_net = 0;
 
                         merged.forEach(function (data, i) {
-                            if (subTotal._group.organisation_name == data._group.organisation_name) {
+                            if (isAllClient || subTotal._group.organisation_name == data._group.organisation_name) {
                                 subTotal.totalAmount += data.totalAmount;
 
                                 if (data.client_amount_net)
@@ -654,7 +654,11 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
 
-            if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations') {// for subscribe one time
+            // TODO: refactor this expression to a function on the constructor class, call that in all places
+            // where we want to check "should we show all clients?"
+            let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
+            
+            if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
                 organisations = { $in: $scope.getReactively("filteredOrganisations") };
@@ -672,14 +676,17 @@ class SpendingPerTimePage {
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
-                period: $scope.getReactively("period")
+                period: $scope.getReactively("period"),
+                groupField: (isAllClient ? undefined : "organisation_name")
             }];
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
             let organisations = '';
 
-            if ($scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations') {
+            let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
+            
+            if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
                 organisations = { $in: $scope.getReactively("filteredOrganisations") };
@@ -696,7 +703,8 @@ class SpendingPerTimePage {
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
-                period: $scope.getReactively("period")
+                period: $scope.getReactively("period"),
+                groupField: (isAllClient ? undefined : "organisation_name")
             }];
         });
 

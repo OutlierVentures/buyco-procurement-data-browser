@@ -25,12 +25,11 @@ Meteor.publish(collectionName, function (filters, options) {
     else if (period == "quarter")
         groupClause.$group._id.quarter = { $ceil: { $divide: [{ $month: "$payment_date" }, 3] } };
 
-    // Group by organisation_name. In case of a single organisation, will give one
+    // Group by options.groupField, usually "organisation_name". In case of a single organisation, will give one
     // record per period. In case of N organisations, max N records per period (depending
     // on whether that organisation has data in the period).
-    // TODO: pass the field to group by as options.groupField. When that field is empty, only
-    // group by period.
-    groupClause.$group._id.organisation_name = "$organisation_name";
+    if(options.groupField)
+        groupClause.$group._id[options.groupField] = "$" + options.groupField;
 
     pipeLine.push(groupClause);
 
