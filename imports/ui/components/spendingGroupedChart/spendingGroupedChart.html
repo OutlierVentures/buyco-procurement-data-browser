@@ -1,3 +1,13 @@
+<div ng-show="insight" class="mini-stats" style="margin-top: 1em">
+    <div class="ribbon-wrapper">
+        <div class="ribbon-design purple-skin">INSIGHT</div>
+    </div> <span class="sky-skin" style="background-color: {{insight.color}}; border-color: {{insight.color}} !important;"><i class="fa fa-gbp"></i></span>
+    <p><i class="fa fa-arrow-down down" ng-show="insight.percentage < 0">
+        </i><i class="fa fa-arrow-up up" ng-show="insight.percentage > 0"></i> {{insight.description}}</p>
+    <a href="/spending/insights/{{insight.organisation_name}}/{{insight.type}}/{{insight.id}}">
+        <h3>{{insight.amountText}}</h3>
+    </a>
+</div>
 <div class="widget" ng-class="{'full-screen': fullScreenMode}">
     <div class="activity-sec">
         <div class="widget-title">
