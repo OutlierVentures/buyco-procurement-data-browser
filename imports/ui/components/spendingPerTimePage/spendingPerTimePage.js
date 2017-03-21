@@ -203,7 +203,7 @@ class SpendingPerTimePage {
 
                             if (!isExist) {
                                 if (data._group.year != '') {
-                                    data._group.organisation_name = 'All Organisation';
+                                    data._group.organisation_name = 'All organisations';
                                     allMergedTable.push(data);
                                 }
                             }
