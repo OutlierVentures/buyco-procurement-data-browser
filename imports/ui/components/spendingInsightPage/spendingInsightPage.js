@@ -2,6 +2,7 @@ import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
 import utilsPagination from 'angular-utils-pagination';
+import regression from 'regression';
 
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
@@ -79,14 +80,23 @@ class SpendingInsightPage {
                 //      "clientValue_Another Council": 4321
                 // }
 
-                spendingPerTime.forEach((spendThisPeriod) => {
+                var regressionData = that.getRegressionLine(spendingPerTime);
+
+                regressionData.forEach((regressionVal) => {
+                    let spendThisPeriod = _(spendingPerTime).find((v) => {
+                        return v._group
+                            && v._group.year == regressionVal._group.year
+                            && v._group[$scope.period] === regressionVal._group[$scope.period]
+                            && v._group.organisation_name === regressionVal._group.organisation_name;
+                    });
+
                     let xLabel;
                     if ($scope.period == "quarter")
                         // "2016 Q2"
-                        xLabel = spendThisPeriod._group.year + " Q" + spendThisPeriod._group.quarter;
+                        xLabel = regressionVal._group.year + " Q" + regressionVal._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = spendThisPeriod._group.year + "-" + ("00" + spendThisPeriod._group.month).slice(-2);
+                        xLabel = regressionVal._group.year + "-" + ("00" + regressionVal._group.month).slice(-2);
 
                     let dataPoint = pointsByPeriod[xLabel];
                     if (!dataPoint) {
@@ -94,37 +104,40 @@ class SpendingInsightPage {
                         pointsByPeriod[xLabel] = dataPoint;
                     }
 
-                    let amount = spendThisPeriod.totalAmount;
-                    let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
-                    // For "All organisations", data is summed on the client.
-                    // For larger data sets that will get very inefficient.
-                    // TODO: sum data for "All organisations" on the server (`spendingPerTime/publish.js`) by using
-                    // a parameter in the subscription.
-                    if(dataPoint[dataPointGroup]) {
-                        dataPoint[dataPointGroup] += amount;
-                    } else {
-                        dataPoint[dataPointGroup] = amount;
-                    }
-                    // dataPoint[spendThisPeriod._group.organisation_name] = amount;
+                    dataPoint.regression = regressionVal.totalAmount;
 
-                    let clientVal = _(clientSpendingPerTime).find((v) => {
-                        return v._group
-                            && v._group.year == spendThisPeriod._group.year
-                            && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
-                            && v._group.organisation_name === spendThisPeriod._group.organisation_name;
-                    });
-
-                    if (clientVal !== undefined) {
-                        let clientPointKey = "clientValue_" + (isAllClient ? "All" : spendThisPeriod._group.organisation_name);
-                        if(dataPoint[clientPointKey]) {
-                            dataPoint[clientPointKey] += clientVal.totalAmount;
+                    if(spendThisPeriod) {
+                        let amount = spendThisPeriod.totalAmount;
+                        let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
+                        // For "All organisations", data is summed on the client.
+                        // For larger data sets that will get very inefficient.
+                        // TODO: sum data for "All organisations" on the server (`spendingPerTime/publish.js`) by using
+                        // a parameter in the subscription.
+                        if (dataPoint[dataPointGroup]) {
+                            dataPoint[dataPointGroup] += amount;
                         } else {
-                            dataPoint[clientPointKey] = clientVal.totalAmount;
+                            dataPoint[dataPointGroup] = amount;
                         }
-                        // dataPoint[clientPointKey] = clientVal.totalAmount;
-                    }
 
-                    publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
+                        let clientVal = _(clientSpendingPerTime).find((v) => {
+                            return v._group
+                                && v._group.year == spendThisPeriod._group.year
+                                && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
+                                && v._group.organisation_name === spendThisPeriod._group.organisation_name;
+                        });
+
+                        if (clientVal !== undefined) {
+                            let clientPointKey = "clientValue_" + (isAllClient ? "All" : spendThisPeriod._group.organisation_name);
+                            if (dataPoint[clientPointKey]) {
+                                dataPoint[clientPointKey] += clientVal.totalAmount;
+                            } else {
+                                dataPoint[clientPointKey] = clientVal.totalAmount;
+                            }
+                            // dataPoint[clientPointKey] = clientVal.totalAmount;
+                        }
+                    
+                        publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
+                    }
 
                     i++;
                 });
@@ -145,46 +158,32 @@ class SpendingInsightPage {
 
                 // Create series for each selected organisation, and if client data is shown,
                 // another series for client data for each organisation.
-                if (isAllClient) {
+                series.push({
+                    argumentField: "xAxis",
+                    valueField: "All",
+                    name: $scope.organisation_name,
+                    type: "bar",
+                    color: getColor($scope.organisation_name)
+                });
+
+                // Regression series
+                series.push({
+                    argumentField: "xAxis",
+                    valueField: "regression",
+                    name: "Forecast",
+                    type: "spline",
+                    color: getColor("Forecast")
+                });
+
+                // Add client series if we have data for it
+                if (allowedClients.length > 0 && sc) {
                     series.push({
                         argumentField: "xAxis",
-                        valueField: "All",
-                        name: "All",
+                        valueField: "clientValue_" + "All",
+                        name: sc.name + " - " + "All",
                         type: "spline",
-                        color: getColor("All")
-                    });
-
-                    // Add client series if we have data for it
-                    if (allowedClients.length > 0 && sc) {
-                        series.push({
-                            argumentField: "xAxis",
-                            valueField: "clientValue_" + "All",
-                            name: sc.name + " - " + "All",
-                            type: "spline",
-                            color: '#543996'
-                        })
-                    }
-                } else {
-                    _($scope.selectedOrganisation).each((org) => {
-                        series.push({
-                            argumentField: "xAxis",
-                            valueField: org.id,
-                            name: org.id,
-                            type: "bar",
-                            color: getColor(org.id)
-                        });
-
-                        // Add client series if we have data for it
-                        if (allowedClients.length > 0 && sc) {
-                            series.push({
-                                argumentField: "xAxis",
-                                valueField: "clientValue_" + org.id,
-                                name: sc.name + " - " + org.id,
-                                type: "bar",
-                                color: '#543996'
-                            })
-                        }
-                    });
+                        color: '#543996'
+                    })
                 }
 
                 let selectedArgument = 0;
@@ -266,9 +265,9 @@ class SpendingInsightPage {
         function markSelectedPoint() {
             setTimeout(function () {
                 let chartHandle = getChartHandle();
-                if(chartHandle) {
+                if (chartHandle) {
                     let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
-                    if(series && series.getAllPoints().length) {
+                    if (series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
                             let serviceName = point.initialArgument;
@@ -283,7 +282,7 @@ class SpendingInsightPage {
 
         // TODO: remove this hardcoded default option, just use the first item in the list
 
-        $scope.checkSelection = function() {
+        $scope.checkSelection = function () {
             let prevTotalsItemSelected;
 
             if ($scope.previousSelection && $scope.previousSelection.length == 1 && $scope.previousSelection[0].id == "All organisations") {
@@ -293,7 +292,7 @@ class SpendingInsightPage {
             let totalsItemSelected = null;
             let nonTotalsItemSelected = null;
 
-            $scope.viewOrganisations.forEach(function(selectedItem) {
+            $scope.viewOrganisations.forEach(function (selectedItem) {
                 if (selectedItem == prevTotalsItemSelected)
                     return false;
 
@@ -427,10 +426,9 @@ class SpendingInsightPage {
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
-                // Use  `payment_date` for filter and group rather than `effective_date` even though
-                // the latter might be the correct one.
-                // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
-                // payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
+                // Make sure we don't show null items (1970, unix epoch)
+                // For now don't show data beyond 2016
+                payment_date: { $gt: new Date(2000,1,1), $lt: new Date(2017,1,1) }
             },
             {
                 period: $scope.getReactively("period"),
@@ -451,7 +449,9 @@ class SpendingInsightPage {
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
-                // payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
+                // Make sure we don't show null items (1970, unix epoch)
+                // For now don't show data beyond 2016
+                payment_date: { $gt: new Date(2000,1,1), $lt: new Date(2017,1,1) }
             },
             {
                 period: $scope.getReactively("period"),
@@ -466,7 +466,7 @@ class SpendingInsightPage {
             }
         });
 
-        function stringToColour (str) {
+        function stringToColour(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -481,9 +481,70 @@ class SpendingInsightPage {
         /**
          * Return the color for an organisation series
          */
-        function getColor (organisationName) {
+        function getColor(organisationName) {
             return stringToColour(organisationName);
         }
+    }
+
+    getRegressionLine(spendingData) {
+        if (spendingData.length == 0)
+            return [];
+
+        // Convert to an array of type [ [x1, y1], [x2, y2], ..., [xN, yN] ].
+        let data = [];
+
+        for (let i = 0; i < spendingData.length; i++) {
+            let spendingPoint = spendingData[i];
+            data.push([i, spendingPoint.totalAmount]);
+        }
+
+        let result = regression('linear', data);
+        // let result = regression('polynomial', data, 2);
+
+        let slope = result.equation[0];
+        let yIntercept = result.equation[1];
+
+        // Calculate trend value for each point
+        let resultData = [];
+
+        for (let i = 0; i < spendingData.length; i++) {
+            let spendingPoint = spendingData[i];
+
+            let regressionPoint = {
+                _group: spendingPoint._group,
+                totalAmount: result.points[i][1]
+            }
+            resultData.push(regressionPoint);
+        }
+
+        // Add future points
+
+        // The regression package creates a string that's /almost/ valid Javascript, but not
+        // quite. Add '*' to allow eval()'ing it.
+        var evaluatableFormula = result.string.replace(/x/g, ' * x');
+
+        for (let i = 0; i <  8; i++) {
+            let timeIndex = i + spendingData.length;
+
+            let quarter = i % 4 + 1;
+            let year = 2017 + Math.floor((i) / 4);
+
+            var x = timeIndex;
+
+            let regressionValue = eval(evaluatableFormula);
+
+            let regressionPoint = {
+                _group: {
+                    year: year,
+                    quarter: quarter
+                },
+                totalAmount: regressionValue
+            }
+
+            resultData.push(regressionPoint);
+        }
+
+        return resultData;
     }
 }
 
@@ -505,6 +566,6 @@ function config($stateProvider) {
     $stateProvider
         .state('spending-insight', {
             url: '/spending/insight/:organisation_name/:type/:id',
-            template: '<spending-insight-page [organisation_name]="' + name +'.organisation_name" [type]="' + name +'.type" [id]="' + name +'.id"></spending-insight-page>'
+            template: '<spending-insight-page [organisation_name]="' + name + '.organisation_name" [type]="' + name + '.type" [id]="' + name + '.id"></spending-insight-page>'
         });
 }
