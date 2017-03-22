@@ -161,7 +161,7 @@ class SpendingInsightPage {
                 series.push({
                     argumentField: "xAxis",
                     valueField: "All",
-                    name: $scope.organisation_name,
+                    name: "Historical spending",
                     type: "bar",
                     color: getColor($scope.organisation_name)
                 });
@@ -415,21 +415,37 @@ class SpendingInsightPage {
         $scope.subscribe('spendingServices');
         $scope.subscribe('spendingCategories');
 
+        // Prepare filter data
+        var organisations = '';
+
+        organisations = { $in: [$scope.getReactively("organisation_name")] };
+
+        var filters = {
+            organisation_name: organisations,                
+            // Make sure we don't show null items (1970, unix epoch)
+            // For now don't show data beyond 2016
+            payment_date: { $gt: new Date(2000,1,1), $lt: new Date(2017,1,1) }
+        };
+
+        let filterField;
+
+        switch($scope.type) {
+            case "category":
+                filterField = "procurement_classification_1";
+                break;
+            case "service":
+                filterField = "sercop_service";
+                break;
+            case "supplier":
+                filterField = "supplier_name";
+                break;
+        }
+
+        filters[filterField] = $scope.id;
+
         $scope.subscribe('spendingPerTime', function () {
-            let organisations = '';
-
-            organisations = { $in: [$scope.getReactively("organisation_name")] };
-
-            $scope.getReactively("filteredOrganisations");
-            return [{
-                organisation_name: organisations,
-                procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service"),
-                supplier_name: $scope.getReactively('supplier_name'),
-                // Make sure we don't show null items (1970, unix epoch)
-                // For now don't show data beyond 2016
-                payment_date: { $gt: new Date(2000,1,1), $lt: new Date(2017,1,1) }
-            },
+            return [
+                filters,
             {
                 period: $scope.getReactively("period"),
                 groupField: (isAllClient ? undefined : "organisation_name")
@@ -437,22 +453,8 @@ class SpendingInsightPage {
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
-            let organisations = '';
-
-            organisations = { $in: [$scope.getReactively("organisation_name")] };
-
-            $scope.getReactively("filteredOrganisations");
-
-            return [{
-                client_id: $scope.getReactively("selectedClient.client_id"),
-                organisation_name: organisations,
-                procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service"),
-                supplier_name: $scope.getReactively('supplier_name'),
-                // Make sure we don't show null items (1970, unix epoch)
-                // For now don't show data beyond 2016
-                payment_date: { $gt: new Date(2000,1,1), $lt: new Date(2017,1,1) }
-            },
+            return [
+                filters,
             {
                 period: $scope.getReactively("period"),
                 groupField: (isAllClient ? undefined : "organisation_name")

@@ -406,7 +406,7 @@ class SpendingGroupedChart {
                 if(!items || !items.length)
                     return null;
                 
-                let insightItem = items[0];
+                let insightItem = items[Math.round(Math.random() * items.length)];
                 
                 let date = new Date();
                 date.setYear(date.getFullYear() + 1);
