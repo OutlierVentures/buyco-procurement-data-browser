@@ -5,7 +5,7 @@ Meteor app for browsing and visualising spending data stored in a BigchainDB/Mon
 Live environments:
 
 - Development (`develop` branch): [http://dev.app.publicdata.works](http://dev.app.publicdata.works)
-- Staging (`master` branch): [http://staging.app.publicdata.works](http://staging.app.publicdata.works) - to be set up
+- Staging (`master` branch): [http://staging.app.publicdata.works](http://staging.app.publicdata.works)
 
 ## Components
 

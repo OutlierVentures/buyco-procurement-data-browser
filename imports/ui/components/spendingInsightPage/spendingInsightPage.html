@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="widget">
+            <div class="activity-sec">
+                <div class="widget-title">
+                    <h3>{{organisation_name}} - {{id}}</h3>
+                </div>
+                <div>
+                    <div id="timeChart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
+                                    bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource', tooltip: 'chartData.tooltip' } }"
+                        ng-show="spendingPerTime.length"></div>
+
+                    <div ng-show="spendingPerTime.length === 0">
+                        <p>Loading...</p>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
