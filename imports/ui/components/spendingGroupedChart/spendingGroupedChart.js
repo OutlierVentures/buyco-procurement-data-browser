@@ -393,6 +393,45 @@ class SpendingGroupedChart {
 
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
+            },
+            insight: () => {
+                // Show insights only to logged on users
+                if(!Meteor.userId())
+                    return null;
+
+                // Stub function: show a random value for a random item from the list.
+                // TODO: implement real value from prediction data.
+                let items = this.getReactively("spendingGrouped")();
+
+                if(!items || !items.length)
+                    return null;
+                
+                let insightItem = items[Math.round(Math.random() * items.length)];
+                
+                let date = new Date();
+                date.setYear(date.getFullYear() + 1);
+
+                // Quarter: deterministic value 1-4 for each item 
+                let quarter = insightItem.count % 4 + 1;
+
+                // Percentage: deterministic value -30 - +30
+                let percentage = insightItem.count % 80 - 40;
+
+                // Only show insights with a significant percentage.
+                if (Math.abs(percentage) < 10)
+                    return 0;
+
+                let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + date.getFullYear() + "-Q" + quarter;
+
+                return {
+                    id: insightItem._group,
+                    type: this.groupDisplayName,                    
+                    organisation_name: insightItem.organisation_name,
+                    description: insightItem.organisation_name + " - " + insightItem._group,
+                    percentage: percentage,
+                    amountText: amountText,
+                    color: getColor(insightItem.organisation_name)
+                }
             }
         });
 

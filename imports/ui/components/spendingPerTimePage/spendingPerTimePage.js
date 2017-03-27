@@ -144,7 +144,7 @@ class SpendingPerTimePage {
                         subTotal.client_amount_net = 0;
 
                         merged.forEach(function (data, i) {
-                            if (subTotal._group.organisation_name == data._group.organisation_name) {
+                            if (isAllClient || subTotal._group.organisation_name == data._group.organisation_name) {
                                 subTotal.totalAmount += data.totalAmount;
 
                                 if (data.client_amount_net)
@@ -203,7 +203,7 @@ class SpendingPerTimePage {
 
                             if (!isExist) {
                                 if (data._group.year != '') {
-                                    data._group.organisation_name = 'All Organisation';
+                                    data._group.organisation_name = 'All organisations';
                                     allMergedTable.push(data);
                                 }
                             }
@@ -234,7 +234,7 @@ class SpendingPerTimePage {
                 // filter for organisations.
                 $scope.allOrganisations = [];
 
-                let organisations = SpendingOrganisations.find({}).fetch();
+                let organisations = SpendingOrganisations.find({}, { sort: { "organisation_name": 1 }}).fetch();
 
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
@@ -266,14 +266,20 @@ class SpendingPerTimePage {
                 return organisationsBuffer;
             },
             spendingServices: function () {
-                return SpendingServices.find({
+                let services = SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                }).fetch();
+                }, { sort: { "name": 1 } }
+                ).fetch();
+
+                return services;
             },
             spendingCategories: function () {
-                return SpendingCategories.find({
+                let categories = SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                }).fetch();
+                }, { sort: { "name": 1 } }
+                ).fetch();
+
+                return categories;
             },
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
@@ -666,8 +672,21 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
+            let organisations = '';
+
+            // TODO: refactor this expression to a function on the constructor class, call that in all places
+            // where we want to check "should we show all clients?"
+            let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
+            
+            if (isAllClient) {// for subscribe one time
+                organisations = '';
+            } else {
+                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+            }
+
+            $scope.getReactively("filteredOrganisations");
             return [{
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
@@ -677,21 +696,35 @@ class SpendingPerTimePage {
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
-                period: $scope.getReactively("period")
+                period: $scope.getReactively("period"),
+                groupField: (isAllClient ? undefined : "organisation_name")
             }];
         });
 
         $scope.subscribe('clientSpendingPerTime', function () {
+            let organisations = '';
+
+            let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
+            
+            if (isAllClient) {// for subscribe one time
+                organisations = '';
+            } else {
+                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+            }
+
+            $scope.getReactively("filteredOrganisations");
+
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
-                organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
+                organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
                 sercop_service: $scope.getReactively("service"),
                 supplier_name: $scope.getReactively('supplier_name'),
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
-                period: $scope.getReactively("period")
+                period: $scope.getReactively("period"),
+                groupField: (isAllClient ? undefined : "organisation_name")
             }];
         });
 
