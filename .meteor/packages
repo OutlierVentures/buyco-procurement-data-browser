@@ -22,8 +22,8 @@ velocity:html-reporter
 velocity:console-reporter
 accounts-password@1.3.3
 dotansimha:accounts-ui-angular
-accounts-facebook@1.0.11
-accounts-twitter@1.1.12
+#accounts-facebook@1.0.11
+#accounts-twitter@1.1.12
 tmeasday:publish-counts
 check@1.2.4
 email@1.1.18
