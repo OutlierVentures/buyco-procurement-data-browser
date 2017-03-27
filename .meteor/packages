@@ -32,3 +32,4 @@ alanning:roles
 meteorhacks:aggregate
 momentjs:moment
 erasaur:meteor-lodash
+practicalmeteor:mocha

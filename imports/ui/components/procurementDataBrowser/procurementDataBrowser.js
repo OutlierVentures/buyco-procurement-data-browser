@@ -15,6 +15,7 @@ import '/node_modules/bootstrap-daterangepicker/daterangepicker.css';
 import template from './procurementDataBrowser.html';
 import { name as SpendingList } from '../spendingList/spendingList';
 import { name as SpendingPerTimePage } from '../spendingPerTimePage/spendingPerTimePage';
+import { name as SpendingInsightPage } from '../spendingInsightPage/spendingInsightPage';
 import { name as Importer } from '../importer/importer';
 import { name as Navigation } from '../navigation/navigation';
 
@@ -28,6 +29,7 @@ export default angular.module(name, [
   uiRouter,
   SpendingList,
   SpendingPerTimePage,
+  SpendingInsightPage,
   Importer,
   Navigation,
   daterangepicker,
