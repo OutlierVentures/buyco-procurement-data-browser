@@ -399,8 +399,8 @@ class SpendingGroupedChart {
                 if(!Meteor.userId())
                     return null;
 
-                // Stub function: always show an insight about the first item in the list.
-                // TODO: implement.
+                // Stub function: show a random value for a random item from the list.
+                // TODO: implement real value from prediction data.
                 let items = this.getReactively("spendingGrouped")();
 
                 if(!items || !items.length)
