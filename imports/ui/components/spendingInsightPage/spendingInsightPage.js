@@ -2,13 +2,14 @@ import angular from 'angular';
 import angularMeteor from 'angular-meteor';
 import uiRouter from 'angular-ui-router';
 import utilsPagination from 'angular-utils-pagination';
-import regression from 'regression';
 
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
 import { SpendingPerTime } from '../../../api/spendingPerTime';
 import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { Clients } from '../../../api/clients';
+
+import { getRegressionLine } from '/imports/utils/predictions';
 
 import { CHART_FONT } from '../../stylesheet/config';
 
@@ -80,9 +81,9 @@ class SpendingInsightPage {
                 //      "clientValue_Another Council": 4321
                 // }
 
-                var regressionData = that.getRegressionLine(spendingPerTime);
+                var regressionData = getRegressionLine(spendingPerTime);
 
-                regressionData.forEach((regressionVal) => {
+                regressionData.points.forEach((regressionVal) => {
                     let spendThisPeriod = _(spendingPerTime).find((v) => {
                         return v._group
                             && v._group.year == regressionVal._group.year
@@ -486,67 +487,6 @@ class SpendingInsightPage {
         function getColor(organisationName) {
             return stringToColour(organisationName);
         }
-    }
-
-    getRegressionLine(spendingData) {
-        if (spendingData.length == 0)
-            return [];
-
-        // Convert to an array of type [ [x1, y1], [x2, y2], ..., [xN, yN] ].
-        let data = [];
-
-        for (let i = 0; i < spendingData.length; i++) {
-            let spendingPoint = spendingData[i];
-            data.push([i, spendingPoint.totalAmount]);
-        }
-
-        let result = regression('linear', data);
-        // let result = regression('polynomial', data, 2);
-
-        let slope = result.equation[0];
-        let yIntercept = result.equation[1];
-
-        // Calculate trend value for each point
-        let resultData = [];
-
-        for (let i = 0; i < spendingData.length; i++) {
-            let spendingPoint = spendingData[i];
-
-            let regressionPoint = {
-                _group: spendingPoint._group,
-                totalAmount: result.points[i][1]
-            }
-            resultData.push(regressionPoint);
-        }
-
-        // Add future points
-
-        // The regression package creates a string that's /almost/ valid Javascript, but not
-        // quite. Add '*' to allow eval()'ing it.
-        var evaluatableFormula = result.string.replace(/x/g, ' * x');
-
-        for (let i = 0; i <  8; i++) {
-            let timeIndex = i + spendingData.length;
-
-            let quarter = i % 4 + 1;
-            let year = 2017 + Math.floor((i) / 4);
-
-            var x = timeIndex;
-
-            let regressionValue = eval(evaluatableFormula);
-
-            let regressionPoint = {
-                _group: {
-                    year: year,
-                    quarter: quarter
-                },
-                totalAmount: regressionValue
-            }
-
-            resultData.push(regressionPoint);
-        }
-
-        return resultData;
     }
 }
 
