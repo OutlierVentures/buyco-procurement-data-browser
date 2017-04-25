@@ -356,7 +356,7 @@ class SpendingGroupedChart {
                         }
                     },
                     onPointClick: function (e) {
-                        var target = e.target;
+                        let target = e.target;
                         if (!target.isSelected()) {
                             target.select();
                             selectedArgument = target.originalArgument;
@@ -364,7 +364,6 @@ class SpendingGroupedChart {
                             self.subfilter = selectedService;
                         } else {
                             target.clearSelection();
-                            let selectedService = getSelectedService(selectedArgument);
                             self.subfilter = null;
                         }
                     },
@@ -448,9 +447,9 @@ class SpendingGroupedChart {
 
         function markSelectedSubFilter() {
             setTimeout(function () {
-                var chartHandle = getChartHandle();
+                let chartHandle = getChartHandle();
                 if(chartHandle) {
-                    let series = chartHandle.getSeriesByPos(1);
+                    let series = chartHandle.getSeriesByPos(0);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
@@ -492,7 +491,7 @@ class SpendingGroupedChart {
                 colour += ('00' + value.toString(16)).substr(-2);
             }
             return colour;
-        }
+        };
         /**
          * Return the color for an organisation series
          */
