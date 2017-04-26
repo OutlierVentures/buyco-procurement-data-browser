@@ -92,7 +92,7 @@ class SpendingPerTimePage {
                 return Meteor.userId() != null;
             },
             spendingPerTime: function () {
-                return SpendingPerTime.find({}).fetch();
+                return SpendingPerTime.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 }}).fetch();
             },
             clientSpendingPerTime: function () {
                 return ClientSpendingPerTime.find({}).fetch();
