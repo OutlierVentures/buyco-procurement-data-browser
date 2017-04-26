@@ -16,6 +16,7 @@ import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGr
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
 import { CHART_FONT } from '../../stylesheet/config';
+import { getColour } from '../../../utils';
 
 import template from './spendingPerTimePage.html';
 
@@ -384,7 +385,7 @@ class SpendingPerTimePage {
                         valueField: "All",
                         name: "All",
                         type: "bar",
-                        color: getColor("All")
+                        color: getColour("All")
                     });
 
                     // Add client series if we have data for it
@@ -404,7 +405,7 @@ class SpendingPerTimePage {
                             valueField: org.id,
                             name: org.id,
                             type: "bar",
-                            color: getColor(org.id)
+                            color: getColour(org.id)
                         });
 
                         // Add client series if we have data for it
@@ -735,24 +736,8 @@ class SpendingPerTimePage {
             }
         });
 
-        function stringToColour (str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            let colour = '#';
-            for (let i = 0; i < 3; i++) {
-                let value = (hash >> (i * 8)) & 0xFF;
-                colour += ('00' + value.toString(16)).substr(-2);
-            }
-            return colour;
-        }
-        /**
-         * Return the color for an organisation series
-         */
-        function getColor (organisationName) {
-            return stringToColour(organisationName);
-        }
+        
+        
     }
 }
 
