@@ -69,7 +69,8 @@ class SpendingPerTimePage {
             [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
             [lastTwoYearsLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
             [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
-            'This Year': [moment().startOf('year'), moment().endOf('year')]
+            'This Year': [moment().startOf('year'), moment().endOf('year')],
+            ['All available data']: [moment("2010-01-01"), moment()]
         };
 
         $scope.filterDate = {
