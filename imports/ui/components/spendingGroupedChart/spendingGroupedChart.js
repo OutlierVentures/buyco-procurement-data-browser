@@ -9,6 +9,7 @@ import { SpendingGrouped } from '/imports/api/spendingGrouped';
 import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
+import { getColour } from '../../../utils';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
@@ -253,7 +254,7 @@ class SpendingGroupedChart {
                         valueField: 'zero',
                         type: 'scatter',
                         name: organisation_name,
-                        color: getColor(organisation_name),
+                        color: getColour(organisation_name),
                         showInLegend: true,
                         point: {
                             color: 'none'
@@ -351,7 +352,7 @@ class SpendingGroupedChart {
                         if (this.series.name == "Public spending") {
                             let sourcePoint = $scope.dataSource[this.index];
                             return {
-                                color: getColor(sourcePoint.organisationName)
+                                color: getColour(sourcePoint.organisationName)
                             };
                         }
                     },
@@ -429,7 +430,7 @@ class SpendingGroupedChart {
                     description: insightItem.organisation_name + " - " + insightItem._group,
                     percentage: percentage,
                     amountText: amountText,
-                    color: getColor(insightItem.organisation_name)
+                    color: getColour(insightItem.organisation_name)
                 }
             }
         });
@@ -479,25 +480,6 @@ class SpendingGroupedChart {
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
-
-        let stringToColour = function (str) {
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            var colour = '#';
-            for (var i = 0; i < 3; i++) {
-                var value = (hash >> (i * 8)) & 0xFF;
-                colour += ('00' + value.toString(16)).substr(-2);
-            }
-            return colour;
-        };
-        /**
-         * Return the color for an organisation series
-         */
-        let getColor = (organisationName) => {
-            return stringToColour(organisationName);
-        };
 
         let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early

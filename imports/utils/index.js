@@ -1,4 +1,5 @@
 import { MetaDataHelper as mdh } from './metaDataHelper';
+import { stringToColour } from './style';
 
 export const MetaDataHelper = new mdh();
 
@@ -14,3 +15,10 @@ export const removeEmptyFilters = (filters) => {
             delete filters[k];
     }
 };
+
+/**
+ * Return the color for an organisation series
+ */
+export const getColour = (organisationName) => {
+    return stringToColour(organisationName);
+}
