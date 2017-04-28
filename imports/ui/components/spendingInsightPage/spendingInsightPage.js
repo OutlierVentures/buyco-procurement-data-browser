@@ -8,12 +8,15 @@ import { Counts } from 'meteor/tmeasday:publish-counts';
 import { SpendingPerTime } from '../../../api/spendingPerTime';
 import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { Clients } from '../../../api/clients';
+import { Predictions } from '../../../api/predictions';
 
 import { getRegressionLine } from '/imports/utils/predictions';
+import { getColour } from '../../../utils';
 
 import { CHART_FONT } from '../../stylesheet/config';
 
 import template from './spendingInsightPage.html';
+
 
 class SpendingInsightPage {
     constructor($scope, $reactive, $rootScope, $element, $stateParams) {
@@ -57,6 +60,9 @@ class SpendingInsightPage {
             },
             clients: function () {
                 return Clients.find({}).fetch();
+            },
+            predictionData: function (){
+                return Predictions.find({}).fetch();
             },
             chartData: function () {
                 let spendingPerTime = $scope.getReactively("spendingPerTime");
@@ -164,7 +170,7 @@ class SpendingInsightPage {
                     valueField: "All",
                     name: "Historical spending",
                     type: "bar",
-                    color: getColor($scope.organisation_name)
+                    color: getColour($scope.organisation_name)
                 });
 
                 // Regression series
@@ -173,7 +179,7 @@ class SpendingInsightPage {
                     valueField: "regression",
                     name: "Forecast",
                     type: "spline",
-                    color: getColor("Forecast")
+                    color: getColour("Forecast")
                 });
 
                 // Add client series if we have data for it
@@ -418,8 +424,9 @@ class SpendingInsightPage {
 
         // Prepare filter data
         var organisations = '';
+        let organisation_name = $scope.getReactively("organisation_name");
 
-        organisations = { $in: [$scope.getReactively("organisation_name")] };
+        organisations = { $in: [organisation_name] };
 
         var filters = {
             organisation_name: organisations,                
@@ -442,7 +449,9 @@ class SpendingInsightPage {
                 break;
         }
 
-        filters[filterField] = $scope.id;
+        let filterValue = $scope.id;
+
+        filters[filterField] = filterValue;
 
         $scope.subscribe('spendingPerTime', function () {
             return [
@@ -460,6 +469,16 @@ class SpendingInsightPage {
                 period: $scope.getReactively("period"),
                 groupField: (isAllClient ? undefined : "organisation_name")
             }];
+        });      
+
+        $scope.subscribe('predictions', function () {
+            return [
+                organisation_name,
+                filterField,
+                filterValue,
+            {
+                period: $scope.getReactively("period"),
+            }];
         });
 
         this.autorun(() => {
@@ -469,24 +488,7 @@ class SpendingInsightPage {
             }
         });
 
-        function stringToColour(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            let colour = '#';
-            for (let i = 0; i < 3; i++) {
-                let value = (hash >> (i * 8)) & 0xFF;
-                colour += ('00' + value.toString(16)).substr(-2);
-            }
-            return colour;
-        }
-        /**
-         * Return the color for an organisation series
-         */
-        function getColor(organisationName) {
-            return stringToColour(organisationName);
-        }
+
     }
 }
 
