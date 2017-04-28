@@ -6,13 +6,26 @@ import { getRegressionLine } from '/imports/utils/predictions';
  * Calculate a prediction for a single organisation, group field and group value.
  * The prediction is calculated per month.
  */
-export function computePrediction(organisationName, groupField, groupValue) {
+export function computePrediction(organisationName, groupField, groupValue, forceRecalculate) {
     let period = "quarter";
 
-    console.log("computePrediction", organisationName, groupField, groupValue);
+    // console.log("computePrediction", organisationName, groupField, groupValue);
 
     if (!groupValue) {
         // console.log("Empty group value, not computing prediction.");
+        return;
+    }
+
+    let filters = {
+        "organisation_name": organisationName,
+        "group_field": groupField,
+        "group_value": groupValue,
+        "type": "linear_regression"
+    };
+
+    if (!forceRecalculate && Predictions.findOne(filters)) {
+        // console.log("Using existing prediction data.");
+        return;
     }
 
     // Get spending per time for all time
@@ -25,11 +38,7 @@ export function computePrediction(organisationName, groupField, groupValue) {
     // console.log("computePrediction points", regressionData.points);
 
     // Delete any old prediction data for this org/group
-    Predictions.remove({
-        "organisation_name": organisationName,
-        "group_field": groupField,
-        "group_value": groupValue
-    });
+    Predictions.remove(filters);
 
     // Insert new prediction data
     // TODO: use bulk insert. Not supported by Meteor collections, have to use rawCollection.
