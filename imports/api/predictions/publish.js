@@ -22,7 +22,15 @@ if (Meteor.isServer) {
 
         pipeLine.push({ $match: filters });
 
-        let groupClause = { $group: { _id: { year: { $year: "$effective_date" } }, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+        let groupClause = { 
+            $group: { 
+                _id: {
+                    organisation_name: "$organisation_name",
+                    year: { $year: "$effective_date" }
+                }, 
+                totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 }
+            } 
+        };
 
         if (period == "month")
             groupClause.$group._id.month = { $month: "$effective_date" };
@@ -48,7 +56,7 @@ if (Meteor.isServer) {
             // Store the groupField in the row so that the client can use it for filtering.
             doc.groupField = groupField;
 
-            console.log(collectionName + "predictions document", JSON.stringify(doc));
+            console.log(collectionName + " document", JSON.stringify(doc));
 
             // We add each document to the published collection so the subscribing client receives them.
             this.added(collectionName, doc._id, doc);

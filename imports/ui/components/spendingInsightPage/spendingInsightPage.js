@@ -27,7 +27,7 @@ class SpendingInsightPage {
         $scope.id = $stateParams.id;
 
         $rootScope.$on('resizeRequested', function (e) {
-            resizeTimeChart();
+            resizeForecastChart();
         });
 
         $reactive(this).attach($scope);
@@ -39,8 +39,6 @@ class SpendingInsightPage {
             seriesName: '',
             pointName: ''
         };
-
-        let isAllClient = true;
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -89,12 +87,21 @@ class SpendingInsightPage {
 
                 var regressionData = getRegressionLine(spendingPerTime);
 
+                var predictionData = $scope.getReactively("predictionData");
+
+                // Loop through the forecast data as it has a wider time reach than the real data.
                 regressionData.points.forEach((regressionVal) => {
                     let spendThisPeriod = _(spendingPerTime).find((v) => {
                         return v._group
                             && v._group.year == regressionVal._group.year
                             && v._group[$scope.period] === regressionVal._group[$scope.period]
                             && v._group.organisation_name === regressionVal._group.organisation_name;
+                    });
+
+                    let predictionThisPeriod = _(predictionData).find((v) => {
+                        return v._group
+                            && v._group.year == regressionVal._group.year
+                            && v._group[$scope.period] === regressionVal._group[$scope.period];
                     });
 
                     let xLabel;
@@ -115,7 +122,7 @@ class SpendingInsightPage {
 
                     if(spendThisPeriod) {
                         let amount = spendThisPeriod.totalAmount;
-                        let dataPointGroup = isAllClient ? "All" : spendThisPeriod._group.organisation_name;
+                        let dataPointGroup = spendThisPeriod._group.organisation_name;
                         // For "All organisations", data is summed on the client.
                         // For larger data sets that will get very inefficient.
                         // TODO: sum data for "All organisations" on the server (`spendingPerTime/publish.js`) by using
@@ -134,7 +141,7 @@ class SpendingInsightPage {
                         });
 
                         if (clientVal !== undefined) {
-                            let clientPointKey = "clientValue_" + (isAllClient ? "All" : spendThisPeriod._group.organisation_name);
+                            let clientPointKey = "clientValue_" + dataPointGroup;
                             if (dataPoint[clientPointKey]) {
                                 dataPoint[clientPointKey] += clientVal.totalAmount;
                             } else {
@@ -144,6 +151,15 @@ class SpendingInsightPage {
                         }
                     
                         publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
+                    }
+
+                    if(predictionThisPeriod) {
+                        let amount = predictionThisPeriod.totalAmount;
+                        let dataPointGroup = predictionThisPeriod._group.organisation_name;
+
+                        let predictionPointKey = "prediction_" + dataPointGroup;
+
+                        dataPoint[predictionPointKey] = amount;
                     }
 
                     i++;
@@ -160,6 +176,7 @@ class SpendingInsightPage {
                 };
 
                 let series = [];
+                let seriesName = '';
 
                 let sc = $scope.getReactively("selectedClient");
 
@@ -167,27 +184,40 @@ class SpendingInsightPage {
                 // another series for client data for each organisation.
                 series.push({
                     argumentField: "xAxis",
-                    valueField: "All",
+                    valueField: $scope.organisation_name,
                     name: "Historical spending",
                     type: "bar",
                     color: getColour($scope.organisation_name)
                 });
 
                 // Regression series
+                seriesName = "Forecast - regression";
                 series.push({
                     argumentField: "xAxis",
                     valueField: "regression",
-                    name: "Forecast",
+                    name: seriesName,
                     type: "spline",
-                    color: getColour("Forecast")
+                    color: getColour(seriesName)
+                });
+
+                // Prediction series
+                seriesName = "Forecast";
+                let predictionPointKey = "prediction_" + $scope.organisation_name;
+
+                series.push({
+                    argumentField: "xAxis",
+                    valueField: predictionPointKey,
+                    name: seriesName,
+                    type: "spline",
+                    color: getColour(seriesName)
                 });
 
                 // Add client series if we have data for it
                 if (allowedClients.length > 0 && sc) {
                     series.push({
                         argumentField: "xAxis",
-                        valueField: "clientValue_" + "All",
-                        name: sc.name + " - " + "All",
+                        valueField: "clientValue_" + $scope.organisation_name,
+                        name: sc.name + " - " + $scope.organisation_name,
                         type: "spline",
                         color: '#543996'
                     })
@@ -246,20 +276,17 @@ class SpendingInsightPage {
                 };
                 markSelectedPoint();
 
-                resizeTimeChart();
+                resizeForecastChart();
 
                 return options;
             },
         });
 
         // UX defaults on component open
-        $scope.detailsVisible = true;
-        $scope.drillDownVisible = true;
-        $scope.performanceIndicatorsVisible = true;
         $scope.period = "quarter";
 
         function getChartHandle() {
-            let chartDiv = angular.element($element).find("#timeChart");
+            let chartDiv = angular.element($element).find("#forecastChart");
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
             if (!chartDiv.data("dxChart"))
                 return;
@@ -287,107 +314,12 @@ class SpendingInsightPage {
             }, 800);
         }
 
-        // TODO: remove this hardcoded default option, just use the first item in the list
-
-        $scope.checkSelection = function () {
-            let prevTotalsItemSelected;
-
-            if ($scope.previousSelection && $scope.previousSelection.length == 1 && $scope.previousSelection[0].id == "All organisations") {
-                prevTotalsItemSelected = $scope.previousSelection[0];
-            }
-
-            let totalsItemSelected = null;
-            let nonTotalsItemSelected = null;
-
-            $scope.viewOrganisations.forEach(function (selectedItem) {
-                if (selectedItem == prevTotalsItemSelected)
-                    return false;
-
-                if (totalsItemSelected)
-                    return false;
-
-                if (selectedItem.id == "All organisations") {
-                    totalsItemSelected = selectedItem;
-                } else {
-                    nonTotalsItemSelected = selectedItem;
-                }
-            });
-
-            if (totalsItemSelected) {
-                $scope.viewOrganisations = [totalsItemSelected];
-            } else if (prevTotalsItemSelected && nonTotalsItemSelected && $scope.viewOrganisations.length == 2) {
-                $scope.viewOrganisations = [nonTotalsItemSelected]
-            }
-
-            $scope.previousSelection = $scope.viewOrganisations;
-
-            if ($scope.viewOrganisations.length) {
-                if ($scope.viewOrganisations[0].id == "All organisations") {
-                    $scope.selectedOrganisation = $scope.allOrganisations;
-                    isAllClient = true;
-                } else {
-                    $scope.selectedOrganisation = $scope.viewOrganisations;
-                    isAllClient = false;
-                }
-            } else {
-                $scope.selectedOrganisation = [];
-            }
-        };
-
-        function filterPeriod(period) {
-            let selectedYear;
-            let selectedMonth;
-            let index = 0;
-            let startDate, endDate;
-            $scope.filterName = period;
-
-            // Clear filter
-            if (period == null) {
-                $scope.selectedPeriod = null;
-                return;
-            }
-
-            if ($scope.period === 'quarter') {
-                // Example: 2015-Q2
-                index = period.search('Q');
-                selectedYear = period.substring(0, index - 1);
-                // End month, example: 6
-                selectedMonth = period.substring(index + 1) * 3;
-                // First day of first month of quarter (example: 04-01)
-                startDate = new Date(selectedYear + '-' + (selectedMonth - 2) + '-01');
-                endDate = new Date(startDate);
-                endDate.setMonth(selectedMonth);
-                // End date is now "2015-07-01". Use setDate(0) to go one day back. This works well 
-                // even for December --> January.
-                endDate.setDate(0);
-            } else { // if month
-                // Example: 2015-11
-                index = period.search('-');
-                selectedYear = period.substring(0, index);
-                // selectedMonth has the display value (11).
-                selectedMonth = period.substring(index + 1);
-                selectedMonth = Number(selectedMonth);
-                startDate = new Date(selectedYear + '-' + selectedMonth + '-01');
-                endDate = new Date(startDate);
-                // We increase the month by 1 (setMonth is 0-based and the display value is 1-based),
-                // then decrease the date by 1. 
-                // Example: setMonth(11) --> 2016-12-01, setDate(0) --> 2016-11-30
-                endDate.setMonth(selectedMonth);
-                endDate.setDate(0);
-            }
-
-            $scope.selectedPeriod = {
-                startDate: moment(startDate),
-                endDate: moment(endDate)
-            };
-        }
-
-        function resizeTimeChart() {
+        function resizeForecastChart() {
             // A page resize has been requested by another component. The chart object
             // needs to re-render to properly size.
 
             // Has the chart been initialised? https://www.devexpress.com/Support/Center/Question/Details/T187799
-            let chartComponent = $('#timeChart');
+            let chartComponent = $('#forecastChart');
             if (!chartComponent.data("dxChart"))
                 return;
 
@@ -458,7 +390,7 @@ class SpendingInsightPage {
                 filters,
             {
                 period: $scope.getReactively("period"),
-                groupField: (isAllClient ? undefined : "organisation_name")
+                groupField: "organisation_name"
             }];
         });
 
@@ -467,7 +399,7 @@ class SpendingInsightPage {
                 filters,
             {
                 period: $scope.getReactively("period"),
-                groupField: (isAllClient ? undefined : "organisation_name")
+                groupField: "organisation_name"
             }];
         });      
 
