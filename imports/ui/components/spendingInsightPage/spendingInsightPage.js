@@ -6,8 +6,6 @@ import utilsPagination from 'angular-utils-pagination';
 import { Counts } from 'meteor/tmeasday:publish-counts';
 
 import { SpendingPerTime } from '../../../api/spendingPerTime';
-import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
-import { Clients } from '../../../api/clients';
 import { Predictions } from '../../../api/predictions';
 
 import { getRegressionLine } from '/imports/utils/predictions';
@@ -46,27 +44,18 @@ class SpendingInsightPage {
             },
             spendingPerTime: function () {
                 return SpendingPerTime.find({}).fetch();
-            },
-            clientSpendingPerTime: function () {
-                return ClientSpendingPerTime.find({}).fetch();
-            },
+            },            
             selectedPeriod: function () {
                 return $scope.getReactively("filterDate");
             },
             filterPeriodName: function () {
                 return $scope.getReactively("filterName");
             },
-            clients: function () {
-                return Clients.find({}).fetch();
-            },
             predictionData: function (){
                 return Predictions.find({}).fetch();
             },
             chartData: function () {
-                let spendingPerTime = $scope.getReactively("spendingPerTime");
-                let allowedClients = $scope.getReactively("clients");
-                let clientSpendingPerTime = $scope.getReactively("clientSpendingPerTime");
-                let publicValues = [];
+                let spendingPerTime = $scope.getReactively("spendingPerTime");                
                 let i = 0;
 
                 let pointsByPeriod = [];
@@ -75,15 +64,6 @@ class SpendingInsightPage {
                 // { _group: { year: 2016, quarter: "2016 Q1", organisation_name: "Some Council"}, totalAmount: 12345},
                 // { _group: { year: 2016, quarter: "2016 Q1", organisation_name: "Another Council"}, totalAmount: 54321},
                 // ...
-                // Furthermore we might have clientData which has the same structure.
-                // We loop through them and create points like this:
-                // {
-                //      "xAxis": "2016 Q1"
-                //      "Some Council": 12345,
-                //      "Another Council": 54321,
-                //      "clientValue_Some Council": 1234,
-                //      "clientValue_Another Council": 4321
-                // }
 
                 var regressionData = getRegressionLine(spendingPerTime);
 
@@ -123,35 +103,13 @@ class SpendingInsightPage {
                     if(spendThisPeriod) {
                         let amount = spendThisPeriod.totalAmount;
                         let dataPointGroup = spendThisPeriod._group.organisation_name;
-                        // For "All organisations", data is summed on the client.
-                        // For larger data sets that will get very inefficient.
-                        // TODO: sum data for "All organisations" on the server (`spendingPerTime/publish.js`) by using
-                        // a parameter in the subscription.
+
                         if (dataPoint[dataPointGroup]) {
                             dataPoint[dataPointGroup] += amount;
                         } else {
                             dataPoint[dataPointGroup] = amount;
                         }
-
-                        let clientVal = _(clientSpendingPerTime).find((v) => {
-                            return v._group
-                                && v._group.year == spendThisPeriod._group.year
-                                && v._group[$scope.period] === spendThisPeriod._group[$scope.period]
-                                && v._group.organisation_name === spendThisPeriod._group.organisation_name;
-                        });
-
-                        if (clientVal !== undefined) {
-                            let clientPointKey = "clientValue_" + dataPointGroup;
-                            if (dataPoint[clientPointKey]) {
-                                dataPoint[clientPointKey] += clientVal.totalAmount;
-                            } else {
-                                dataPoint[clientPointKey] = clientVal.totalAmount;
-                            }
-                            // dataPoint[clientPointKey] = clientVal.totalAmount;
-                        }
-                    
-                        publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
-                    }
+                                        }
 
                     if(predictionThisPeriod) {
                         let amount = predictionThisPeriod.totalAmount;
@@ -169,19 +127,10 @@ class SpendingInsightPage {
                 // dxCharts wants a numeric array.
                 let sourceValues = _.values(pointsByPeriod);
 
-                $scope.publicSpendingData = {
-                    key: $scope.selectedOrganisation,
-                    color: '#404040',
-                    values: publicValues
-                };
-
                 let series = [];
                 let seriesName = '';
 
-                let sc = $scope.getReactively("selectedClient");
-
-                // Create series for each selected organisation, and if client data is shown,
-                // another series for client data for each organisation.
+                // Create series for the selected organisation / group, another series for for predictions.
                 series.push({
                     argumentField: "xAxis",
                     valueField: $scope.organisation_name,
@@ -211,17 +160,6 @@ class SpendingInsightPage {
                     type: "spline",
                     color: getColour(seriesName)
                 });
-
-                // Add client series if we have data for it
-                if (allowedClients.length > 0 && sc) {
-                    series.push({
-                        argumentField: "xAxis",
-                        valueField: "clientValue_" + $scope.organisation_name,
-                        name: sc.name + " - " + $scope.organisation_name,
-                        type: "spline",
-                        color: '#543996'
-                    })
-                }
 
                 let selectedArgument = 0;
 
@@ -329,14 +267,6 @@ class SpendingInsightPage {
             timeChart.render();
         }
 
-        function selectAllOrganisation() {
-            console.log('selected All');
-        }
-
-        function reachedMaxSelection() {
-            console.log('reached Max Selection');
-        }
-
         let abbreviate_number = function (num, fixed) {
             if (num === null) { return null; } // terminate early
             if (num === 0) { return '0'; } // terminate early
@@ -349,7 +279,6 @@ class SpendingInsightPage {
             return e;
         };
 
-        let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices');
         $scope.subscribe('spendingCategories');
@@ -394,15 +323,6 @@ class SpendingInsightPage {
             }];
         });
 
-        $scope.subscribe('clientSpendingPerTime', function () {
-            return [
-                filters,
-            {
-                period: $scope.getReactively("period"),
-                groupField: "organisation_name"
-            }];
-        });      
-
         $scope.subscribe('predictions', function () {
             return [
                 organisation_name,
@@ -414,10 +334,6 @@ class SpendingInsightPage {
         });
 
         this.autorun(() => {
-            // Select the first client option by default when the subscription is ready.
-            if (clientSub.ready()) {
-                $scope.selectedClient = $scope.getReactively("firstClient");
-            }
         });
 
 

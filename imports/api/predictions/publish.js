@@ -44,7 +44,7 @@ if (Meteor.isServer) {
         };
         pipeLine.push(sortClause);
 
-        console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
+        // console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
 
         // Call the aggregate
         let cursor = Predictions.aggregate(
@@ -56,7 +56,7 @@ if (Meteor.isServer) {
             // Store the groupField in the row so that the client can use it for filtering.
             doc.groupField = groupField;
 
-            console.log(collectionName + " document", JSON.stringify(doc));
+            // console.log(collectionName + " document", JSON.stringify(doc));
 
             // We add each document to the published collection so the subscribing client receives them.
             this.added(collectionName, doc._id, doc);
