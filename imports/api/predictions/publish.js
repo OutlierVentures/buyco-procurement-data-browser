@@ -22,14 +22,14 @@ if (Meteor.isServer) {
 
         pipeLine.push({ $match: filters });
 
-        let groupClause = { 
-            $group: { 
+        let groupClause = {
+            $group: {
                 _id: {
                     organisation_name: "$organisation_name",
                     year: { $year: "$effective_date" }
-                }, 
+                },
                 totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 }
-            } 
+            }
         };
 
         if (period == "month")
