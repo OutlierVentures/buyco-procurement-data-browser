@@ -1,5 +1,6 @@
 import { MetaDataHelper as mdh } from './metaDataHelper';
 import { stringToColour } from './style';
+import { abbreviateNumber } from './tools';
 
 export const MetaDataHelper = new mdh();
 
@@ -22,3 +23,5 @@ export const removeEmptyFilters = (filters) => {
 export const getColour = (organisationName) => {
     return stringToColour(organisationName);
 }
+
+export { abbreviateNumber };
