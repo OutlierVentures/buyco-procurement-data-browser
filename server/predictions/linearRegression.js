@@ -12,7 +12,7 @@ export function computePrediction(organisationName, groupField, groupValue) {
     console.log("computePrediction", organisationName, groupField, groupValue);
 
     if (!groupValue) {
-        console.log("Empty group value, not computing prediction.");
+        // console.log("Empty group value, not computing prediction.");
     }
 
     // Get spending per time for all time
@@ -22,7 +22,7 @@ export function computePrediction(organisationName, groupField, groupValue) {
     let regressionData = getRegressionLine(spendingData);
 
     // Get prediction points
-    console.log("computePrediction points", regressionData.points);
+    // console.log("computePrediction points", regressionData.points);
 
     // Delete any old prediction data for this org/group
     Predictions.remove({
@@ -53,7 +53,7 @@ export function computePrediction(organisationName, groupField, groupValue) {
             predictionDoc.effective_date = new Date(point._group.year, month, 1);
 
             Predictions.insert(predictionDoc, function(err, res){
-                // Callback only added to make call async and hence faster
+                // Callback only added to make call async and hence (possibly) faster
             });
         }
     });
@@ -93,13 +93,14 @@ function getGroupedData(organisationName, groupField, groupValue) {
     };
     pipeLine.push(sortClause);
 
-    console.log("computePrediction pipeLine", JSON.stringify(pipeLine));
+    // console.log("computePrediction pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let spendingData = [];
     Spending.aggregate(
         pipeLine
     ).forEach((doc) => {
+        doc._group = doc._id;
         spendingData.push(doc);
     });
 
