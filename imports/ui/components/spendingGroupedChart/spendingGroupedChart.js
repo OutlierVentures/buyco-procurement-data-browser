@@ -116,6 +116,14 @@ class SpendingGroupedChart {
             return publishParams;
         });
 
+        // Subscribe to all predictions for the selected organisations and group field.
+        // $scope.subscribe('predictions', () => {
+        //     return [ {
+        //         organisation_name: this.getReactively("filters.organisation_name"),                
+        //         group_field: this.getReactively("groupField")
+        //     }];
+        // });
+
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
         // with a different group field and filters, which leads to different results.
@@ -407,6 +415,10 @@ class SpendingGroupedChart {
                     return null;
                 
                 let insightItem = items[Math.round(Math.random() * items.length)];
+
+                // Don't show for empty categories
+                if(!insightItem._group)
+                    return;
                 
                 let date = new Date();
                 date.setYear(date.getFullYear() + 1);
