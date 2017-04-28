@@ -75,7 +75,9 @@ Meteor.publish(collectionName, function (filters, options) {
         this.added(collectionName, doc._id, doc);
 
         // Call prediction update for lack of a better place to do it (WIP)
-        computePrediction(doc.organisation_name, groupField, doc._group);
+        Meteor.setTimeout(() => {
+            computePrediction(doc.organisation_name, groupField, doc._group);        
+        }, 100);
     });
 
     // Stop observing the cursor when client unsubs.

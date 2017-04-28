@@ -52,9 +52,7 @@ export function computePrediction(organisationName, groupField, groupValue) {
 
             predictionDoc.effective_date = new Date(point._group.year, month, 1);
 
-            Predictions.insert(predictionDoc, function(err, res){
-                // Callback only added to make call async and hence (possibly) faster
-            });
+            Predictions.insert(predictionDoc);
         }
     });
 }

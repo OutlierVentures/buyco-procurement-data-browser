@@ -8,7 +8,6 @@ import { Counts } from 'meteor/tmeasday:publish-counts';
 import { SpendingPerTime } from '../../../api/spendingPerTime';
 import { Predictions } from '../../../api/predictions';
 
-import { getRegressionLine } from '/imports/utils/predictions';
 import { getColour, abbreviateNumber } from '../../../utils';
 
 import { CHART_FONT } from '../../stylesheet/config';
@@ -52,7 +51,7 @@ class SpendingInsightPage {
                 return $scope.getReactively("filterName");
             },
             predictionData: function (){
-                return Predictions.find({}).fetch();
+                return Predictions.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 } }).fetch();
             },
             chartData: function () {
                 let spendingPerTime = $scope.getReactively("spendingPerTime");                
@@ -65,40 +64,37 @@ class SpendingInsightPage {
                 // { _group: { year: 2016, quarter: "2016 Q1", organisation_name: "Another Council"}, totalAmount: 54321},
                 // ...
 
-                var regressionData = getRegressionLine(spendingPerTime);
-
                 var predictionData = $scope.getReactively("predictionData");
 
                 // Loop through the forecast data as it has a wider time reach than the real data.
-                regressionData.points.forEach((regressionVal) => {
+                predictionData.forEach((predictionThisPeriod) => {
                     let spendThisPeriod = _(spendingPerTime).find((v) => {
                         return v._group
-                            && v._group.year == regressionVal._group.year
-                            && v._group[$scope.period] === regressionVal._group[$scope.period]
-                            && v._group.organisation_name === regressionVal._group.organisation_name;
-                    });
-
-                    let predictionThisPeriod = _(predictionData).find((v) => {
-                        return v._group
-                            && v._group.year == regressionVal._group.year
-                            && v._group[$scope.period] === regressionVal._group[$scope.period];
+                            && v._group.year == predictionThisPeriod._group.year
+                            && v._group[$scope.period] === predictionThisPeriod._group[$scope.period]
+                            && v._group.organisation_name === predictionThisPeriod._group.organisation_name;
                     });
 
                     let xLabel;
                     if ($scope.period == "quarter")
                         // "2016 Q2"
-                        xLabel = regressionVal._group.year + " Q" + regressionVal._group.quarter;
+                        xLabel = predictionThisPeriod._group.year + " Q" + predictionThisPeriod._group.quarter;
                     else
                         // E.g. "2016-05" for May 2016
-                        xLabel = regressionVal._group.year + "-" + ("00" + regressionVal._group.month).slice(-2);
+                        xLabel = predictionThisPeriod._group.year + "-" + ("00" + predictionThisPeriod._group.month).slice(-2);
 
                     let dataPoint = pointsByPeriod[xLabel];
                     if (!dataPoint) {
                         dataPoint = { xAxis: xLabel };
-                        pointsByPeriod[xLabel] = dataPoint;
+                        pointsByPeriod[xLabel] = dataPoint; 
                     }
 
-                    dataPoint.regression = regressionVal.totalAmount;
+                    let amount = predictionThisPeriod.totalAmount;
+                    let dataPointGroup = predictionThisPeriod._group.organisation_name;
+
+                    let predictionPointKey = "prediction_" + dataPointGroup;
+
+                    dataPoint[predictionPointKey] = amount;
 
                     if(spendThisPeriod) {
                         let amount = spendThisPeriod.totalAmount;
@@ -109,15 +105,6 @@ class SpendingInsightPage {
                         } else {
                             dataPoint[dataPointGroup] = amount;
                         }
-                                        }
-
-                    if(predictionThisPeriod) {
-                        let amount = predictionThisPeriod.totalAmount;
-                        let dataPointGroup = predictionThisPeriod._group.organisation_name;
-
-                        let predictionPointKey = "prediction_" + dataPointGroup;
-
-                        dataPoint[predictionPointKey] = amount;
                     }
 
                     i++;
@@ -137,16 +124,6 @@ class SpendingInsightPage {
                     name: "Historical spending",
                     type: "bar",
                     color: getColour($scope.organisation_name)
-                });
-
-                // Regression series
-                seriesName = "Forecast - regression";
-                series.push({
-                    argumentField: "xAxis",
-                    valueField: "regression",
-                    name: seriesName,
-                    type: "spline",
-                    color: getColour(seriesName)
                 });
 
                 // Prediction series
