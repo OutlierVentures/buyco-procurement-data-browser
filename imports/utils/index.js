@@ -22,3 +22,5 @@ export const removeEmptyFilters = (filters) => {
 export const getColour = (organisationName) => {
     return stringToColour(organisationName);
 }
+
+export * from './tools';

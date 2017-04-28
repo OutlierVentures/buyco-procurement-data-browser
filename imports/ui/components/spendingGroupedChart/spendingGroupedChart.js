@@ -9,7 +9,7 @@ import { SpendingGrouped } from '/imports/api/spendingGrouped';
 import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
-import { getColour } from '../../../utils';
+import { getColour, abbreviateNumber } from '../../../utils';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
@@ -115,6 +115,14 @@ class SpendingGroupedChart {
 
             return publishParams;
         });
+
+        // Subscribe to all predictions for the selected organisations and group field.
+        // $scope.subscribe('predictions', () => {
+        //     return [ {
+        //         organisation_name: this.getReactively("filters.organisation_name"),                
+        //         group_field: this.getReactively("groupField")
+        //     }];
+        // });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
@@ -329,7 +337,7 @@ class SpendingGroupedChart {
                             precision: 1
                         },
                         customizeTooltip: function (arg) {
-                            let newValue = abbreviate_number(arg.value, 0);
+                            let newValue = abbreviateNumber(arg.value, 0);
                             let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
                             let tempItem = '';
                             tempItem += items;
@@ -407,6 +415,10 @@ class SpendingGroupedChart {
                     return null;
                 
                 let insightItem = items[Math.round(Math.random() * items.length)];
+
+                // Don't show for empty categories
+                if(!insightItem._group)
+                    return;
                 
                 let date = new Date();
                 date.setYear(date.getFullYear() + 1);
@@ -479,18 +491,6 @@ class SpendingGroupedChart {
             index = selectedArgument.search('-');
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
-        }
-
-        let abbreviate_number = function (num, fixed) {
-            if (num === null) { return null; } // terminate early
-            if (num === 0) { return '0'; } // terminate early
-            fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
-            var b = (num).toPrecision(2).split("e"), // get power
-                k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
-                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
-                d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
-                e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
-            return e;
         }
     }
 
