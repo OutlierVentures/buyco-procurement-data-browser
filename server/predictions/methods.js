@@ -7,8 +7,6 @@ export function executePredictionStep(predictionRunId) {
     if (Meteor.isServer) {
         console.log("executePredictionStep", predictionRunId);
 
-        console.log("shaman", shaman);
-
         // Load data for all councils, all time
 
         let data = [];
@@ -40,7 +38,7 @@ export function executePredictionStep(predictionRunId) {
                 }
             });
 
-        pipeLine.push({ $sort: { "totalAmount": -1 } })
+        pipeLine.push({ $sort: { "_id.year": 1, "_id.month": 1, "totalAmount": -1 } })
 
         console.log("pipeLine", JSON.stringify(pipeLine));
         var cursor = Spending.aggregate(pipeLine);
@@ -68,9 +66,9 @@ export function executePredictionStep(predictionRunId) {
         //console.log("labels", labels);
 
         // Log data for debugging
-        for (let i = 0; i < 10; i++) {
-            console.log(data[i]);
-        }
+        // for (let i = 0; i < 10; i++) {
+        //     console.log(data[i]);
+        // }
 
         // Prepare array-formed data for linear regression
 
@@ -83,8 +81,22 @@ export function executePredictionStep(predictionRunId) {
             // https://github.com/luccastera/shaman/blob/master/examples/stock.js
             // valueArray.push(doc.month.getFullYear());
             // valueArray.push(doc.month.getMonth());
-            valueArray.push(doc._id.year);
+
+            var period = (doc._id.year - 2010) * 12 + doc._id.month;
+            //valueArray.push(doc._id.year);
+            valueArray.push(period);
+
+            // Add month as individual value, and also as 1-hot for seasonality
             valueArray.push(doc._id.month);
+
+            // for (let i = 1; i <= 12; i++) {
+            //     if (doc._id.month == i) {
+            //         valueArray.push(1);
+            //     }
+            //     else {
+            //         valueArray.push(0)
+            //     };
+            // }
 
             // Save the label as 1-hot encoding
             for (let i = 0; i < Object.keys(labels).length; i++) {
@@ -102,10 +114,11 @@ export function executePredictionStep(predictionRunId) {
         });
 
         console.log("example from X array", JSON.stringify(X[100]));
+        console.log(X[100].length);
 
         var lr = new shaman.LinearRegression(X, y,
-            // { algorithm: 'GradientDescent', learningRate: 0.3, numberOfIterations: 5000 }
-            { algorithm: 'NormalEquation' }
+            // { algorithm: 'GradientDescent', learningRate: 0.3, numberOfIterations: 5000, debug: true }
+            { algorithm: 'NormalEquation', debug: true }
             // { algorithm: 'GradientDescent', debug: true }
         );
         lr.train(function (err) {
@@ -114,8 +127,17 @@ export function executePredictionStep(predictionRunId) {
 
             // Create an example value array for the predictions
             let valueArray = [];
-            valueArray.push(y);
+
+            // period
             valueArray.push(1);
+
+            // month
+            valueArray.push(1);
+
+            // Month as 1-hot
+            // for (let m = 1; m <= 12; m++) {
+            //     valueArray.push(0);
+            // }
 
             let desiredLabel = cat;
             let labelKeys = Object.keys(labels);
@@ -133,9 +155,23 @@ export function executePredictionStep(predictionRunId) {
             let predictions = [];
             for (let y2 = 2016; y2 <= 2018; y2++) {
                 for (let m = 1; m <= 12; m++) {
-                    valueArray[0] = y2;
-                    valueArray[1] = m;
+                    var period = (y2 - 2010) * 12 + m;
+                    //valueArray.push(doc._id.year);
+                    valueArray[0] = period;
 
+                    // Add month as individual value, and also as 1-hot for seasonality
+                    //valueArray.push(doc._id.month);
+                    for (let i = 1; i <= 12; i++) {
+                        if (m == i) {
+                            valueArray[1 + i] = 1;
+                        }
+                        else {
+                            valueArray[1 + i] = 0;
+                        };
+                    }
+                    // valueArray[0] = y2;
+                    // valueArray[1] = m;
+                    console.log(valueArray.length);
                     predictions.push({ year: y2, month: m, prediction: lr.predict(valueArray) })
                 }
             }
