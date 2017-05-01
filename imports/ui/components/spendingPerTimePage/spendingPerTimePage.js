@@ -268,6 +268,9 @@ class SpendingPerTimePage {
                 return organisationsBuffer;
             },
             spendingServices: function () {
+                if(that.subManager && !that.subManager.ready()) {
+                    return [];
+                }
                 let services = SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }, { sort: { "name": 1 } }
@@ -276,6 +279,9 @@ class SpendingPerTimePage {
                 return services;
             },
             spendingCategories: function () {
+                if(that.subManager && !that.subManager.ready()) {
+                    return [];
+                }
                 let categories = SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }, { sort: { "name": 1 } }
@@ -655,11 +661,11 @@ class SpendingPerTimePage {
         function reachedMaxSelection() {
             console.log('reached Max Selection');
         }
-
+        this.subManager = new SubsManager();
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
-        $scope.subscribe('spendingServices');
-        $scope.subscribe('spendingCategories');
+        this.subManager.subscribe('spendingServices');
+        this.subManager.subscribe('spendingCategories');
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
@@ -667,7 +673,7 @@ class SpendingPerTimePage {
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
-            
+
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
@@ -695,7 +701,7 @@ class SpendingPerTimePage {
             let organisations = '';
 
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
-            
+
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
@@ -724,9 +730,6 @@ class SpendingPerTimePage {
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
-
-        
-        
     }
 }
 

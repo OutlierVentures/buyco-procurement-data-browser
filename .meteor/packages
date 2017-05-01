@@ -33,3 +33,4 @@ meteorhacks:aggregate
 momentjs:moment
 erasaur:meteor-lodash
 practicalmeteor:mocha
+meteorhacks:subs-manager
