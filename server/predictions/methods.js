@@ -21,15 +21,32 @@ export function executePredictionStep(predictionRunId) {
                 // , limit: 10 
             });
 
+        var labels = {};
+
         //console.log("data length", cursor.length);
         cursor.forEach((doc) => {
+            // Reduce date to month
             doc.month = new Date(doc.payment_date.getFullYear(), doc.payment_date.getMonth(), 1);
+
+            // Codify category
+            let textValue = doc.procurement_classification_1;
+
+            let label = labels[textValue];
+            if (!label) {
+                label = Object.keys(labels).length;
+                labels[textValue] = label;
+            }
+            doc.label = label;
             data.push(doc);
-        });
+        });        
 
         console.log("data length after forEach", data.length);
+        console.log("labels", labels);
 
-        console.log(data[0]);
+        for (let i = 0; i < 100; i++) {
+            console.log(data[i]);
+        }
+
 
     }
 }
