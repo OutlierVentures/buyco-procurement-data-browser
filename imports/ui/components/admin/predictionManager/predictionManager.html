@@ -1,0 +1,30 @@
+<div class="row">
+    <div class="col-md-12">
+        <h3>Prediction runs</h3>
+    </div>
+    <div class="col-md-4" ng-repeat="run in predictionRuns track by id">
+        <div class="widget">
+            <div class="grids">
+                <h4>{{run.type}}</h4>
+                <p>{{run.point_count}} data points</p>
+                <p>Accuracy on validation set: {{run.accuracy * 100 | number : 2}}%</p>
+                <button class="btn btn-primary">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+
+        <p>Total number of prediction runs: {{predictionRunCount}}</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget">
+            <div class="grids">
+                <button class="btn btn-primary">Start new run</button>
+            </div>
+        </div>
+    </div>
+</div>
