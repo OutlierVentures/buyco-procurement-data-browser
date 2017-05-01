@@ -8,6 +8,7 @@
                 <h4>{{run.type}} {{run.date}}</h4>
                 <p>{{run.point_count}} data points</p>
                 <p>Accuracy on validation set: {{run.accuracy * 100 | number : 2}}%</p>
+                <button ng-hide="run.finish_date" class="btn btn-primary" ng-click="predictionManager.executePredictionRunStep(run._id)"><i class="fa fa-run"></i> Run step</button>
                 <button ng-hide="run.finish_date || run.is_paused" class="btn btn-default"><i class="fa fa-pause"></i> Pause</button>
                 <button ng-hide="run.finish_date || !run.is_paused" class="btn btn-default"><i class="fa fa-play"></i> Continue</button>
                 <button class="btn btn-danger">Delete</button>

@@ -44,6 +44,10 @@ class PredictionManager {
         };
 
     }
+
+    executePredictionRunStep(runId){
+        Meteor.call('executePredictionStep', runId);
+    }
 }
 
 const name = 'predictionManager';
