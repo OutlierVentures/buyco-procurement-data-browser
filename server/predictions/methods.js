@@ -7,6 +7,9 @@ export function executePredictionStep(predictionRunId) {
     if (Meteor.isServer) {
         if (debug) console.log("executePredictionStep", predictionRunId);
 
+        if (predictionRunId._str)
+            predictionRunId = predictionRunId._str;
+
         // TODO: take organisation name as parameter; run for all organisations
         let organisationName = "Wakefield MDC";
 
@@ -229,7 +232,20 @@ export function executePredictionStep(predictionRunId) {
                 console.log("Example predictions", JSON.stringify(examplePredictions));
             }
 
-            // TODO: store prediction data in Predictions collection. Use rawCollection and bulk insert.
+            // Store prediction data in Predictions collection. Use rawCollection and bulk insert.
+            Predictions.remove({ prediction_run_id: predictionRunId });
+            const predictionsRaw = Predictions.rawCollection()
+
+            const timer = Date.now();
+            const bulkInsertOp = predictionsRaw.initializeUnorderedBulkOp();
+            bulkInsertOp.executeAsync = Meteor.wrapAsync(bulkInsertOp.execute);
+
+            predictions.forEach((p) => {
+                bulkInsertOp.insert(Object.assign({}, p));
+            })
+            bulkInsertOp.executeAsync();
+
+            console.log(`Insert completed in ${Date.now() - timer}ms`);
         });
     }
 }
