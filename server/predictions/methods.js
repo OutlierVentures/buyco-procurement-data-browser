@@ -7,6 +7,9 @@ export function executePredictionStep(predictionRunId) {
     if (Meteor.isServer) {
         if (debug) console.log("executePredictionStep", predictionRunId);
 
+        // TODO: take organisation name as parameter; run for all organisations
+        let organisationName = "Wakefield MDC";
+
         // Unblock immediately
         this.unblock();
 
@@ -19,7 +22,7 @@ export function executePredictionStep(predictionRunId) {
 
         let pipeLine = [];
 
-        pipeLine.push({ $match: { organisation_name: "Wakefield MDC" } });
+        pipeLine.push({ $match: { organisation_name: organisationName } });
         pipeLine.push(
             {
                 $group: {
@@ -121,12 +124,6 @@ export function executePredictionStep(predictionRunId) {
         // Debug: find example values for specific category
         let exampleCatName = "Children and Young People";
 
-        // let historicalData = _(data).filter((dataPoint) => {
-        //     return dataPoint._id[groupField] == exampleCatName;
-        // });
-
-        // if(debug) console.log("historical data", JSON.stringify(historicalData));
-
         var lr = new shaman.LinearRegression(X, y,
             // { algorithm: 'GradientDescent', learningRate: 0.3, numberOfIterations: 5000, debug: true }
             { algorithm: 'NormalEquation', debug: true }
@@ -134,96 +131,103 @@ export function executePredictionStep(predictionRunId) {
         );
         lr.train(function (err) {
             if (err) { throw err; }
-            let y = 2018;
-
-            let catIndex = labels[exampleCatName];
-            if (debug) console.log("Category index", catIndex);
 
             // Create an example value array for the predictions
             let valueArray = [];
 
             // Dummy values for time-based parameters. We fill in the real values in the loop below.
             // Period
-            valueArray.push(1);
-
-            // Month as value
-            // valueArray.push(1);
+            valueArray.push(0);
 
             // Month as 1-hot encoding
             for (let m = 1; m <= 12; m++) {
                 valueArray.push(0);
             }
 
-            let desiredLabel = catIndex;
+            // let catIndex = 1;
+            // let desiredLabel = catIndex;
+
             let labelKeys = Object.keys(labels);
 
             // Category as 1-hot encoding
             for (let i = 0; i < labelKeys.length; i++) {
-                if (desiredLabel == i) {
-                    valueArray.push(1);
-                }
-                else {
-                    valueArray.push(0)
-                };
+                valueArray.push(0)
             }
 
-            // Get some results 
+            // Get predictions for all categories, 3 years in future
             let predictions = [];
-            for (let y2 = 2013; y2 <= 2018; y2++) {
-                for (let m = 1; m <= 12; m++) {
-                    var period = (y2 - 2010) * 12 + m;
-                    //valueArray.push(doc._id.year);
-                    valueArray[0] = period;
+            for (let labelIndex = 0; labelIndex < labelKeys.length; labelIndex++) {
+                let labelText = labelKeys[labelIndex];
 
-                    // Add month as individual value
-                    //valueArray.push(doc._id.month);
-
-                    // Month as 1-hot encoding
-                    for (let i = 1; i <= 12; i++) {
-                        if (m == i) {
-                            valueArray[i] = 1;
-                        }
-                        else {
-                            valueArray[i] = 0;
-                        };
+                // Category as 1-hot encoding
+                let catIndexOffset = 13;
+                for (let i = 0; i < labelKeys.length; i++) {
+                    if (labelIndex == i) {
+                        valueArray[catIndexOffset + i] = 1;
                     }
-                    // valueArray[0] = y2;
-                    // valueArray[1] = m;
-
-                    if (y2 == 2016 && m == 1) {
-                        // Log example item for debugging
-                        if (debug) console.log("prediction valueArray length", valueArray.length);
-                        if (debug) console.log("prediction valueArray", JSON.stringify(valueArray));
-                    }
-
-                    let predictionPoint = {
-                        year: y2, month: m, prediction: lr.predict(valueArray)
+                    else {
+                        valueArray[catIndexOffset + i] = 0;
                     };
+                }
 
-                    // Find historical value for matching points
-                    let histVal = _(data).find((dataPoint) => {
-                        return dataPoint._id.year == y2 && dataPoint._id.month == m && dataPoint._id[groupField] == exampleCatName;
-                    });
+                for (let y = 2010; y <= 2018; y++) {
+                    for (let m = 1; m <= 12; m++) {
+                        var period = (y - 2010) * 12 + m;
+                        valueArray[0] = period;
 
-                    if (histVal) {
-                        predictionPoint.historical_value = histVal.totalAmount;
+                        // Month as 1-hot encoding
+                        for (let i = 1; i <= 12; i++) {
+                            if (m == i) {
+                                valueArray[i] = 1;
+                            }
+                            else {
+                                valueArray[i] = 0;
+                            };
+                        }
+
+                        if (debug) {
+                            if (y == 2016 && m == 1) {
+                                // Log example item for debugging
+                                console.log("prediction valueArray length", valueArray.length);
+                                console.log("prediction valueArray", JSON.stringify(valueArray));
+                            }
+                        }
+
+                        let predictionPoint = {
+                            year: y, month: m, amount_net: lr.predict(valueArray)
+                        };
+
+                        // Find historical value for matching points
+                        if (debug) {
+                            let histVal = _(data).find((dataPoint) => {
+                                return dataPoint._id.year == y && dataPoint._id.month == m && dataPoint._id[groupField] == labelText;
+                            });
+
+                            if (histVal) {
+                                predictionPoint.historical_value = histVal.totalAmount;
+                            }
+                        }
+
+                        predictionPoint.organisation_name = organisationName;
+                        predictionPoint.prediction_run_id = predictionRunId;
+                        predictionPoint.group_field = groupField;
+
+                        // Decodify group value
+                        predictionPoint.group_value = labelText;
+
+                        predictionPoint.effective_date = new Date(y, m, 1);
+
+                        predictions.push(predictionPoint);
                     }
-
-                    predictions.push(predictionPoint);
                 }
             }
 
-            if (debug) console.log()
+            if (debug) console.log("first 100 predictions", JSON.stringify(_(predictions).head(100)));
 
-            let label;
-            for (let i = 0; i < labelKeys.length; i++) {
-                if (catIndex == i)
-                    label = labelKeys[i];
+            if (debug) {
+                let examplePredictions = _(predictions).filter((p) => { return p.group_value == exampleCatName });
+                console.log("Example predictions", JSON.stringify(examplePredictions));
             }
-
-            if (debug) console.log("predictions for category " + label, JSON.stringify(predictions));
-
-            // TODO: decodify
 
             // TODO: store prediction data in Predictions collection. Use rawCollection and bulk insert.
         });
