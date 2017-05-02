@@ -39,7 +39,7 @@
                                 <label for="service">Service</label>
                                 <select class="form-control" name="service" ng-model="service">
                                     <option default value="">-- select --</option>
-                                    <option bindonce ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>
+                                    <option ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>
                                 </select>
                             </div>
                         </div>

@@ -70,7 +70,7 @@ class SpendingGroupedChart {
                     groupField: this.getReactively("groupField")
                 }];
 
-            return publishParams;                
+            return publishParams;
         });
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
@@ -161,14 +161,13 @@ class SpendingGroupedChart {
                     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             }
 
-            let temp = this.getReactively("filters.period");
+            this.getReactively("filters.period");
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
             removeEmptyFilters (filters);
 
-            var data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
-
+            let data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
             return data;
         };
 
