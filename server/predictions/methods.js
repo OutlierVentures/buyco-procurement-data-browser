@@ -5,26 +5,18 @@ import shaman from 'shaman';
 
 export function executePredictionStep(predictionRunId) {
     if (Meteor.isServer) {
-        console.log("executePredictionStep", predictionRunId);
+        if (debug) console.log("executePredictionStep", predictionRunId);
 
         // Unblock immediately
         this.unblock();
 
+        let debug = true;
+
         // Load data for all councils, all time
-
         let data = [];
-        // const spendingRaw = Spending.rawCollection();
-        // const findSpending = Meteor.wrapAsync(spendingRaw.find, Spending);
-
-        // var cursor = findSpending({}, { organisation_name: 1, procurement_classification_1: 1, amount_net: 1 })
 
         let groupField = "procurement_classification_1";
-        // var cursor = Spending.find({
-        //     organisation_name: "Wakefield MDC"
-        // }, {
-        //         fields: { organisation_name: 1, procurement_classification_1: 1, amount_net: 1, payment_date: 1 }
-        //         // , limit: 10 
-        //     });
+
         let pipeLine = [];
 
         pipeLine.push({ $match: { organisation_name: "Wakefield MDC" } });
@@ -41,9 +33,10 @@ export function executePredictionStep(predictionRunId) {
                 }
             });
 
+        // Sort the data by date. Not necessary for the ML, but helpful when inspecting it.
         pipeLine.push({ $sort: { "_id.year": 1, "_id.month": 1, "totalAmount": -1 } })
 
-        console.log("pipeLine", JSON.stringify(pipeLine));
+        if (debug) console.log("pipeLine", JSON.stringify(pipeLine));
         var cursor = Spending.aggregate(pipeLine);
 
         var labels = {};
@@ -66,12 +59,12 @@ export function executePredictionStep(predictionRunId) {
             data.push(doc);
         });
 
-        console.log("data length after forEach", data.length);
-        console.log("labels", JSON.stringify(labels));
+        if (debug) console.log("data length after forEach", data.length);
+        if (debug) console.log("labels", JSON.stringify(labels));
 
-        // Log data for debugging
+        // Log some source data for debugging
         // for (let i = 0; i < 10; i++) {
-        //     console.log(data[i]);
+        //     if(debug) console.log(data[i]);
         // }
 
         // Prepare array-formed data for linear regression
@@ -81,6 +74,7 @@ export function executePredictionStep(predictionRunId) {
 
         data.forEach((doc) => {
             let valueArray = [];
+
             // Try year and month separately. Could put in the point as date as in this example:
             // https://github.com/luccastera/shaman/blob/master/examples/stock.js
             // valueArray.push(doc.month.getFullYear());
@@ -121,8 +115,8 @@ export function executePredictionStep(predictionRunId) {
         });
 
         let exampleItem = X[100];
-        console.log("example from X array", JSON.stringify(exampleItem));
-        console.log("X item length", exampleItem.length);
+        if (debug) console.log("example from X array", JSON.stringify(exampleItem));
+        if (debug) console.log("X item length", exampleItem.length);
 
         // Debug: find example values for specific category
         let exampleCatName = "Children and Young People";
@@ -131,7 +125,7 @@ export function executePredictionStep(predictionRunId) {
         //     return dataPoint._id[groupField] == exampleCatName;
         // });
 
-        // console.log("historical data", JSON.stringify(historicalData));
+        // if(debug) console.log("historical data", JSON.stringify(historicalData));
 
         var lr = new shaman.LinearRegression(X, y,
             // { algorithm: 'GradientDescent', learningRate: 0.3, numberOfIterations: 5000, debug: true }
@@ -143,7 +137,7 @@ export function executePredictionStep(predictionRunId) {
             let y = 2018;
 
             let catIndex = labels[exampleCatName];
-            console.log("Category index", catIndex);
+            if (debug) console.log("Category index", catIndex);
 
             // Create an example value array for the predictions
             let valueArray = [];
@@ -198,8 +192,8 @@ export function executePredictionStep(predictionRunId) {
 
                     if (y2 == 2016 && m == 1) {
                         // Log example item for debugging
-                        console.log("prediction valueArray length", valueArray.length);
-                        console.log("prediction valueArray", JSON.stringify(valueArray));
+                        if (debug) console.log("prediction valueArray length", valueArray.length);
+                        if (debug) console.log("prediction valueArray", JSON.stringify(valueArray));
                     }
 
                     let predictionPoint = {
@@ -219,7 +213,7 @@ export function executePredictionStep(predictionRunId) {
                 }
             }
 
-            console.log()
+            if (debug) console.log()
 
             let label;
             for (let i = 0; i < labelKeys.length; i++) {
@@ -227,16 +221,12 @@ export function executePredictionStep(predictionRunId) {
                     label = labelKeys[i];
             }
 
-            console.log("predictions for category " + label, JSON.stringify(predictions));
+            if (debug) console.log("predictions for category " + label, JSON.stringify(predictions));
 
             // TODO: decodify
 
             // TODO: store prediction data in Predictions collection. Use rawCollection and bulk insert.
         });
-
-
-
-
     }
 }
 
