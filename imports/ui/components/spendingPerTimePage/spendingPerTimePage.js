@@ -60,6 +60,9 @@ class SpendingPerTimePage {
             ['All available data']: [moment("2010-01-01"), moment()]
         };
 
+        // $scope.category = '';
+        // $scope.service = '';
+        $scope.period = "quarter";
         $scope.filterDate = {
             startDate: start,
             endDate: end
@@ -76,6 +79,32 @@ class SpendingPerTimePage {
             pointName: ''
         };
 
+        function applyFilters() {
+            if (Session.get('category')) {
+                $scope.category = Session.get('category');
+            }
+
+            if (Session.get('service')) {
+                $scope.service = Session.get('service');
+            }
+
+            if (Session.get('startDate')) {
+                let dateObj = new Date(Session.get('startDate'));
+                // let momentObj = moment(dateObj);
+                $scope.filterDate.startDate = moment(dateObj);
+            }
+
+            if (Session.get('endDate')) {
+                let dateObj = new Date(Session.get('endDate'));
+                $scope.filterDate.endDate = moment(dateObj);
+            }
+
+            if (Session.get('period')) {
+                $scope.period = Session.get('period');
+            }
+        }
+
+        applyFilters();
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -521,7 +550,6 @@ class SpendingPerTimePage {
         $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
-        $scope.period = "quarter";
 
         function getChartHandle() {
             let chartDiv = angular.element($element).find("#timeChart");
@@ -664,6 +692,20 @@ class SpendingPerTimePage {
             timeChart.render();
         }
 
+        function saveFilters () {
+            let category = $scope.getReactively("category");
+            let service = $scope.getReactively("service");
+            let startDate = $scope.getReactively("filterDate").startDate.toDate();
+            let endDate = $scope.getReactively("filterDate").endDate.toDate();
+            let period = $scope.getReactively("period");
+
+            Session.setPersistent('category', category);
+            Session.setPersistent('service', service);
+            Session.setPersistent('startDate', startDate);
+            Session.setPersistent('endDate', endDate);
+            Session.setPersistent('period', period);
+        }
+
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
         $scope.subscribe('spendingServices');
@@ -682,6 +724,8 @@ class SpendingPerTimePage {
             }
 
             $scope.getReactively("filteredOrganisations");
+            saveFilters();
+
             return [{
                 organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
