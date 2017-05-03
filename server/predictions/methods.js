@@ -135,6 +135,11 @@ export function executePredictionStep(predictionRunId) {
         lr.train(function (err) {
             if (err) { throw err; }
 
+            if (debug) {
+                console.log("Training complete");
+                console.log("theta", JSON.stringify(lr.theta));
+            }
+
             // Create an example value array for the predictions
             let valueArray = [];
 
@@ -189,7 +194,7 @@ export function executePredictionStep(predictionRunId) {
                         }
 
                         if (debug) {
-                            if (y == 2016 && m == 1) {
+                            if (y == 2016 && m == 1 && labelText == exampleCatName) {
                                 // Log example item for debugging
                                 console.log("prediction valueArray length", valueArray.length);
                                 console.log("prediction valueArray", JSON.stringify(valueArray));
@@ -218,7 +223,7 @@ export function executePredictionStep(predictionRunId) {
                         // Decodify group value
                         predictionPoint.group_value = labelText;
 
-                        predictionPoint.effective_date = new Date(y, m, 1);
+                        predictionPoint.effective_date = new Date(y, m - 1, 1);
 
                         predictions.push(predictionPoint);
                     }
