@@ -26,6 +26,8 @@ if (Meteor.isServer) {
             $group: {
                 _id: {
                     organisation_name: "$organisation_name",
+                    group_field: "$group_field",
+                    group_value: "$group_value",
                     year: { $year: "$effective_date" }
                 },
                 totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 }
@@ -44,7 +46,7 @@ if (Meteor.isServer) {
         };
         pipeLine.push(sortClause);
 
-        // console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
+        console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
 
         // Call the aggregate
         let cursor = Predictions.aggregate(
@@ -69,5 +71,7 @@ if (Meteor.isServer) {
             if (cursor)
                 cursor.stop();
         });
+
+        this.ready();
     });
 }

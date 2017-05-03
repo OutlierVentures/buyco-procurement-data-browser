@@ -6,6 +6,7 @@ import template from './spendingGroupedChart.html';
 import { removeEmptyFilters, MetaDataHelper } from "/imports/utils";
 
 import { SpendingGrouped } from '/imports/api/spendingGrouped';
+import { Predictions } from '/imports/api/predictions';
 import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
@@ -115,14 +116,6 @@ class SpendingGroupedChart {
 
             return publishParams;
         });
-
-        // Subscribe to all predictions for the selected organisations and group field.
-        // $scope.subscribe('predictions', () => {
-        //     return [ {
-        //         organisation_name: this.getReactively("filters.organisation_name"),                
-        //         group_field: this.getReactively("groupField")
-        //     }];
-        // });
 
         // Subscriptions are per client session, so subscriptions between multiple sessions
         // won't overlap. However we open multiple subscriptions to the `spendingGrouped` collection
@@ -402,48 +395,97 @@ class SpendingGroupedChart {
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
             },
-            insight: () => {
+            getInsight: () => {
                 // Show insights only to logged on users
                 if(!Meteor.userId())
                     return null;
 
-                // Stub function: show a random value for a random item from the list.
-                // TODO: implement real value from prediction data.
+                // (Re-)set insight to empty until we have found one
+                $scope.insight = undefined;
+
+                // Get a random item from the list. See if there is a prediction. If yes, show insight.
+                // if not, no insight.
                 let items = this.getReactively("spendingGrouped")();
 
                 if(!items || !items.length)
                     return null;
                 
-                let insightItem = items[Math.round(Math.random() * items.length)];
+                let insightItem = items[Math.floor(Math.random() * items.length)];
 
                 // Don't show for empty categories
                 if(!insightItem._group)
                     return;
-                
-                let date = new Date();
-                date.setYear(date.getFullYear() + 1);
 
-                // Quarter: deterministic value 1-4 for each item 
-                let quarter = insightItem.count % 4 + 1;
+                let predictionSub = this.subscribe('predictions', 
+                    () => {
+                        return [insightItem.organisation_name,
+                            insightItem.groupField,
+                            insightItem._group]
+                    },
+                    {
+                        onError: () => {
 
-                // Percentage: deterministic value -30 - +30
-                let percentage = insightItem.count % 80 - 40;
+                        },
+                        onReady: (err, res) => {
+                            // The Predictions collection contains the aggregated items
+                            let predictionValues = Predictions.find(
+                                { "_group.quarter": 2, "_group.year": 2018,
+                                "groupField": insightItem.groupField,
+                                "_group.group_value": insightItem._group,
+                                "_group.organisation_name": insightItem.organisation_name }
+                            ).fetch();
 
-                // Only show insights with a significant percentage.
-                if (Math.abs(percentage) < 10)
-                    return 0;
+                            // predictionSub.stop();
 
-                let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + date.getFullYear() + "-Q" + quarter;
+                            if(predictionValues.length == 0)
+                                return;
 
-                return {
-                    id: insightItem._group,
-                    type: this.groupDisplayName,                    
-                    organisation_name: insightItem.organisation_name,
-                    description: insightItem.organisation_name + " - " + insightItem._group,
-                    percentage: percentage,
-                    amountText: amountText,
-                    color: getColour(insightItem.organisation_name)
-                }
+                            let predictionPoint = predictionValues[0];                
+                            
+                            let year =  predictionPoint._group.year;
+                            let quarter = predictionPoint._group.quarter;
+                            let predictionValue = predictionPoint.totalAmount;
+
+                            // Get value for last full quarter
+                            // Stub: take the average of what we have
+                            let startDate, endDate;
+
+                            if (this.getReactively('filterDate')) {
+                                startDate = this.getReactively("filterDate").startDate.toDate();
+                                endDate = this.getReactively("filterDate").endDate.toDate();
+                            }
+
+                            if (this.getReactively('selDate')) {
+                                startDate = this.getReactively("selDate").startDate.toDate();
+                                endDate = this.getReactively("selDate").endDate.toDate();
+                            }
+
+                            let diff = endDate - startDate;
+                            
+                            let quartersShown = Math.ceil(diff/1000/3600/24/90);
+
+                            let averageValue = insightItem.totalAmount / quartersShown;
+
+                            // Percentage: deterministic value -30 - +30
+                            let percentage = Math.round((predictionValue / averageValue - 1) * 100);
+
+                            // Only show insights with a significant percentage.
+                            if (Math.abs(percentage) < 10)
+                                return 0;
+
+                            let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + year + "-Q" + quarter;
+
+                            $scope.insight = {
+                                id: insightItem._group,
+                                type: this.groupDisplayName,                    
+                                organisation_name: insightItem.organisation_name,
+                                description: insightItem.organisation_name + " - " + insightItem._group,
+                                percentage: percentage,
+                                amountText: amountText,
+                                color: getColour(insightItem.organisation_name)
+                            }
+                        }
+                    });
             }
         });
 
