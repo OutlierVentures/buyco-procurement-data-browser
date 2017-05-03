@@ -26,7 +26,7 @@ class PredictionManager {
                     sort: $scope.getReactively('sort')
                 });
             },
-            predictionRunCount: function () {                
+            predictionRunCount: function () {
                 return Counts.get('predictionRunCount');
             }
         });
@@ -45,10 +45,10 @@ class PredictionManager {
 
     }
 
-    executePredictionRunStep(runId){
+    executePredictionRunStep(runId) {
         // Call execute prediction run with Meteor.apply() to be able to supply 
         // noRetry. Because this is a long-running method, we don't want the client to retry.
-        Meteor.apply('executePredictionStep', runId, { noRetry: true});
+        Meteor.apply('executePredictionStep', [runId], { noRetry: true });
     }
 }
 
