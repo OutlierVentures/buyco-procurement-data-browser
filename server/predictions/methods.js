@@ -232,8 +232,11 @@ export function executePredictionStep(predictionRunId) {
                 console.log("Example predictions", JSON.stringify(examplePredictions));
             }
 
-            // Store prediction data in Predictions collection. Use rawCollection and bulk insert.
+            // Store prediction data in Predictions collection.
+            // Delete any previous data for this run
             Predictions.remove({ prediction_run_id: predictionRunId });
+
+            // Use rawCollection and bulk insert because we'll be doing many inserts at once.
             const predictionsRaw = Predictions.rawCollection()
 
             const timer = Date.now();
@@ -242,7 +245,7 @@ export function executePredictionStep(predictionRunId) {
 
             predictions.forEach((p) => {
                 bulkInsertOp.insert(Object.assign({}, p));
-            })
+            });
             bulkInsertOp.executeAsync();
 
             console.log(`Insert completed in ${Date.now() - timer}ms`);

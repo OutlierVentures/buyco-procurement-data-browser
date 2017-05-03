@@ -73,11 +73,6 @@ Meteor.publish(collectionName, function (filters, options) {
 
         // We add each document to the published collection so the subscribing client receives them.
         this.added(collectionName, doc._id, doc);
-
-        // Call prediction update for lack of a better place to do it (WIP)
-        Meteor.setTimeout(() => {
-            computePrediction(doc.organisation_name, groupField, doc._group);        
-        }, 100);
     });
 
     // Stop observing the cursor when client unsubs.

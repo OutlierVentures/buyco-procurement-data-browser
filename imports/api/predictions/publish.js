@@ -44,7 +44,7 @@ if (Meteor.isServer) {
         };
         pipeLine.push(sortClause);
 
-        // console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
+        console.log(collectionName + " pipeLine", JSON.stringify(pipeLine));
 
         // Call the aggregate
         let cursor = Predictions.aggregate(
