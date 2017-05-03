@@ -86,7 +86,7 @@ export function executePredictionStep(predictionRunId) {
             // valueArray.push(doc.month.getFullYear());
             // valueArray.push(doc.month.getMonth());
 
-            var period = (doc._id.year - 2010) * 12 + doc._id.month;
+            var period = computePeriod(doc._id.year, doc._id.month);
 
             //valueArray.push(doc._id.year);
             // Period value
@@ -119,6 +119,9 @@ export function executePredictionStep(predictionRunId) {
 
             y.push(doc.totalAmount || 0);
         });
+
+        if (debug) console.log("X length", X.length);
+        if (debug) console.log("y length", y.length);        
 
         let exampleItem = X[100];
         if (debug) console.log("example from X array", JSON.stringify(exampleItem));
@@ -178,9 +181,9 @@ export function executePredictionStep(predictionRunId) {
                     };
                 }
 
-                for (let y = 2010; y <= 2018; y++) {
+                for (let y = 2014; y <= 2018; y++) {
                     for (let m = 1; m <= 12; m++) {
-                        var period = (y - 2010) * 12 + m;
+                        var period = computePeriod(y, m);
                         valueArray[0] = period;
 
                         // Month as 1-hot encoding
@@ -201,8 +204,10 @@ export function executePredictionStep(predictionRunId) {
                             }
                         }
 
+                        let predictionValue = lr.predict(valueArray);
+
                         let predictionPoint = {
-                            year: y, month: m, amount_net: lr.predict(valueArray)
+                            year: y, month: m, amount_net: Math.max(predictionValue, 0)
                         };
 
                         // Find historical value for matching points
@@ -267,6 +272,15 @@ export function executePredictionStep(predictionRunId) {
 function getFirstUnprocessedParameters(predictionRunId) {
 
 }
+
+
+/**
+ * Compute a period value as used in predictions.
+ */
+function computePeriod(year, month) {
+    return (year - 2010) * 12 + month;
+}
+
 
 Meteor.methods({
     executePredictionStep
