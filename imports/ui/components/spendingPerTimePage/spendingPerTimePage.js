@@ -11,11 +11,11 @@ import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 import { Clients } from '../../../api/clients';
+import { Session } from 'meteor/session';
 
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
-import { CHART_FONT } from '../../stylesheet/config';
 import { getColour, abbreviateNumber } from '../../../utils';
 
 import template from './spendingPerTimePage.html';
@@ -29,8 +29,6 @@ class SpendingPerTimePage {
         });
 
         $reactive(this).attach($scope);
-
-        let that = this;
 
         let start = moment().subtract(1, 'year').startOf('year');
         let end = moment();
@@ -47,26 +45,6 @@ class SpendingPerTimePage {
         let isAllClient = true;
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
-
-        if (Session.get('organisation')) {
-            // setTimeout(function() {
-            $scope.viewOrganisations = [...Session.get('organisation')];
-            $scope.selectedOrganisation = [...Session.get('organisation')];
-            $scope.filteredOrganisations= [...Session.get('organisation')];
-
-            if ($scope.viewOrganisations.length) {
-                if ($scope.viewOrganisations[0].id == "All organisations") {
-                    $scope.selectedOrganisation = $scope.allOrganisations;
-                    isAllClient = true;
-                } else {
-                    $scope.selectedOrganisation = $scope.viewOrganisations;
-                    isAllClient = false;
-                }
-            } else {
-                $scope.selectedOrganisation = [];
-            }
-            // }, 1000);
-        }
 
         $scope.filteredOrganisations = [];
 
@@ -193,7 +171,6 @@ class SpendingPerTimePage {
 
                 // Sum values according to year and period if All Organisation
                 if (isAllClient) {
-                    console.log('mergedSpendingPerTime - isAllClient = ', isAllClient);
                     if (mergedTable && mergedTable.length) {
                         let allMergedTable = [];
                         mergedTable.forEach((data) => {
@@ -240,7 +217,6 @@ class SpendingPerTimePage {
                 return Clients.find({}).fetch();
             },
             spendingOrganisations: function () {
-                console.log('spendingOrganisations-helper');
                 let organisationsBuffer = [];
                 // Create an array with all organisations to be used when "All organisations" is selected.
                 // TODO: don't pass the individual organisations for this as a filter, just leave out the 
@@ -248,7 +224,6 @@ class SpendingPerTimePage {
                 $scope.allOrganisations = [];
 
                 let organisations = SpendingOrganisations.find({}, { sort: { "organisation_name": 1 }}).fetch();
-                // return [allOrgs, ...organisations];
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
                     organisationsBuffer.push({
@@ -263,8 +238,33 @@ class SpendingPerTimePage {
                 });
 
                 if ( organisationsBuffer.length ) {
+
+                    if (Session.get('organisation') && organisationsBuffer.length > 1) {
+                        $scope.viewOrganisations = [];
+                        let session_organisations = Session.get('organisation');
+
+                        session_organisations.forEach((org) => {
+                            organisationsBuffer.forEach((orgBuffer) => {
+                                if (org.label === orgBuffer.label) {
+                                    $scope.viewOrganisations.push(orgBuffer);
+                                }
+                            })
+                        });
+
+                        if ($scope.viewOrganisations.length) {
+                            if ($scope.viewOrganisations[0].id == "All organisations") {
+                                $scope.selectedOrganisation = $scope.allOrganisations;
+                                isAllClient = true;
+                            } else {
+                                $scope.selectedOrganisation = $scope.viewOrganisations;
+                                isAllClient = false;
+                            }
+                        } else {
+                            $scope.selectedOrganisation = [];
+                        }
+                    }
+
                     if ($scope.viewOrganisations.length == 0) {
-                        console.log('spendingOrganisations-helper-1111');
                         $scope.viewOrganisations[0] = organisationsBuffer[0];
                     }
 
@@ -273,14 +273,12 @@ class SpendingPerTimePage {
                     // "{ organisation_name: { $in : [ every, single, organisation, ...] } }"
                     // It's more efficient to just leave out the organisation filter in that case.
                     if ($scope.viewOrganisations[0].id == 'All organisations') {
-                        console.log('spendingOrganisations-helper222');
                         $scope.selectedOrganisation = $scope.allOrganisations;
                     }
+
                     $scope.previousSelection = $scope.viewOrganisations;
-                    console.log('spendingOrganisations-helper333 = ', $scope.viewOrganisations);
                 }
 
-                // $scope.organisationCount = organisationsBuffer.length;
                 return organisationsBuffer;
             },
             spendingServices: function () {
@@ -600,7 +598,7 @@ class SpendingPerTimePage {
                 $scope.selectedOrganisation = [];
             }
 
-            Session.set('organisation', $scope.viewOrganisations);
+            Session.setPersistent('organisation', $scope.viewOrganisations);
         };
 
         function filterPeriod(period) {
@@ -673,9 +671,6 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
-
-            console.log('spendingPerTime-Subscribe-viewOrganisation = ', $scope.viewOrganisations);
-            console.log('spendingPerTime-Subscribe-filteredOrganisations = ', $scope.filteredOrganisations);
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
@@ -736,8 +731,6 @@ class SpendingPerTimePage {
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
-
-        console.log('viewOrganization-origin = ', $scope.viewOrganisations);
     }
 }
 
