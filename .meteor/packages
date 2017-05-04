@@ -32,5 +32,15 @@ alanning:roles
 meteorhacks:aggregate
 momentjs:moment
 erasaur:meteor-lodash
-practicalmeteor:mocha
 meteorhacks:subs-manager
+
+#Testing
+practicalmeteor:mocha
+practicalmeteor:chai
+xolvio:cleaner
+xolvio:backdoor
+dburles:factory
+random@1.0.10
+johanbrook:publication-collector
+dispatch:mocha
+reywood:publish-composite
