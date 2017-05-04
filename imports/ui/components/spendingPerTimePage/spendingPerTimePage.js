@@ -56,10 +56,6 @@ class SpendingPerTimePage {
             showUncheckAll: false,
             selectionLimit: $scope.organisationCount
         };
-        $scope.organisationEventSetting = {
-            onSelectAll: selectAllOrganisation,
-            onMaxSelectionReached: reachedMaxSelection
-        };
 
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -654,13 +650,6 @@ class SpendingPerTimePage {
             timeChart.render();
         }
 
-        function selectAllOrganisation() {
-            console.log('selected All');
-        }
-
-        function reachedMaxSelection() {
-            console.log('reached Max Selection');
-        }
         this.subManager = new SubsManager();
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
