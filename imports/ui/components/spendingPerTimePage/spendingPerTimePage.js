@@ -30,6 +30,7 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
+        let that = this;
         let start = moment().subtract(1, 'year').startOf('year');
         let end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
@@ -45,7 +46,6 @@ class SpendingPerTimePage {
         let isAllClient = true;
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
-
         $scope.filteredOrganisations = [];
 
         $scope.ranges = {
@@ -60,8 +60,8 @@ class SpendingPerTimePage {
             ['All available data']: [moment("2010-01-01"), moment()]
         };
 
-        // $scope.category = '';
-        // $scope.service = '';
+        $scope.filtersVisible = false;
+        $scope.detailsVisible = false;
         $scope.period = "quarter";
         $scope.filterDate = {
             startDate: start,
@@ -101,6 +101,14 @@ class SpendingPerTimePage {
 
             if (Session.get('period')) {
                 $scope.period = Session.get('period');
+            }
+
+            if (Session.get('filterVisible')) {
+                $scope.filtersVisible = Session.get('filterVisible');
+            }
+
+            if (Session.get('detailsVisible')) {
+                $scope.detailsVisible = Session.get('detailsVisible');
             }
         }
 
@@ -553,7 +561,7 @@ class SpendingPerTimePage {
         });
 
         // UX defaults on component open
-        $scope.detailsVisible = true;
+        // $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
 
@@ -633,6 +641,17 @@ class SpendingPerTimePage {
             }
 
             Session.setPersistent('organisation', $scope.viewOrganisations);
+        };
+
+        $scope.onClickFilterVisible = function () {
+            $scope.filtersVisible = !$scope.filtersVisible;
+            Session.setPersistent('filterVisible', $scope.filtersVisible);
+        };
+
+        $scope.onClickDetailsVisible = function () {
+            $scope.detailsVisible = !$scope.detailsVisible;
+            Session.setPersistent('detailsVisible', $scope.detailsVisible);
+            console.log('onClickDetailsVisible = ', Session.get('detailsVisible'));
         };
 
         function filterPeriod(period) {

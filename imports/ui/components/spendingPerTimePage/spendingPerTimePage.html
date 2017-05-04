@@ -18,7 +18,7 @@
                             </div>
                         </div>
                         <div class="col-md-4 pull-right">
-                            <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right">
+                            <button type="button" ng-click="onClickFilterVisible()" class="btn btn-default pull-right">
                                 <span ng-show="!filtersVisible">Filter</span>
                                 <span ng-show="filtersVisible">Hide filter</span>
                             </button>
@@ -74,7 +74,7 @@
                     <div ng-show="spendingPerTime.length === 0">
                         <p>Loading...</p>
                     </div>
-                    <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+                    <button type="button" ng-click="onClickDetailsVisible()" class="btn btn-default pull-right">
                         <span ng-show="!detailsVisible">Show details</span>
                         <span ng-show="detailsVisible">Hide details</span>
                     </button>
