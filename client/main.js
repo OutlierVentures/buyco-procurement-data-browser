@@ -2,11 +2,13 @@ import angular from 'angular';
 
 import { Meteor } from 'meteor/meteor';
 
-import { name as ProcurementDataBrowser } from '../imports/ui/components/procurementDataBrowser/procurementDataBrowser';
+import { name as ProcurementDataBrowser } from '/imports/ui/components/procurementDataBrowser/procurementDataBrowser';
+import { name as PredictionManager } from '/imports/ui/components/admin/predictionManager/predictionManager';
 
 function onReady() {
   angular.bootstrap(document, [
-    ProcurementDataBrowser
+    ProcurementDataBrowser,
+    PredictionManager
   ], {
       strictDi: true
     });

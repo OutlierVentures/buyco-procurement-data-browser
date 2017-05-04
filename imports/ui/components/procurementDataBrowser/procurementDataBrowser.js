@@ -25,17 +25,17 @@ const name = 'procurementDataBrowser';
 
 // create a module
 export default angular.module(name, [
-  angularMeteor,
-  uiRouter,
-  SpendingList,
-  SpendingPerTimePage,
-  SpendingInsightPage,
-  Importer,
-  Navigation,
-  daterangepicker,
-  'accounts.ui',
-  'dx',
-  'localytics.directives'
+    angularMeteor,
+    uiRouter,
+    SpendingList,
+    SpendingPerTimePage,
+    SpendingInsightPage,
+    Importer,
+    Navigation,
+    daterangepicker,
+    'accounts.ui',
+    'dx',
+    'localytics.directives'
 ]).component(name, {
   template,
   controllerAs: name,

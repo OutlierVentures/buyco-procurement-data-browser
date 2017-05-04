@@ -30,7 +30,7 @@
                                 <label for="category">Category</label>
                                 <select class="form-control" name="category" ng-model="category">
                                     <option default value="">-- select --</option>
-                                    <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
+                                    <option ng-repeat="cat in spendingCategories track by cat.name" value="{{cat.name}}">{{cat.name}}</option>
                                 </select>
                             </div>
                         </div>
@@ -39,7 +39,7 @@
                                 <label for="service">Service</label>
                                 <select class="form-control" name="service" ng-model="service">
                                     <option default value="">-- select --</option>
-                                    <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
+                                    <option bindonce ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>
                                 </select>
                             </div>
                         </div>
