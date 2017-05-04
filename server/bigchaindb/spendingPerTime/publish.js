@@ -14,7 +14,8 @@ Meteor.publish(collectionName, function (filters, options) {
     let pipeLine = [];
 
     removeEmptyFilters(filters);
-
+    console.log('spendingPerTime-filters = ', filters);
+    console.log('spendingPerTime-options = ', options);
     if (filters) {
         pipeLine.push({ $match: filters });
     }
@@ -52,6 +53,7 @@ Meteor.publish(collectionName, function (filters, options) {
         doc._id = JSON.stringify(doc).hashCode();
 
         // We add each document to the published collection so the subscribing client receives them.
+        console.log('spendingPerTime - collection = ', doc);
         this.added(collectionName, doc._id, doc);
     });
 
