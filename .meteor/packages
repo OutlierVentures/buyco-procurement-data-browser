@@ -33,4 +33,7 @@ meteorhacks:aggregate
 momentjs:moment
 erasaur:meteor-lodash
 practicalmeteor:mocha
+session
+u2622:persistent-session
 meteorhacks:subs-manager
+
