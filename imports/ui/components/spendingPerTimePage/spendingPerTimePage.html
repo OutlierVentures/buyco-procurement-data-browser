@@ -11,8 +11,8 @@
                             <div class="form-group">
                                 <label for="viewOrganisations">Organisation</label>
                                 <select class="form-control" name="organisation" multiple chosen ng-model="viewOrganisations"
-                                        placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()" 
-                                        ng-options="t.label for t in spendingOrganisations">
+                                        placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()"
+                                        ng-options="organisation.label for organisation in spendingOrganisations">
                                     <option value=""></option>
                                 </select>
                             </div>

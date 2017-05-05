@@ -11,11 +11,11 @@ import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
 import { Clients } from '../../../api/clients';
+import { Session } from 'meteor/session';
 
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
-import { CHART_FONT } from '../../stylesheet/config';
 import { getColour, abbreviateNumber } from '../../../utils';
 
 import template from './spendingPerTimePage.html';
@@ -30,8 +30,6 @@ class SpendingPerTimePage {
 
         $reactive(this).attach($scope);
 
-        let that = this;
-
         let start = moment().subtract(1, 'year').startOf('year');
         let end = moment();
         lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
@@ -39,6 +37,7 @@ class SpendingPerTimePage {
         yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
 
         $scope.selectedOrganisation = [];
+
         let allOrgs = {
             label: "All organisations",
             id: 'All organisations'
@@ -46,20 +45,8 @@ class SpendingPerTimePage {
         let isAllClient = true;
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
+
         $scope.filteredOrganisations = [];
-        $scope.organisationCount = 0;
-        $scope.organisationSettings = {
-            scrollableHeight: '200px',
-            scrollable: true,
-            enableSearch: false,
-            externalIdProp: "id",
-            showUncheckAll: false,
-            selectionLimit: $scope.organisationCount
-        };
-        $scope.organisationEventSetting = {
-            onSelectAll: selectAllOrganisation,
-            onMaxSelectionReached: reachedMaxSelection
-        };
 
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -73,6 +60,9 @@ class SpendingPerTimePage {
             ['All available data']: [moment("2010-01-01"), moment()]
         };
 
+        // $scope.category = '';
+        // $scope.service = '';
+        $scope.period = "quarter";
         $scope.filterDate = {
             startDate: start,
             endDate: end
@@ -89,6 +79,32 @@ class SpendingPerTimePage {
             pointName: ''
         };
 
+        function applyFilters() {
+            if (Session.get('category')) {
+                $scope.category = Session.get('category');
+            }
+
+            if (Session.get('service')) {
+                $scope.service = Session.get('service');
+            }
+
+            if (Session.get('startDate')) {
+                let dateObj = new Date(Session.get('startDate'));
+                // let momentObj = moment(dateObj);
+                $scope.filterDate.startDate = moment(dateObj);
+            }
+
+            if (Session.get('endDate')) {
+                let dateObj = new Date(Session.get('endDate'));
+                $scope.filterDate.endDate = moment(dateObj);
+            }
+
+            if (Session.get('period')) {
+                $scope.period = Session.get('period');
+            }
+        }
+
+        applyFilters();
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -237,7 +253,6 @@ class SpendingPerTimePage {
                 $scope.allOrganisations = [];
 
                 let organisations = SpendingOrganisations.find({}, { sort: { "organisation_name": 1 }}).fetch();
-
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
                     organisationsBuffer.push({
@@ -252,19 +267,47 @@ class SpendingPerTimePage {
                 });
 
                 if ( organisationsBuffer.length ) {
-                    $scope.viewOrganisations[0] = organisationsBuffer[0];
 
-                    // When the special "All organisations" item is selected, use the collection with all organisations as 
+                    if (Session.get('organisation') && organisationsBuffer.length > 1) {
+                        $scope.viewOrganisations = [];
+                        let session_organisations = Session.get('organisation');
+
+                        session_organisations.forEach((org) => {
+                            organisationsBuffer.forEach((orgBuffer) => {
+                                if (org.label === orgBuffer.label) {
+                                    $scope.viewOrganisations.push(orgBuffer);
+                                }
+                            })
+                        });
+
+                        if ($scope.viewOrganisations.length) {
+                            if ($scope.viewOrganisations[0].id == "All organisations") {
+                                $scope.selectedOrganisation = $scope.allOrganisations;
+                                isAllClient = true;
+                            } else {
+                                $scope.selectedOrganisation = $scope.viewOrganisations;
+                                isAllClient = false;
+                            }
+                        } else {
+                            $scope.selectedOrganisation = [];
+                        }
+                    }
+
+                    if ($scope.viewOrganisations.length == 0) {
+                        $scope.viewOrganisations[0] = organisationsBuffer[0];
+                    }
+
+                    // When the special "All organisations" item is selected, use the collection with all organisations as
                     // the selection filter. Effectively this causes a filter like:
                     // "{ organisation_name: { $in : [ every, single, organisation, ...] } }"
                     // It's more efficient to just leave out the organisation filter in that case.
                     if ($scope.viewOrganisations[0].id == 'All organisations') {
                         $scope.selectedOrganisation = $scope.allOrganisations;
                     }
+
                     $scope.previousSelection = $scope.viewOrganisations;
                 }
 
-                $scope.organisationCount = organisationsBuffer.length;
                 return organisationsBuffer;
             },
             spendingServices: function () {
@@ -513,7 +556,6 @@ class SpendingPerTimePage {
         $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
-        $scope.period = "quarter";
 
         function getChartHandle() {
             let chartDiv = angular.element($element).find("#timeChart");
@@ -589,6 +631,8 @@ class SpendingPerTimePage {
             } else {
                 $scope.selectedOrganisation = [];
             }
+
+            Session.setPersistent('organisation', $scope.viewOrganisations);
         };
 
         function filterPeriod(period) {
@@ -654,12 +698,18 @@ class SpendingPerTimePage {
             timeChart.render();
         }
 
-        function selectAllOrganisation() {
-            console.log('selected All');
-        }
+        function saveFilters () {
+            let category = $scope.getReactively("category");
+            let service = $scope.getReactively("service");
+            let startDate = $scope.getReactively("filterDate").startDate.toDate();
+            let endDate = $scope.getReactively("filterDate").endDate.toDate();
+            let period = $scope.getReactively("period");
 
-        function reachedMaxSelection() {
-            console.log('reached Max Selection');
+            Session.setPersistent('category', category);
+            Session.setPersistent('service', service);
+            Session.setPersistent('startDate', startDate);
+            Session.setPersistent('endDate', endDate);
+            Session.setPersistent('period', period);
         }
         this.subManager = new SubsManager();
         let clientSub = $scope.subscribe('clients');
@@ -669,7 +719,6 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
-
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
@@ -681,6 +730,8 @@ class SpendingPerTimePage {
             }
 
             $scope.getReactively("filteredOrganisations");
+            saveFilters();
+
             return [{
                 organisation_name: organisations,
                 procurement_classification_1: $scope.getReactively("category"),
