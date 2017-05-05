@@ -88,14 +88,13 @@ class SpendingPerTimePage {
                 $scope.service = Session.get('service');
             }
 
-            if (Session.get('startDate')) {
-                let dateObj = new Date(Session.get('startDate'));
-                // let momentObj = moment(dateObj);
+            if (Session.get('filterStartDate')) {
+                let dateObj = new Date(Session.get('filterStartDate'));
                 $scope.filterDate.startDate = moment(dateObj);
             }
 
-            if (Session.get('endDate')) {
-                let dateObj = new Date(Session.get('endDate'));
+            if (Session.get('filterEndDate')) {
+                let dateObj = new Date(Session.get('filterEndDate'));
                 $scope.filterDate.endDate = moment(dateObj);
             }
 
@@ -113,12 +112,22 @@ class SpendingPerTimePage {
 
             if (Session.get('selectedPoint')) {
                 $scope.selectedPoint = Session.get('selectedPoint');
-                // $scope.selectedPoint.pointName = Session.get('selectedPoint').pointName;
-                console.log('1111 = ', $scope.selectedPoint);
             }
+
+            if (Session.get('selectedStartDate')) {
+                let dateObj = new Date(Session.get('selectedStartDate'));
+                // console.log('selectedStartDate = ', moment(dateObj));
+                $scope.selectedPeriod.startDate = moment(dateObj);
+            }
+
+            if (Session.get('selectedEndDate')) {
+                let dateObj = new Date(Session.get('selectedEndDate'));
+                $scope.selectedPeriod.endDate = moment(dateObj);
+            }
+            console.log('selectedStartDate = ', $scope.selectedPeriod.startDate);
+            console.log('selectedEndDate = ', $scope.selectedPeriod.endDate);
         }
 
-        applyFilters();
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
@@ -507,7 +516,6 @@ class SpendingPerTimePage {
                             $scope.selectedPoint.seriesName = target.series.name;
                             $scope.selectedPoint.pointName = selectedArgument;
                             Session.setPersistent('selectedPoint', $scope.selectedPoint);
-                            console.log('blblblb = ', $scope.selectedPoint.seriesName);
                             filterPeriod(selectedArgument);
                         } else {
                             target.clearSelection();
@@ -587,11 +595,9 @@ class SpendingPerTimePage {
 
         function markSelectedPoint() {
             setTimeout(function () {
-                console.log('timeOut');
                 let chartHandle = getChartHandle();
                 if(chartHandle) {
                     let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
-                    console.log('series = ', series);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
@@ -674,6 +680,8 @@ class SpendingPerTimePage {
             // Clear filter
             if (period == null) {
                 $scope.selectedPeriod = null;
+                Session.setPersistent('selectedStartDate', $scope.filterDate.startDate.toDate());
+                Session.setPersistent('selectedEndDate', $scope.filterDate.endDate.toDate());
                 return;
             }
 
@@ -710,6 +718,11 @@ class SpendingPerTimePage {
                 startDate: moment(startDate),
                 endDate: moment(endDate)
             };
+
+            Session.setPersistent('selectedStartDate', $scope.selectedPeriod.startDate.toDate());
+            Session.setPersistent('selectedEndDate', $scope.selectedPeriod.endDate.toDate());
+            console.log('selectedStartDate-filterDate= ', Session.get('selectedStartDate'));
+            console.log('selectedEndDate-filterDate= ', Session.get('selectedEndDate'));
         }
 
         function resizeTimeChart() {
@@ -736,10 +749,11 @@ class SpendingPerTimePage {
 
             Session.setPersistent('category', category);
             Session.setPersistent('service', service);
-            Session.setPersistent('startDate', startDate);
-            Session.setPersistent('endDate', endDate);
+            Session.setPersistent('filterStartDate', startDate);
+            Session.setPersistent('filterEndDate', endDate);
             Session.setPersistent('period', period);
         }
+
         this.subManager = new SubsManager();
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
@@ -804,6 +818,7 @@ class SpendingPerTimePage {
             }];
         });
 
+        applyFilters();
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
