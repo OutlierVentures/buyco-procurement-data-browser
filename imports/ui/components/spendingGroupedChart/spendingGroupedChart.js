@@ -516,7 +516,7 @@ class SpendingGroupedChart {
             setTimeout(function () {
                 let chartHandle = getChartHandle();
                 if(chartHandle) {
-                    let series = chartHandle.getSeriesByPos(0);
+                    let series = chartHandle.getSeriesByPos(1);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
