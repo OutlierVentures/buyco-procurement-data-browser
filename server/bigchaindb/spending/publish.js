@@ -36,8 +36,9 @@ Meteor.publish(collectionName, function (options, searchString) {
 
         selector.$or = [
             { organisation_name: searchRegex },
+            { sercop_service: searchRegex },
             { procurement_classification_1: searchRegex },
-            { purpose: searchRegex }
+            { supplier_name: searchRegex }
         ];
     }
     
