@@ -110,6 +110,12 @@ class SpendingPerTimePage {
             if (Session.get('detailsVisible')) {
                 $scope.detailsVisible = Session.get('detailsVisible');
             }
+
+            if (Session.get('selectedPoint')) {
+                $scope.selectedPoint = Session.get('selectedPoint');
+                // $scope.selectedPoint.pointName = Session.get('selectedPoint').pointName;
+                console.log('1111 = ', $scope.selectedPoint);
+            }
         }
 
         applyFilters();
@@ -500,11 +506,14 @@ class SpendingPerTimePage {
                             selectedArgument = target.originalArgument;
                             $scope.selectedPoint.seriesName = target.series.name;
                             $scope.selectedPoint.pointName = selectedArgument;
+                            Session.setPersistent('selectedPoint', $scope.selectedPoint);
+                            console.log('blblblb = ', $scope.selectedPoint.seriesName);
                             filterPeriod(selectedArgument);
                         } else {
                             target.clearSelection();
                             $scope.selectedPoint.seriesName = '';
                             $scope.selectedPoint.pointName = '';
+                            Session.setPersistent('selectedPoint', $scope.selectedPoint);
                             filterPeriod(null);
                         }
                     },
@@ -578,9 +587,11 @@ class SpendingPerTimePage {
 
         function markSelectedPoint() {
             setTimeout(function () {
+                console.log('timeOut');
                 let chartHandle = getChartHandle();
                 if(chartHandle) {
                     let series = chartHandle.getSeriesByName($scope.selectedPoint.seriesName);
+                    console.log('series = ', series);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
@@ -651,7 +662,6 @@ class SpendingPerTimePage {
         $scope.onClickDetailsVisible = function () {
             $scope.detailsVisible = !$scope.detailsVisible;
             Session.setPersistent('detailsVisible', $scope.detailsVisible);
-            console.log('onClickDetailsVisible = ', Session.get('detailsVisible'));
         };
 
         function filterPeriod(period) {
