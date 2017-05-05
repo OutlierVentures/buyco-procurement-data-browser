@@ -11,13 +11,14 @@ import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
 import { getColour, abbreviateNumber } from '../../../utils';
+import { Session } from 'meteor/session';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
         'ngInject';
         $reactive(this).attach($scope);
 
-        var self = this;
+        let self = this;
         $rootScope.$on('resizeRequested', function (e) {
             resizeChart();
         });
@@ -206,6 +207,11 @@ class SpendingGroupedChart {
             },
             groupDisplayName: () => {
                 this.groupDisplayName = MetaDataHelper.getFieldDisplayName("public_spending", this.getReactively("groupField"));
+                let subFilterName = 'subfilter' + this.groupDisplayName;
+
+                if (Session.get(subFilterName)) {
+                    self.subfilter = Session.get(subFilterName);
+                }
                 return this.groupDisplayName;
             },
             spendingGrouped: () => {
@@ -364,9 +370,15 @@ class SpendingGroupedChart {
                             selectedArgument = target.originalArgument;
                             let selectedService = getSelectedService(selectedArgument);
                             self.subfilter = selectedService;
+
+                            let subFilterName = 'subfilter' + this.groupDisplayName;
+                            Session.setPersistent(subFilterName, self.subfilter);
                         } else {
                             target.clearSelection();
                             self.subfilter = null;
+
+                            let subFilterName = 'subfilter' + this.groupDisplayName;
+                            Session.setPersistent(subFilterName, self.subfilter);
                         }
                     },
                 };

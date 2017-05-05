@@ -116,7 +116,6 @@ class SpendingPerTimePage {
 
             if (Session.get('selectedStartDate')) {
                 let dateObj = new Date(Session.get('selectedStartDate'));
-                // console.log('selectedStartDate = ', moment(dateObj));
                 $scope.selectedPeriod.startDate = moment(dateObj);
             }
 
@@ -124,9 +123,9 @@ class SpendingPerTimePage {
                 let dateObj = new Date(Session.get('selectedEndDate'));
                 $scope.selectedPeriod.endDate = moment(dateObj);
             }
-            console.log('selectedStartDate = ', $scope.selectedPeriod.startDate);
-            console.log('selectedEndDate = ', $scope.selectedPeriod.endDate);
         }
+
+        applyFilters();
 
         $scope.helpers({
             isLoggedIn: function () {
@@ -355,9 +354,6 @@ class SpendingPerTimePage {
 
                 return categories;
             },
-            selectedPeriod: function () {
-                return $scope.getReactively("filterDate");
-            },
             filterPeriodName: function () {
                 return $scope.getReactively("filterName");
             },
@@ -558,7 +554,6 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
-                $scope.selectedPeriod = '';
                 return {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
                     procurement_classification_1: $scope.getReactively("category"),
@@ -721,8 +716,6 @@ class SpendingPerTimePage {
 
             Session.setPersistent('selectedStartDate', $scope.selectedPeriod.startDate.toDate());
             Session.setPersistent('selectedEndDate', $scope.selectedPeriod.endDate.toDate());
-            console.log('selectedStartDate-filterDate= ', Session.get('selectedStartDate'));
-            console.log('selectedEndDate-filterDate= ', Session.get('selectedEndDate'));
         }
 
         function resizeTimeChart() {
@@ -818,7 +811,6 @@ class SpendingPerTimePage {
             }];
         });
 
-        applyFilters();
         this.autorun(() => {
             // Select the first client option by default when the subscription is ready.
             if (clientSub.ready()) {
