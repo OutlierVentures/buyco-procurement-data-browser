@@ -512,11 +512,27 @@ class SpendingGroupedChart {
             return timechart;
         }
 
+        /**
+         * Mark the selected sub filter ("click filter") in the chart after a reload.
+         */
         function markSelectedSubFilter() {
             setTimeout(function () {
                 let chartHandle = getChartHandle();
-                if(chartHandle) {
-                    let series = chartHandle.getSeriesByPos(1);
+                
+                if(!chartHandle)
+                    return;
+
+                // Series index 0 should always be marked
+                let seriesToMarkByPos = [0];
+                
+                // If showing client data, series 0 is the client data and series 1 is the public
+                // spending data. Mark them both.
+                if(self.getReactively("filters.client.client_id")){
+                    seriesToMarkByPos.push(1);
+                }
+
+                for(let i = 0; i< seriesToMarkByPos.length; i++){
+                    let series = chartHandle.getSeriesByPos(seriesToMarkByPos[i]);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
@@ -526,7 +542,7 @@ class SpendingGroupedChart {
                             }
                         });
                     }
-                }
+                }                
             }, 800);
         }
 
@@ -546,6 +562,7 @@ class SpendingGroupedChart {
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
+
     }
 
     $onInit = () => {}
