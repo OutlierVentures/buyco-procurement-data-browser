@@ -548,6 +548,9 @@ class SpendingGroupedChart {
 
         function resizeChart() {
             var chartHandle = getChartHandle();
+            if(!chartHandle)
+                return;
+            
             chartHandle.render();
         }
 
