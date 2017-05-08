@@ -11,13 +11,14 @@ import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
 import { getColour, abbreviateNumber } from '../../../utils';
+import { Session } from 'meteor/session';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
         'ngInject';
         $reactive(this).attach($scope);
 
-        var self = this;
+        let self = this;
         $rootScope.$on('resizeRequested', function (e) {
             resizeChart();
         });
@@ -206,6 +207,11 @@ class SpendingGroupedChart {
             },
             groupDisplayName: () => {
                 this.groupDisplayName = MetaDataHelper.getFieldDisplayName("public_spending", this.getReactively("groupField"));
+                let subFilterName = 'subfilter' + this.groupDisplayName;
+
+                if (Session.get(subFilterName)) {
+                    self.subfilter = Session.get(subFilterName);
+                }
                 return this.groupDisplayName;
             },
             spendingGrouped: () => {
@@ -364,9 +370,15 @@ class SpendingGroupedChart {
                             selectedArgument = target.originalArgument;
                             let selectedService = getSelectedService(selectedArgument);
                             self.subfilter = selectedService;
+
+                            let subFilterName = 'subfilter' + this.groupDisplayName;
+                            Session.setPersistent(subFilterName, self.subfilter);
                         } else {
                             target.clearSelection();
                             self.subfilter = null;
+
+                            let subFilterName = 'subfilter' + this.groupDisplayName;
+                            Session.setPersistent(subFilterName, self.subfilter);
                         }
                     },
                 };
@@ -500,11 +512,27 @@ class SpendingGroupedChart {
             return timechart;
         }
 
+        /**
+         * Mark the selected sub filter ("click filter") in the chart after a reload.
+         */
         function markSelectedSubFilter() {
             setTimeout(function () {
                 let chartHandle = getChartHandle();
-                if(chartHandle) {
-                    let series = chartHandle.getSeriesByPos(0);
+                
+                if(!chartHandle)
+                    return;
+
+                // Series index 0 should always be marked
+                let seriesToMarkByPos = [0];
+                
+                // If showing client data, series 0 is the client data and series 1 is the public
+                // spending data. Mark them both.
+                if(self.getReactively("filters.client.client_id")){
+                    seriesToMarkByPos.push(1);
+                }
+
+                for(let i = 0; i< seriesToMarkByPos.length; i++){
+                    let series = chartHandle.getSeriesByPos(seriesToMarkByPos[i]);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
@@ -514,7 +542,7 @@ class SpendingGroupedChart {
                             }
                         });
                     }
-                }
+                }                
             }, 800);
         }
 
@@ -534,6 +562,7 @@ class SpendingGroupedChart {
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
+
     }
 
     $onInit = () => {}
