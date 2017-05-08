@@ -3,6 +3,8 @@ import { Predictions } from '/imports/api/predictions';
 import { Spending } from '/server/bigchaindb/spending';
 import shaman from 'shaman';
 
+let debug = true;
+
 export function executePredictionStep(predictionRunId) {
     if (Meteor.isServer) {
         if (debug) console.log("executePredictionStep", predictionRunId);
@@ -15,8 +17,6 @@ export function executePredictionStep(predictionRunId) {
 
         // Unblock immediately
         this.unblock();
-
-        let debug = true;
 
         // Load data for all councils, all time
         let data = [];
