@@ -33,16 +33,18 @@ class SpendingPerTimePage {
         let that = this;
         let lastYear = moment().subtract(1, 'year');
         let twoYearsAgo = moment().subtract(2, 'year');
+        let startTwoYearsAgo = twoYearsAgo.clone().startOf('year');
+        let endTwoYearsAgo = twoYearsAgo.clone().endOf('year');
         let startLastYear = lastYear.startOf('year');
-        let endLastYear = lastYear.endOf('year');
+        let endLastYear = lastYear.clone().endOf('year');
 
         // By default, show data for the last full year
         let defaultStart = startLastYear;
         let defaultEnd = endLastYear;
 
         lastYearLabel = 'Last Year (' + startLastYear.year() + ')';
-        lastTwoYearsLabel = 'Last Two Years (' + twoYearsAgo.startOf('year').year() + '-' + lastYear.year() + ')';
-        yearBeforeLabel = 'Year Before Last (' + twoYearsAgo.startOf('year').year() + ')';
+        lastTwoYearsLabel = 'Last Two Years (' + startTwoYearsAgo.year() + '-' + lastYear.year() + ')';
+        yearBeforeLabel = 'Year Before Last (' + startTwoYearsAgo.year() + ')';
 
         $scope.selectedOrganisation = [];
 
@@ -61,8 +63,8 @@ class SpendingPerTimePage {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
             [lastYearLabel]: [startLastYear, endLastYear],
-            [lastTwoYearsLabel]: [twoYearsAgo.startOf('year'), endLastYear],
-            [yearBeforeLabel]: [twoYearsAgo.startOf('year'), twoYearsAgo.endOf('year')],
+            [lastTwoYearsLabel]: [startTwoYearsAgo, endLastYear],
+            [yearBeforeLabel]: [startTwoYearsAgo, endTwoYearsAgo],
             'This Year': [moment().startOf('year'), moment().endOf('year')],
             ['All available data']: [moment("2010-01-01"), moment()]
         };
