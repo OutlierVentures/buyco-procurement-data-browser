@@ -131,7 +131,7 @@ class SpendingPerTimePage {
                 return Meteor.userId() != null;
             },
             spendingPerTime: function () {
-                return SpendingPerTime.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 }}).fetch();
+                return SpendingPerTime.find({}, { sort: { "_group.year": 1, ["_group." + $scope.period]: 1, "_group.organisation_name": 1 }}).fetch();
             },
             clientSpendingPerTime: function () {
                 return ClientSpendingPerTime.find({}).fetch();
@@ -140,7 +140,7 @@ class SpendingPerTimePage {
                 // Prepare a joined collection with the percentage of client trade.
                 // TODO: this is business logic, move it to an API function.
                 // Sort the data by organisation name to ensure precondition for sub total comparison.
-                let ps = SpendingPerTime.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 } });
+                let ps = SpendingPerTime.find({}, { sort: { "_group.year": 1, ["_group." + $scope.period]: 1, "_group.organisation_name": 1 } });
                 let cs = ClientSpendingPerTime.find({});
 
                 let totalValues = {
