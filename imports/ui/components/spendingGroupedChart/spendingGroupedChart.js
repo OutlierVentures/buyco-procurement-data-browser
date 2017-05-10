@@ -100,10 +100,12 @@ class SpendingGroupedChart {
             }
 
             if (this.getReactively('filterDate')) {
+                console.log(this.groupField + " using filterDate", this.filterDate);
                 filterOptions.payment_date = { $gte: this.getReactively("filterDate").startDate.toDate(), $lte: this.getReactively("filterDate").endDate.toDate() };
             }
 
             if (this.getReactively('selDate')) {
+                console.log(this.groupField + " using selDate", this.selDate);
                 filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
             }
 

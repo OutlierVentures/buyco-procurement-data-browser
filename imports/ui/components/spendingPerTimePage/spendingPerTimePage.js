@@ -68,10 +68,7 @@ class SpendingPerTimePage {
             endDate: end
         };
 
-        $scope.selectedPeriod = {
-            startDate: start,
-            endDate: end
-        };
+        $scope.selectedPeriod = null;
 
         $scope.filterName = '';
         $scope.selectedPoint = {
@@ -116,11 +113,13 @@ class SpendingPerTimePage {
 
             if (Session.get('selectedStartDate')) {
                 let dateObj = new Date(Session.get('selectedStartDate'));
+                $scope.selectedPeriod = $scope.selectedPeriod || {};
                 $scope.selectedPeriod.startDate = moment(dateObj);
             }
 
             if (Session.get('selectedEndDate')) {
                 let dateObj = new Date(Session.get('selectedEndDate'));
+                $scope.selectedPeriod = $scope.selectedPeriod || {};
                 $scope.selectedPeriod.endDate = moment(dateObj);
             }
         }
@@ -675,8 +674,8 @@ class SpendingPerTimePage {
             // Clear filter
             if (period == null) {
                 $scope.selectedPeriod = null;
-                Session.setPersistent('selectedStartDate', $scope.filterDate.startDate.toDate());
-                Session.setPersistent('selectedEndDate', $scope.filterDate.endDate.toDate());
+                Session.setPersistent('selectedStartDate', null);
+                Session.setPersistent('selectedEndDate', null);
                 return;
             }
 
