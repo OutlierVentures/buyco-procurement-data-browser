@@ -11,7 +11,7 @@ export const removeEmptyFilters = (filters) => {
     for (let k in filters) {
         // Take out empty values. We explicitly take out the empty string as a filter value,
         // because select boxes can pass them when an empty "-- select --" option is selected.
-        if (filters[k] === null || filters[k] === "")
+        if ((filters[k] === null || filters[k] === "") || (filters[k] && filters[k].length === 0))
             delete filters[k];
     }
 };

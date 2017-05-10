@@ -64,15 +64,15 @@ class SpendingGroupedChart {
                 filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
             }
 
+            console.log('spendingGrouped-subscribe = ', filterOptions);
             removeEmptyFilters(filterOptions);
-
-            var publishParams = [
+            let publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
                 }];
 
-            return publishParams;                
+            return publishParams;
         });
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
@@ -161,8 +161,7 @@ class SpendingGroupedChart {
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
             removeEmptyFilters (filters);
 
-            var data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
-
+            let data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
             return data;
         };
 
@@ -210,8 +209,9 @@ class SpendingGroupedChart {
                 let subFilterName = 'subfilter' + this.groupDisplayName;
 
                 if (Session.get(subFilterName)) {
-                    self.subfilter = Session.get(subFilterName);
+                    // self.subfilter = Session.get(subFilterName);
                 }
+                console.log('displayName = ', this.groupDisplayName);
                 return this.groupDisplayName;
             },
             spendingGrouped: () => {
@@ -378,7 +378,7 @@ class SpendingGroupedChart {
                             self.subfilter = null;
 
                             let subFilterName = 'subfilter' + this.groupDisplayName;
-                            Session.setPersistent(subFilterName, self.subfilter);
+                            // Session.setPersistent(subFilterName, self.subfilter);
                         }
                     },
                 };
@@ -392,13 +392,24 @@ class SpendingGroupedChart {
                 else
                     filterName = '';
 
-                let category = this.getReactively("filters.procurement_classification_1");
-                if (category)
-                    filterName += 'Category: ' + category + ', ';
-
-                let service = this.getReactively("filters.sercop_service");
-                if (service)
-                    filterName += 'Service: ' + service + ', ';
+                // let category = this.getReactively("filters.procurement_classification_1");
+                // console.log('12312312312 = ', category);
+                // if (category) {
+                //     console.log('345435345345');
+                //     filterName += 'Category: ';
+                //     category.$in.forEach((filter) => {
+                //         filterName += filter + ', ';
+                //     });
+                // }
+                //
+                // let service = this.getReactively("filters.sercop_service");
+                // if (service) {
+                //     console.log('2343242342432');
+                //     filterName += 'Service: ';
+                //     service.$in.forEach((filter) => {
+                //         filterName += filter + ', ';
+                //     });
+                // }
 
                 let supplier = this.getReactively("filters.supplier_name");
                 if (supplier)
@@ -537,9 +548,13 @@ class SpendingGroupedChart {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
                             let serviceName = point.initialArgument;
-                            if (getSelectedService(serviceName) == self.subfilter) {
-                                series.selectPoint(point);
-                            }
+                            // if (self.subfilter && self.subfilter.length) {
+                            //     self.subfilter.forEach((subfilter) => {
+                            //         if (getSelectedService(serviceName) == subfilter) {
+                            //             series.selectPoint(point);
+                            //         }
+                            //     });
+                            // }
                         });
                     }
                 }                
@@ -547,7 +562,7 @@ class SpendingGroupedChart {
         }
 
         function resizeChart() {
-            var chartHandle = getChartHandle();
+            let chartHandle = getChartHandle();
             if(!chartHandle)
                 return;
             
