@@ -31,11 +31,18 @@ class SpendingPerTimePage {
         $reactive(this).attach($scope);
 
         let that = this;
-        let start = moment().subtract(1, 'year').startOf('year');
-        let end = moment();
-        lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
-        lastTwoYearsLabel = 'Last Two Years (' + moment().subtract(2, 'year').startOf('year').year() + '-' + moment().subtract(1, 'year').startOf('year').year() + ')';
-        yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+        let lastYear = moment().subtract(1, 'year');
+        let twoYearsAgo = moment().subtract(2, 'year');
+        let startLastYear = lastYear.startOf('year');
+        let endLastYear = lastYear.endOf('year');
+
+        // By default, show data for the last full year
+        let defaultStart = startLastYear;
+        let defaultEnd = endLastYear;
+
+        lastYearLabel = 'Last Year (' + startLastYear.year() + ')';
+        lastTwoYearsLabel = 'Last Two Years (' + twoYearsAgo.startOf('year').year() + '-' + lastYear.year() + ')';
+        yearBeforeLabel = 'Year Before Last (' + twoYearsAgo.startOf('year').year() + ')';
 
         $scope.selectedOrganisation = [];
 
@@ -53,9 +60,9 @@ class SpendingPerTimePage {
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-            [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-            [lastTwoYearsLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-            [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
+            [lastYearLabel]: [startLastYear, endLastYear],
+            [lastTwoYearsLabel]: [twoYearsAgo.startOf('year'), endLastYear],
+            [yearBeforeLabel]: [twoYearsAgo.startOf('year'), twoYearsAgo.endOf('year')],
             'This Year': [moment().startOf('year'), moment().endOf('year')],
             ['All available data']: [moment("2010-01-01"), moment()]
         };
@@ -64,10 +71,12 @@ class SpendingPerTimePage {
         $scope.detailsVisible = false;
         $scope.period = "quarter";
         $scope.filterDate = {
-            startDate: start,
-            endDate: end
+            startDate: defaultStart,
+            endDate: defaultEnd
         };
 
+        // Initially the selected point/period is empty. It can be set by clicking, or be reloaded 
+        // from the session.
         $scope.selectedPeriod = null;
 
         $scope.filterName = '';
