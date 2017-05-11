@@ -35,7 +35,7 @@ class SpendingGroupedChart {
             };
 
             switch(this.groupDisplayName) {
-                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
                 // case 'category':
                 //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
                 //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
@@ -81,7 +81,7 @@ class SpendingGroupedChart {
             };
 
             switch(this.groupDisplayName) {
-                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
                 // case 'category':
                 //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
                 //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
@@ -138,7 +138,7 @@ class SpendingGroupedChart {
             }
 
             switch(this.groupDisplayName) {
-                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
                 // case 'category':
                 //     filters.sercop_service = this.getReactively("filters.sercop_service");
                 //     filters.supplier_name = this.getReactively("filters.supplier_name");
@@ -176,7 +176,7 @@ class SpendingGroupedChart {
             filters.client_id = this.getReactively("filters.client.client_id");
 
             switch(this.groupDisplayName) {
-                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
                 // case 'category':
                 //     filters.sercop_service = this.getReactively("filters.sercop_service");
                 //     filters.supplier_name = this.getReactively("filters.supplier_name");
