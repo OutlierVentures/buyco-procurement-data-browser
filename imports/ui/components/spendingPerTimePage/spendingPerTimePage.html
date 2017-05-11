@@ -27,19 +27,31 @@
                     <div class="row" ng-show="filtersVisible">
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
+                                <button ng-click="category=null" class="btn btn-default btn-xs pull-right" ng-show="category"><i class="fa fa-remove"></i></button> 
                                 <label for="category">Category</label>
-                                <select class="form-control" name="category" ng-model="category">
-                                    <option default value="">-- select --</option>
-                                    <option ng-repeat="cat in spendingCategories track by cat.name" value="{{cat.name}}">{{cat.name}}</option>
-                                </select>
+                                <!--<select class="form-control" name="category" ng-model="category">-->
+                                    <!--<option default value="">-- select --</option>-->
+                                    <!--<option ng-repeat="cat in spendingCategories track by cat.name" value="{{cat.name}}">{{cat.name}}</option>-->
+                                <!--</select>-->
+                                <select class="form-control" name="category" multiple chosen ng-model="category"
+                                        placeholder-text-multiple="'Select Categories'"
+                                        ng-options="cat for cat in spendingCategories">
+                                    <option value=""></option>
+                                </select>                                
                             </div>
                         </div>
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
+                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service"><i class="fa fa-remove"></i></button>                             
                                 <label for="service">Service</label>
-                                <select class="form-control" name="service" ng-model="service">
-                                    <option default value="">-- select --</option>
-                                    <option bindonce ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>
+                                <!--<select class="form-control" name="service" ng-model="service">-->
+                                    <!--<option default value="">-- select --</option>-->
+                                    <!--<option bindonce ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>-->
+                                <!--</select>-->
+                                <select class="form-control" name="service" multiple chosen ng-model="service"
+                                        placeholder-text-multiple="'Select Services'"
+                                        ng-options="service for service in spendingServices">
+                                    <option value=""></option>
                                 </select>
                             </div>
                         </div>

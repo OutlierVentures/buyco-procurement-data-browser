@@ -65,14 +65,13 @@ class SpendingGroupedChart {
             }
 
             removeEmptyFilters(filterOptions);
-
-            var publishParams = [
+            let publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
                 }];
 
-            return publishParams;                
+            return publishParams;
         });
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
@@ -161,8 +160,7 @@ class SpendingGroupedChart {
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
             removeEmptyFilters (filters);
 
-            var data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
-
+            let data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
             return data;
         };
 
@@ -363,20 +361,32 @@ class SpendingGroupedChart {
                             };
                         }
                     },
+                    pointSelectionMode: 'multiple',
                     onPointClick: function (e) {
                         let target = e.target;
+                        let selectedArgument = target.originalArgument;
+                        let selectedService = getSelectedService(selectedArgument);
+
+                        if (self.subfilter) {
+                            let index = self.subfilter.indexOf(selectedService);
+
+                            if (index > -1)
+                                self.subfilter.splice(index, 1);
+                        } else {
+                            self.subfilter = [];
+                        }
+
                         if (!target.isSelected()) {
                             target.select();
-                            selectedArgument = target.originalArgument;
-                            let selectedService = getSelectedService(selectedArgument);
-                            self.subfilter = selectedService;
+                            self.subfilter.push(selectedService);
 
                             let subFilterName = 'subfilter' + this.groupDisplayName;
                             Session.setPersistent(subFilterName, self.subfilter);
                         } else {
                             target.clearSelection();
-                            self.subfilter = null;
-
+                            let index = self.subfilter.indexOf(selectedService);
+                            if (index > -1)
+                                self.subfilter.splice(index, 1);
                             let subFilterName = 'subfilter' + this.groupDisplayName;
                             Session.setPersistent(subFilterName, self.subfilter);
                         }
@@ -393,16 +403,28 @@ class SpendingGroupedChart {
                     filterName = '';
 
                 let category = this.getReactively("filters.procurement_classification_1");
-                if (category)
-                    filterName += 'Category: ' + category + ', ';
+                if (category) {
+                    filterName += 'Category: ';
+                    category.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
 
                 let service = this.getReactively("filters.sercop_service");
-                if (service)
-                    filterName += 'Service: ' + service + ', ';
+                if (service) {
+                    filterName += 'Service: ';
+                    service.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
 
                 let supplier = this.getReactively("filters.supplier_name");
-                if (supplier)
-                    filterName += 'Supplier: ' + supplier + ', ';
+                if (supplier) {
+                    filterName += 'Supplier: ';
+                    supplier.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
 
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
@@ -537,8 +559,12 @@ class SpendingGroupedChart {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
                             let serviceName = point.initialArgument;
-                            if (getSelectedService(serviceName) == self.subfilter) {
-                                series.selectPoint(point);
+                            if (self.subfilter && self.subfilter.length) {
+                                self.subfilter.forEach((subfilter) => {
+                                    if (getSelectedService(serviceName) == subfilter) {
+                                        series.selectPoint(point);
+                                    }
+                                });
                             }
                         });
                     }
@@ -547,7 +573,7 @@ class SpendingGroupedChart {
         }
 
         function resizeChart() {
-            var chartHandle = getChartHandle();
+            let chartHandle = getChartHandle();
             if(!chartHandle)
                 return;
             
