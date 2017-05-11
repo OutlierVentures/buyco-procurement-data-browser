@@ -10,6 +10,7 @@ import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
+// import { SpendingSuppliers } from '../../../api/spendingSuppliers';
 import { Clients } from '../../../api/clients';
 import { Session } from 'meteor/session';
 
@@ -94,6 +95,14 @@ class SpendingPerTimePage {
 
             if (Session.get('service')) {
                 $scope.service = Session.get('service');
+            }
+
+            if (Session.get('supplier')) {
+                $scope.supplier = Session.get('supplier');
+            }
+
+            if (Session.get('supplier_contains')) {
+                $scope.supplier_contains = Session.get('supplier_contains');
             }
 
             if (Session.get('filterStartDate')) {
@@ -371,6 +380,21 @@ class SpendingPerTimePage {
                 });
                 return spendingCategories;
             },
+            // spendingSuppliers: function () {
+            //     if(that.subManager && !that.subManager.ready()) {
+            //         return [];
+            //     }
+            //     let suppliers = SpendingSuppliers.find({
+            //             organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+            //         }, { sort: { "name": 1 } }
+            //     ).fetch();
+
+            //     let spendingSuppliers = [];
+            //     suppliers.forEach((supplier) => {
+            //         spendingSuppliers.push(supplier.name);
+            //     });
+            //     return spendingSuppliers;
+            // },
             filterPeriodName: function () {
                 return $scope.getReactively("filterName");
             },
@@ -586,9 +610,17 @@ class SpendingPerTimePage {
                     service = '';
                 }
 
-                let supplier = '';
-                if ($scope.getReactively('supplier_name') && $scope.getReactively('supplier_name').length) {
-                    supplier = { $in: $scope.getReactively("supplier_name") };
+                // let supplier = '';
+                // if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
+                //     supplier = { $in: $scope.getReactively("supplier") };
+                // } else {
+                //     supplier = '';
+                // }
+
+                // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+                let supplierContains = '';
+                if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                    supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
                 } else {
                     supplier = '';
                 }
@@ -775,12 +807,16 @@ class SpendingPerTimePage {
         function saveFilters () {
             let category = $scope.getReactively("category");
             let service = $scope.getReactively("service");
+            let supplier = $scope.getReactively("supplier");
+            let supplier_contains = $scope.getReactively("supplier_contains");
             let startDate = $scope.getReactively("filterDate").startDate.toDate();
             let endDate = $scope.getReactively("filterDate").endDate.toDate();
             let period = $scope.getReactively("period");
 
             Session.setPersistent('category', category);
             Session.setPersistent('service', service);
+            Session.setPersistent('supplier', supplier);
+            Session.setPersistent('supplier_contains', supplier_contains);
             Session.setPersistent('filterStartDate', startDate);
             Session.setPersistent('filterEndDate', endDate);
             Session.setPersistent('period', period);
@@ -791,11 +827,13 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingOrganisations');
         this.subManager.subscribe('spendingServices');
         this.subManager.subscribe('spendingCategories');
+        // this.subManager.subscribe('spendingSuppliers');
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
             let category = '';
             let service = '';
+            let supplier = '';
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
@@ -818,6 +856,20 @@ class SpendingPerTimePage {
                 service = '';
             }
 
+            // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
+            //     supplier = { $in: $scope.getCollectionReactively("supplier") };
+            // } else {
+            //     supplier = '';
+            // }
+
+            // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+            let supplierContains = '';
+            if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+            } else {
+                supplier = '';
+            }
+
             $scope.getCollectionReactively("filteredOrganisations");
             saveFilters();
 
@@ -825,7 +877,7 @@ class SpendingPerTimePage {
                 organisation_name: organisations,
                 procurement_classification_1: category,
                 sercop_service: service,
-                supplier_name: $scope.getCollectionReactively('supplier_name'),
+                supplier_name: supplier,
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
@@ -841,6 +893,7 @@ class SpendingPerTimePage {
             let organisations = '';
             let category = '';
             let service = '';
+            let supplier = '';
 
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
 
@@ -862,6 +915,12 @@ class SpendingPerTimePage {
                 service = '';
             }
 
+            if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
+                supplier = { $in: $scope.getReactively("supplier") };
+            } else {
+                supplier = '';
+            }
+
             $scope.getReactively("filteredOrganisations");
 
             return [{
@@ -869,7 +928,7 @@ class SpendingPerTimePage {
                 organisation_name: organisations,
                 procurement_classification_1: category,
                 sercop_service: service,
-                supplier_name: $scope.getReactively('supplier_name'),
+                supplier_name: supplier,
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
