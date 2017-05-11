@@ -10,7 +10,7 @@ import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
-import { SpendingSuppliers } from '../../../api/spendingSuppliers';
+// import { SpendingSuppliers } from '../../../api/spendingSuppliers';
 import { Clients } from '../../../api/clients';
 import { Session } from 'meteor/session';
 
@@ -91,6 +91,10 @@ class SpendingPerTimePage {
 
             if (Session.get('supplier')) {
                 $scope.supplier = Session.get('supplier');
+            }
+
+            if (Session.get('supplier_contains')) {
+                $scope.supplier_contains = Session.get('supplier_contains');
             }
 
             if (Session.get('filterStartDate')) {
@@ -366,21 +370,21 @@ class SpendingPerTimePage {
                 });
                 return spendingCategories;
             },
-            spendingSuppliers: function () {
-                if(that.subManager && !that.subManager.ready()) {
-                    return [];
-                }
-                let suppliers = SpendingSuppliers.find({
-                        organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
-                    }, { sort: { "name": 1 } }
-                ).fetch();
+            // spendingSuppliers: function () {
+            //     if(that.subManager && !that.subManager.ready()) {
+            //         return [];
+            //     }
+            //     let suppliers = SpendingSuppliers.find({
+            //             organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+            //         }, { sort: { "name": 1 } }
+            //     ).fetch();
 
-                let spendingSuppliers = [];
-                suppliers.forEach((supplier) => {
-                    spendingSuppliers.push(supplier.name);
-                });
-                return spendingSuppliers;
-            },
+            //     let spendingSuppliers = [];
+            //     suppliers.forEach((supplier) => {
+            //         spendingSuppliers.push(supplier.name);
+            //     });
+            //     return spendingSuppliers;
+            // },
             filterPeriodName: function () {
                 return $scope.getReactively("filterName");
             },
@@ -596,9 +600,17 @@ class SpendingPerTimePage {
                     service = '';
                 }
 
-                let supplier = '';
-                if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
-                    supplier = { $in: $scope.getReactively("supplier") };
+                // let supplier = '';
+                // if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
+                //     supplier = { $in: $scope.getReactively("supplier") };
+                // } else {
+                //     supplier = '';
+                // }
+
+                // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+                let supplierContains = '';
+                if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                    supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
                 } else {
                     supplier = '';
                 }
@@ -786,6 +798,7 @@ class SpendingPerTimePage {
             let category = $scope.getReactively("category");
             let service = $scope.getReactively("service");
             let supplier = $scope.getReactively("supplier");
+            let supplier_contains = $scope.getReactively("supplier_contains");
             let startDate = $scope.getReactively("filterDate").startDate.toDate();
             let endDate = $scope.getReactively("filterDate").endDate.toDate();
             let period = $scope.getReactively("period");
@@ -793,6 +806,7 @@ class SpendingPerTimePage {
             Session.setPersistent('category', category);
             Session.setPersistent('service', service);
             Session.setPersistent('supplier', supplier);
+            Session.setPersistent('supplier_contains', supplier_contains);
             Session.setPersistent('filterStartDate', startDate);
             Session.setPersistent('filterEndDate', endDate);
             Session.setPersistent('period', period);
@@ -803,7 +817,7 @@ class SpendingPerTimePage {
         $scope.subscribe('spendingOrganisations');
         this.subManager.subscribe('spendingServices');
         this.subManager.subscribe('spendingCategories');
-        this.subManager.subscribe('spendingSuppliers');
+        // this.subManager.subscribe('spendingSuppliers');
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
@@ -832,8 +846,16 @@ class SpendingPerTimePage {
                 service = '';
             }
 
-            if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
-                supplier = { $in: $scope.getCollectionReactively("supplier") };
+            // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
+            //     supplier = { $in: $scope.getCollectionReactively("supplier") };
+            // } else {
+            //     supplier = '';
+            // }
+
+            // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+            let supplierContains = '';
+            if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
             } else {
                 supplier = '';
             }

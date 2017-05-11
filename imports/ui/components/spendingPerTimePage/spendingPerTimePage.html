@@ -36,17 +36,6 @@
                                 </select>                                
                             </div>
                         </div>
-                        <div class="col-md-4 col-xs-12">
-                            <div class="form-group">
-                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service"><i class="fa fa-remove"></i></button>                             
-                                <label for="service">Service</label>
-                                <select class="form-control" name="service" multiple chosen ng-model="service"
-                                        placeholder-text-multiple="'Select Services'"
-                                        ng-options="service for service in spendingServices">
-                                    <option value=""></option>
-                                </select>
-                            </div>
-                        </div>
                         <!-- Supplier selection disabled because it causes critical performance issues. -->
                         <!--<div class="col-md-4 col-xs-12">
                             <div class="form-group">
@@ -59,6 +48,25 @@
                                 </select>
                             </div>
                         </div>-->
+                        <!-- Supplier selection disabled because it causes critical performance issues. -->
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <button ng-click="supplier_contains=null" class="btn btn-default btn-xs pull-right" ng-show="supplier_contains"><i class="fa fa-remove"></i></button>                             
+                                <label for="supplier">Supplier</label>
+                                <input class="form-control" id="supplier_contains" name="supplier_contains" ng-model="supplier_contains" ng-model-options="{ debounce: 1000 }" placeholder="Type a supplier's name">
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service"><i class="fa fa-remove"></i></button>                             
+                                <label for="service">Service</label>
+                                <select class="form-control" name="service" multiple chosen ng-model="service"
+                                        placeholder-text-multiple="'Select Services'"
+                                        ng-options="service for service in spendingServices">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
                                 <label for="filterDate">Date range</label>

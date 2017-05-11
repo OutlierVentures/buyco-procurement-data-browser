@@ -418,12 +418,18 @@ class SpendingGroupedChart {
                     });
                 }
 
+                // let supplier = this.getReactively("filters.supplier_name");
+                // if (supplier) {
+                //     filterName += 'Supplier: ';
+                //     supplier.$in.forEach((filter) => {
+                //         filterName += filter + ', ';
+                //     });
+                // }
+
                 let supplier = this.getReactively("filters.supplier_name");
                 if (supplier) {
-                    filterName += 'Supplier: ';
-                    supplier.$in.forEach((filter) => {
-                        filterName += filter + ', ';
-                    });
+                    filterName += 'Supplier contains: ';
+                    filterName += supplier.$regex + ", ";
                 }
 
                 filterName = filterName.substring(0, filterName.length - 2);
