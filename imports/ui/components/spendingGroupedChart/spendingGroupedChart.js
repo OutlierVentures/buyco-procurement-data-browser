@@ -7,7 +7,6 @@ import { removeEmptyFilters, MetaDataHelper } from "/imports/utils";
 
 import { SpendingGrouped } from '/imports/api/spendingGrouped';
 import { Predictions } from '/imports/api/predictions';
-import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
 import { getColour, abbreviateNumber } from '../../../utils';
@@ -73,6 +72,7 @@ class SpendingGroupedChart {
 
             return publishParams;
         });
+
         $scope.subscribe('clientSpendingGrouped', () => {
             let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
@@ -108,7 +108,7 @@ class SpendingGroupedChart {
 
             removeEmptyFilters(filterOptions);
 
-            var publishParams = [
+            let publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
@@ -154,7 +154,7 @@ class SpendingGroupedChart {
                     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
             }
 
-            let temp = this.getReactively("filters.period");
+            this.getReactively("filters.period");
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
@@ -591,7 +591,6 @@ class SpendingGroupedChart {
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
-
     }
 
     $onInit = () => {}

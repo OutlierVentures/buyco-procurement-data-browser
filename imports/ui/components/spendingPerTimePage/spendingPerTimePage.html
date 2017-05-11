@@ -28,10 +28,6 @@
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
                                 <label for="category">Category</label>
-                                <!--<select class="form-control" name="category" ng-model="category">-->
-                                    <!--<option default value="">-- select --</option>-->
-                                    <!--<option ng-repeat="cat in spendingCategories track by cat.name" value="{{cat.name}}">{{cat.name}}</option>-->
-                                <!--</select>-->
                                 <select class="form-control" name="category" multiple chosen ng-model="category"
                                         placeholder-text-multiple="'Select Categories'"
                                         ng-options="cat for cat in spendingCategories">
@@ -42,13 +38,19 @@
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
                                 <label for="service">Service</label>
-                                <!--<select class="form-control" name="service" ng-model="service">-->
-                                    <!--<option default value="">-- select --</option>-->
-                                    <!--<option bindonce ng-repeat="service in spendingServices track by service.name" value="{{service.name}}">{{service.name}}</option>-->
-                                <!--</select>-->
                                 <select class="form-control" name="service" multiple chosen ng-model="service"
                                         placeholder-text-multiple="'Select Services'"
                                         ng-options="service for service in spendingServices">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="service">Supplier</label>
+                                <select class="form-control" name="supplier" multiple chosen ng-model="supplier"
+                                        placeholder-text-multiple="'Select Supplier'"
+                                        ng-options="supplier for supplier in spendingSuppliers">
                                     <option value=""></option>
                                 </select>
                             </div>
@@ -132,7 +134,7 @@
         <spending-grouped class="init" ng-show="drillDownVisible" subfilter="category" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName" full-screen-mode="fullScreenMode"></spending-grouped>
     </div>
     <div class="init col-lg-4 col-md-6">
-        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="supplier_name" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
+        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="supplier" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
     </div>
     <div class="init col-lg-4 col-md-6">
         <spending-grouped class="init" ng-show="drillDownVisible" subfilter="service" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
