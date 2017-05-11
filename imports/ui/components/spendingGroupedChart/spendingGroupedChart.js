@@ -64,7 +64,6 @@ class SpendingGroupedChart {
                 filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
             }
 
-            console.log('spendingGrouped-subscribe = ', filterOptions);
             removeEmptyFilters(filterOptions);
             let publishParams = [
                 filterOptions,
@@ -209,9 +208,8 @@ class SpendingGroupedChart {
                 let subFilterName = 'subfilter' + this.groupDisplayName;
 
                 if (Session.get(subFilterName)) {
-                    // self.subfilter = Session.get(subFilterName);
+                    self.subfilter = Session.get(subFilterName);
                 }
-                console.log('displayName = ', this.groupDisplayName);
                 return this.groupDisplayName;
             },
             spendingGrouped: () => {
@@ -363,22 +361,34 @@ class SpendingGroupedChart {
                             };
                         }
                     },
+                    pointSelectionMode: 'multiple',
                     onPointClick: function (e) {
                         let target = e.target;
+                        let selectedArgument = target.originalArgument;
+                        let selectedService = getSelectedService(selectedArgument);
+
+                        if (self.subfilter) {
+                            let index = self.subfilter.indexOf(selectedService);
+
+                            if (index > -1)
+                                self.subfilter.splice(index, 1);
+                        } else {
+                            self.subfilter = [];
+                        }
+
                         if (!target.isSelected()) {
                             target.select();
-                            selectedArgument = target.originalArgument;
-                            let selectedService = getSelectedService(selectedArgument);
-                            self.subfilter = selectedService;
+                            self.subfilter.push(selectedService);
 
                             let subFilterName = 'subfilter' + this.groupDisplayName;
                             Session.setPersistent(subFilterName, self.subfilter);
                         } else {
                             target.clearSelection();
-                            self.subfilter = null;
-
+                            let index = self.subfilter.indexOf(selectedService);
+                            if (index > -1)
+                                self.subfilter.splice(index, 1);
                             let subFilterName = 'subfilter' + this.groupDisplayName;
-                            // Session.setPersistent(subFilterName, self.subfilter);
+                            Session.setPersistent(subFilterName, self.subfilter);
                         }
                     },
                 };
@@ -392,28 +402,29 @@ class SpendingGroupedChart {
                 else
                     filterName = '';
 
-                // let category = this.getReactively("filters.procurement_classification_1");
-                // console.log('12312312312 = ', category);
-                // if (category) {
-                //     console.log('345435345345');
-                //     filterName += 'Category: ';
-                //     category.$in.forEach((filter) => {
-                //         filterName += filter + ', ';
-                //     });
-                // }
-                //
-                // let service = this.getReactively("filters.sercop_service");
-                // if (service) {
-                //     console.log('2343242342432');
-                //     filterName += 'Service: ';
-                //     service.$in.forEach((filter) => {
-                //         filterName += filter + ', ';
-                //     });
-                // }
+                let category = this.getReactively("filters.procurement_classification_1");
+                if (category) {
+                    filterName += 'Category: ';
+                    category.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
+
+                let service = this.getReactively("filters.sercop_service");
+                if (service) {
+                    filterName += 'Service: ';
+                    service.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
 
                 let supplier = this.getReactively("filters.supplier_name");
-                if (supplier)
-                    filterName += 'Supplier: ' + supplier + ', ';
+                if (supplier) {
+                    filterName += 'Supplier: ';
+                    supplier.$in.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
 
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
@@ -548,13 +559,13 @@ class SpendingGroupedChart {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
                             let serviceName = point.initialArgument;
-                            // if (self.subfilter && self.subfilter.length) {
-                            //     self.subfilter.forEach((subfilter) => {
-                            //         if (getSelectedService(serviceName) == subfilter) {
-                            //             series.selectPoint(point);
-                            //         }
-                            //     });
-                            // }
+                            if (self.subfilter && self.subfilter.length) {
+                                self.subfilter.forEach((subfilter) => {
+                                    if (getSelectedService(serviceName) == subfilter) {
+                                        series.selectPoint(point);
+                                    }
+                                });
+                            }
                         });
                     }
                 }                

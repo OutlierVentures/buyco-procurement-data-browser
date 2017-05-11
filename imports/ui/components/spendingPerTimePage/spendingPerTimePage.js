@@ -563,17 +563,24 @@ class SpendingPerTimePage {
              */
             subChartFilters: () => {
                 let category = '';
-                if ($scope.getReactively('category')) {
-                    category = $scope.getReactively("category");
+                if ($scope.getReactively('category') && $scope.getReactively('category').length) {
+                    category = { $in: $scope.getReactively("category") };
                 } else {
                     category = '';
                 }
 
                 let service = '';
-                if ($scope.getReactively('service')) {
-                    service = $scope.getReactively("service");
+                if ($scope.getReactively('service') && $scope.getReactively('service').length) {
+                    service = { $in: $scope.getReactively("service") };
                 } else {
                     service = '';
+                }
+
+                let supplier = '';
+                if ($scope.getReactively('supplier_name') && $scope.getReactively('supplier_name').length) {
+                    supplier = { $in: $scope.getReactively("supplier_name") };
+                } else {
+                    supplier = '';
                 }
 
                 return {
@@ -582,7 +589,7 @@ class SpendingPerTimePage {
                     sercop_service: service,
                     period: $scope.getReactively("period"),
                     client: $scope.getReactively("selectedClient"),
-                    supplier_name: $scope.getReactively('supplier_name')
+                    supplier_name: supplier
                 };
             },
             filterSelectedOrganisation: function () {
@@ -786,29 +793,29 @@ class SpendingPerTimePage {
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
-                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+                organisations = { $in: $scope.getCollectionReactively("filteredOrganisations") };
             }
 
-            if ($scope.getReactively('category') && $scope.getReactively('category').length) {
-                category = { $in: $scope.getReactively("category") };
+            if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
+                category = { $in: $scope.getCollectionReactively("category") };
             } else {
                 category = '';
             }
 
-            if ($scope.getReactively('service') && $scope.getReactively('service').length) {
-                service = { $in: $scope.getReactively("service") };
+            if ($scope.getCollectionReactively('service') && $scope.getCollectionReactively('service').length) {
+                service = { $in: $scope.getCollectionReactively("service") };
             } else {
                 service = '';
             }
 
-            $scope.getReactively("filteredOrganisations");
+            $scope.getCollectionReactively("filteredOrganisations");
             saveFilters();
 
             return [{
                 organisation_name: organisations,
                 procurement_classification_1: category,
                 sercop_service: service,
-                supplier_name: $scope.getReactively('supplier_name'),
+                supplier_name: $scope.getCollectionReactively('supplier_name'),
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
