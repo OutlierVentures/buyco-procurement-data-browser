@@ -47,16 +47,18 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4 col-xs-12">
+                        <!-- Supplier selection disabled because it causes critical performance issues. -->
+                        <!--<div class="col-md-4 col-xs-12">
                             <div class="form-group">
-                                <label for="service">Supplier</label>
+                                <button ng-click="supplier=null" class="btn btn-default btn-xs pull-right" ng-show="supplier"><i class="fa fa-remove"></i></button>                             
+                                <label for="supplier">Supplier</label>
                                 <select class="form-control" name="supplier" multiple chosen ng-model="supplier"
                                         placeholder-text-multiple="'Select Supplier'"
                                         ng-options="supplier for supplier in spendingSuppliers">
                                     <option value=""></option>
                                 </select>
                             </div>
-                        </div>
+                        </div>-->
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
                                 <label for="filterDate">Date range</label>
