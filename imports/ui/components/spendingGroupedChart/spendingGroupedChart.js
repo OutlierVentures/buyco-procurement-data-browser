@@ -35,18 +35,19 @@ class SpendingGroupedChart {
             };
 
             switch(this.groupDisplayName) {
-                case 'category':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // case 'category':
+                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
+                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'service':
+                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'supplier':
+                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
+                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     break;
                 default:
                     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
                     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
@@ -80,18 +81,19 @@ class SpendingGroupedChart {
             };
 
             switch(this.groupDisplayName) {
-                case 'category':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // case 'category':
+                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
+                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'service':
+                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'supplier':
+                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
+                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     break;
                 default:
                     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
                     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
@@ -136,18 +138,19 @@ class SpendingGroupedChart {
             }
 
             switch(this.groupDisplayName) {
-                case 'category':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // case 'category':
+                //     filters.sercop_service = this.getReactively("filters.sercop_service");
+                //     filters.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'service':
+                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     filters.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'supplier':
+                //     filters.sercop_service = this.getReactively("filters.sercop_service");
+                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     break;
                 default:
                     filters.sercop_service = this.getReactively("filters.sercop_service");
                     filters.supplier_name = this.getReactively("filters.supplier_name");
@@ -173,18 +176,19 @@ class SpendingGroupedChart {
             filters.client_id = this.getReactively("filters.client.client_id");
 
             switch(this.groupDisplayName) {
-                case 'category':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
+                // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/77
+                // case 'category':
+                //     filters.sercop_service = this.getReactively("filters.sercop_service");
+                //     filters.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'service':
+                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     filters.supplier_name = this.getReactively("filters.supplier_name");
+                //     break;
+                // case 'supplier':
+                //     filters.sercop_service = this.getReactively("filters.sercop_service");
+                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                //     break;
                 default:
                     filters.sercop_service = this.getReactively("filters.sercop_service");
                     filters.supplier_name = this.getReactively("filters.supplier_name");
