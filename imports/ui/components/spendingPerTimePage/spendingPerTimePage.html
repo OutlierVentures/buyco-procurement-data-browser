@@ -27,7 +27,7 @@
                     <div class="row" ng-show="filtersVisible">
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
-                                <button ng-click="category=null" class="btn btn-default btn-xs pull-right" ng-show="category"><i class="fa fa-remove"></i></button> 
+                                <button ng-click="category=null" class="btn btn-default btn-xs pull-right" ng-show="category.length"><i class="fa fa-remove"></i></button> 
                                 <label for="category">Category</label>
                                 <select class="form-control" name="category" multiple chosen ng-model="category"
                                         placeholder-text-multiple="'Select Categories'"
@@ -58,7 +58,7 @@
                         </div>
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
-                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service"><i class="fa fa-remove"></i></button>                             
+                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service.length"><i class="fa fa-remove"></i></button>                             
                                 <label for="service">Service</label>
                                 <select class="form-control" name="service" multiple chosen ng-model="service"
                                         placeholder-text-multiple="'Select Services'"
