@@ -34,24 +34,47 @@ class SpendingGroupedChart {
                 organisation_name: this.getReactively("filters.organisation_name")
             };
 
+            let category = '';
+            if (this.getCollectionReactively('selectionFilter.category') && this.getCollectionReactively('selectionFilter.category').length) {
+                category = { $in: this.getCollectionReactively("selectionFilter.category") };
+            } else {
+                category = '';
+            }
+
+            let service = '';
+            if (this.getCollectionReactively('selectionFilter.service') && this.getCollectionReactively('selectionFilter.service').length) {
+                service = { $in: this.getCollectionReactively("selectionFilter.service") };
+            } else {
+                service = '';
+            }
+
+            let supplier = '';
+            if (this.getCollectionReactively('selectionFilter.supplier') && this.getCollectionReactively('selectionFilter.supplier').length) {
+                supplier = { $in: this.getCollectionReactively("selectionFilter.supplier") };
+            } else {
+                supplier = '';
+            }
             switch(this.groupDisplayName) {
                 // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
-                // case 'category':
-                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                //     break;
-                // case 'service':
-                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                //     filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                //     break;
-                // case 'supplier':
-                //     filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                //     filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                //     break;
+                case 'category':
+                    filterOptions.procurement_classification_1 = this.getCollectionReactively("filters.procurement_classification_1");
+                    filterOptions.sercop_service = service;
+                    filterOptions.supplier_name = supplier;
+                    break;
+                case 'service':
+                    filterOptions.sercop_service = this.getCollectionReactively("filters.sercop_service");
+                    filterOptions.procurement_classification_1 = category;
+                    filterOptions.supplier_name = supplier;
+                    break;
+                case 'supplier':
+                    filterOptions.supplier_name = this.getCollectionReactively("filters.supplier_name");
+                    filterOptions.sercop_service = service;
+                    filterOptions.procurement_classification_1 = category;
+                    break;
                 default:
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                    filterOptions.sercop_service = this.getCollectionReactively("filters.sercop_service");
+                    filterOptions.supplier_name = this.getCollectionReactively("filters.supplier_name");
+                    filterOptions.procurement_classification_1 = this.getCollectionReactively("filters.procurement_classification_1");
             }
 
             // We use $gte and $lte to include the start and end dates. For example, when start date is "2016-11-01T00:00"
@@ -128,42 +151,65 @@ class SpendingGroupedChart {
         // is left as an exercise to the reader; I couldn't get it to work reactively correctly when 
         // using a single filters object.
         this.spendingGrouped = () => {
-            let filters = {
+            let filterOptions = {
                 organisation_name: this.getReactively("filters.organisation_name"),
                 groupField: this.getReactively("groupField")
             };
 
-            if (filters.organisation_name) {
-                $scope.organisation_names = filters.organisation_name.$in;
+            if (filterOptions.organisation_name) {
+                $scope.organisation_names = filterOptions.organisation_name.$in;
             }
 
+            let category = '';
+            if (this.getCollectionReactively('selectionFilter.category') && this.getCollectionReactively('selectionFilter.category').length) {
+                category = { $in: this.getCollectionReactively("selectionFilter.category") };
+            } else {
+                category = '';
+            }
+
+            let service = '';
+            if (this.getCollectionReactively('selectionFilter.service') && this.getCollectionReactively('selectionFilter.service').length) {
+                service = { $in: this.getCollectionReactively("selectionFilter.service") };
+            } else {
+                service = '';
+            }
+
+            let supplier = '';
+            if (this.getCollectionReactively('selectionFilter.supplier') && this.getCollectionReactively('selectionFilter.supplier').length) {
+                supplier = { $in: this.getCollectionReactively("selectionFilter.supplier") };
+            } else {
+                supplier = '';
+            }
             switch(this.groupDisplayName) {
                 // Disabled to partially fix https://github.com/OutlierVentures/buyco-procurement-data-browser/issues/73
-                // case 'category':
-                //     filters.sercop_service = this.getReactively("filters.sercop_service");
-                //     filters.supplier_name = this.getReactively("filters.supplier_name");
-                //     break;
-                // case 'service':
-                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                //     filters.supplier_name = this.getReactively("filters.supplier_name");
-                //     break;
-                // case 'supplier':
-                //     filters.sercop_service = this.getReactively("filters.sercop_service");
-                //     filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                //     break;
+                case 'category':
+                    filterOptions.procurement_classification_1 = this.getCollectionReactively("filters.procurement_classification_1");
+                    filterOptions.sercop_service = service;
+                    filterOptions.supplier_name = supplier;
+                    break;
+                case 'service':
+                    filterOptions.sercop_service = this.getCollectionReactively("filters.sercop_service");
+                    filterOptions.procurement_classification_1 = category;
+                    filterOptions.supplier_name = supplier;
+                    break;
+                case 'supplier':
+                    filterOptions.supplier_name = this.getCollectionReactively("filters.supplier_name");
+                    filterOptions.sercop_service = service;
+                    filterOptions.procurement_classification_1 = category;
+                    break;
                 default:
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
+                    filterOptions.sercop_service = this.getCollectionReactively("filters.sercop_service");
+                    filterOptions.supplier_name = this.getCollectionReactively("filters.supplier_name");
+                    filterOptions.procurement_classification_1 = this.getCollectionReactively("filters.procurement_classification_1");
             }
 
             this.getReactively("filters.period");
 
             // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
             // while all rows should be shown. Hence we only add them if they have a non-empty value.
-            removeEmptyFilters (filters);
+            removeEmptyFilters (filterOptions);
 
-            let data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
+            let data = SpendingGrouped.find(filterOptions, { sort: { "_group.totalAmount": -1} }).fetch();
             return data;
         };
 
@@ -213,6 +259,10 @@ class SpendingGroupedChart {
 
                 if (Session.get(subFilterName)) {
                     self.subfilter = Session.get(subFilterName);
+                }
+
+                if (Session.get('selectionfilter')) {
+                    self.selectionFilter = Session.get('selectionfilter');
                 }
                 return this.groupDisplayName;
             },
@@ -371,28 +421,14 @@ class SpendingGroupedChart {
                         let selectedArgument = target.originalArgument;
                         let selectedService = getSelectedService(selectedArgument);
 
-                        if (self.subfilter) {
-                            let index = self.subfilter.indexOf(selectedService);
-
-                            if (index > -1)
-                                self.subfilter.splice(index, 1);
-                        } else {
-                            self.subfilter = [];
-                        }
-
                         if (!target.isSelected()) {
                             target.select();
-                            self.subfilter.push(selectedService);
-
-                            let subFilterName = 'subfilter' + this.groupDisplayName;
-                            Session.setPersistent(subFilterName, self.subfilter);
+                            addSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
                         } else {
                             target.clearSelection();
-                            let index = self.subfilter.indexOf(selectedService);
-                            if (index > -1)
-                                self.subfilter.splice(index, 1);
-                            let subFilterName = 'subfilter' + this.groupDisplayName;
-                            Session.setPersistent(subFilterName, self.subfilter);
+                            removeSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
                         }
                     },
                 };
@@ -421,14 +457,6 @@ class SpendingGroupedChart {
                         filterName += filter + ', ';
                     });
                 }
-
-                // let supplier = this.getReactively("filters.supplier_name");
-                // if (supplier) {
-                //     filterName += 'Supplier: ';
-                //     supplier.$in.forEach((filter) => {
-                //         filterName += filter + ', ';
-                //     });
-                // }
 
                 let supplier = this.getReactively("filters.supplier_name");
                 if (supplier) {
@@ -576,6 +604,16 @@ class SpendingGroupedChart {
                                     }
                                 });
                             }
+
+                            let selFilterName = getSelectionFilterByGroupName();
+
+                            if (selFilterName && selFilterName.length) {
+                                selFilterName.forEach((filter) => {
+                                    if (getSelectedService(serviceName) == filter) {
+                                        series.selectPoint(point);
+                                    }
+                                });
+                            }
                         });
                     }
                 }                
@@ -601,6 +639,73 @@ class SpendingGroupedChart {
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
+
+        function addSelectedFilter(selectedFilter) {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    addFilterToSelectionFilterArray(self.selectionFilter.category, selectedFilter);
+                    break;
+                case 'service':
+                    addFilterToSelectionFilterArray(self.selectionFilter.service, selectedFilter);
+                    break;
+                case 'supplier':
+                    addFilterToSelectionFilterArray(self.selectionFilter.supplier, selectedFilter);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function removeSelectedFilter(selectedFilter) {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.category, selectedFilter);
+                    break;
+                case 'service':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.service, selectedFilter);
+                    break;
+                case 'supplier':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.supplier, selectedFilter);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function addFilterToSelectionFilterArray(filterArray, filter) {
+            if (filterArray) {
+                let index = filterArray.indexOf(filter);
+
+                if (index > -1)
+                    filterArray.splice(index, 1);
+                else
+                    filterArray.push(filter);
+            } else {
+                filterArray = [];
+            }
+        }
+
+        function removeFilterFromSelectionFilterArray(filterArray, filter) {
+            let index = filterArray.indexOf(filter);
+            if (index > -1)
+                filterArray.splice(index, 1);
+        }
+
+        function  getSelectionFilterByGroupName() {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    return self.selectionFilter.category;
+                    break;
+                case 'service':
+                    return self.selectionFilter.service;
+                    break;
+                case 'supplier':
+                    return self.selectionFilter.supplier;
+                    break;
+                default:
+                    return self.selectionFilter.category;
+            }
+        }
     }
 
     $onInit = () => {}
@@ -616,14 +721,15 @@ export default angular.module(name, [
     template,
     controllerAs: name,
     bindings: {
-        subfilter: '=',
+        subfilter: '<',
         // Filters should contain field names to match as equal.
         filters: '=',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
         groupField: '<',
         filterDate: '<',
         selDate: '<',
-        filterName: '<'
+        filterName: '<',
+        selectionFilter: '='
     },
     controller: SpendingGroupedChart
 });

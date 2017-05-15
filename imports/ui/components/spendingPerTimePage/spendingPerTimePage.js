@@ -57,6 +57,11 @@ class SpendingPerTimePage {
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
+        $scope.selectionFilter = {
+            category: [],
+            supplier: [],
+            service: []
+        };
 
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -633,6 +638,13 @@ class SpendingPerTimePage {
                     client: $scope.getReactively("selectedClient"),
                     supplier_name: supplier
                 };
+            },
+            selectionFilter: function () {
+                return {
+                    category: $scope.getCollectionReactively('selectionFilter.category'),
+                    supplier: $scope.getCollectionReactively('selectionFilter.supplier'),
+                    service: $scope.getCollectionReactively('selectionFilter.service'),
+                }
             },
             filterSelectedOrganisation: function () {
                 let organisations = $scope.getCollectionReactively("selectedOrganisation");
