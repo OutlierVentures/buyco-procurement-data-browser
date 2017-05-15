@@ -57,6 +57,11 @@ class SpendingPerTimePage {
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
+        $scope.selectionFilter = {
+            category: [],
+            supplier: [],
+            service: []
+        };
 
         $scope.ranges = {
             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
@@ -620,9 +625,9 @@ class SpendingPerTimePage {
                 // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
                 let supplierContains = '';
                 if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
-                    supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+                    supplierContains = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
                 } else {
-                    supplier = '';
+                    supplierContains = '';
                 }
 
                 return {
@@ -631,8 +636,16 @@ class SpendingPerTimePage {
                     sercop_service: service,
                     period: $scope.getReactively("period"),
                     client: $scope.getReactively("selectedClient"),
-                    supplier_name: supplier
+                    // supplier_name: supplier,
+                    supplier_contains: supplierContains
                 };
+            },
+            selectionFilter: function () {
+                return {
+                    category: $scope.getCollectionReactively('selectionFilter.category'),
+                    supplier: $scope.getCollectionReactively('selectionFilter.supplier'),
+                    service: $scope.getCollectionReactively('selectionFilter.service'),
+                }
             },
             filterSelectedOrganisation: function () {
                 let organisations = $scope.getCollectionReactively("selectedOrganisation");

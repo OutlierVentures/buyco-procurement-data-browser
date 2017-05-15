@@ -13,6 +13,9 @@ function rgb(string) {
  * palette colours.
  */
 export const stringToColour = (str) => {
+    if(!str)
+        return null;
+        
     // Determine a simple numeric hash of the string.
     let hash = 0;
 
