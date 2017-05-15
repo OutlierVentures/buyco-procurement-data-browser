@@ -946,6 +946,8 @@ class SpendingPerTimePage {
 
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
 
+            // This code is duplicated with the subscribe for `spendingPerTime`.
+            // TODO: deduplicate, move to a helper, similar to `spendingGroupedChart`.
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
@@ -964,20 +966,63 @@ class SpendingPerTimePage {
                 service = '';
             }
 
-            if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
-                supplier = { $in: $scope.getReactively("supplier") };
+            // if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
+            //     supplier = { $in: $scope.getReactively("supplier") };
+            // } else {
+            //     supplier = '';
+            // }
+
+            // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+            let supplierContains = '';
+            if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
             } else {
                 supplier = '';
             }
+
+            // Selection filters
+
+            // The code to get the selection filters and combine them with global filters is duplicated with
+            // spendingGroupChart.
+            // TODO: deduplicate, refactor this code into a module
+            let categorySelection = '';
+            let categorySelectionCol = this.getCollectionReactively('selectionFilter.category');
+            if (categorySelectionCol && categorySelectionCol.length) {
+                categorySelection = { $in: categorySelectionCol };
+            } else {
+                categorySelection = '';
+            }
+
+            let serviceSelection = '';
+            let serviceSelectionCol = this.getCollectionReactively('selectionFilter.service');
+            if (serviceSelectionCol && serviceSelectionCol.length) {
+                serviceSelection = { $in: serviceSelectionCol };
+            } else {
+                serviceSelection = '';
+            }
+
+            let supplierSelection = '';
+            let supplierSelectionCol = this.getCollectionReactively('selectionFilter.supplier');
+            if (supplierSelectionCol && supplierSelectionCol.length) {
+                supplierSelection = { $in: supplierSelectionCol };
+            } else {
+                supplierSelection = '';
+            }
+
+            if(supplierSelection && supplierSelection.$in.length)
+                supplierFilterToUse = supplierSelection;
+            else
+                // The global filter is either empty or a regex clause. No further check necessary.
+                supplierFilterToUse = supplier;
 
             $scope.getReactively("filteredOrganisations");
 
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: organisations,
-                procurement_classification_1: category,
-                sercop_service: service,
-                supplier_name: supplier,
+                procurement_classification_1: combineInFilters(category, categorySelection),
+                sercop_service: combineInFilters(service, serviceSelection),
+                supplier_name: supplierFilterToUse,
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {

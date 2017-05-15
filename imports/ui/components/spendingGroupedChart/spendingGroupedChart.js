@@ -100,6 +100,9 @@ class SpendingGroupedChart {
                 if (!organisations || !organisations.$in.length)
                     return {};
 
+                // Save the organisation names to a scope variable for (a.o.) configuring the data series.
+                $scope.organisation_names = organisations.$in;
+
                 let filterOptions = {
                     organisation_name: organisations
                 };
@@ -215,6 +218,7 @@ class SpendingGroupedChart {
             },
             chartData: () => {
                 let dataSeries = [];
+                
                 $scope.dataSource = [];
 
                 if (this.getReactively("filters.client")) {
@@ -252,7 +256,7 @@ class SpendingGroupedChart {
                     }
                 });
 
-                $scope.organisation_names.forEach((organisation_name) => {
+                $scope.getCollectionReactively("organisation_names").forEach((organisation_name) => {
                     dataSeries.push({
                         valueField: 'zero',
                         type: 'scatter',
