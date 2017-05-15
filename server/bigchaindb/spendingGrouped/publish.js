@@ -16,6 +16,8 @@ Meteor.publish(collectionName, function (filters, options) {
     var self = this;
     let groupField;
 
+    let debug = false;
+
     // We allow grouping by these fields
     if (options.groupField == "procurement_classification_1"
         || options.groupField == "supplier_name"
@@ -27,6 +29,15 @@ Meteor.publish(collectionName, function (filters, options) {
     let pipeLine = [];
 
     removeEmptyFilters(filters);
+
+    // Don't allow querying for completely unfiltered data (prevent useless heavy queries).
+    if (!filters || !Object.keys(filters).length)
+    {
+        if (debug) {
+            console.log("spendingGrouped " + groupField + ": no filters, returning");
+        }
+        return;
+    }
 
     if (filters) {
         pipeLine.push({ $match: filters });
@@ -68,7 +79,7 @@ Meteor.publish(collectionName, function (filters, options) {
     }
     pipeLine.push(limitClause);
 
-    // console.log("spendingGrouped " + groupField + " pipeLine", JSON.stringify(pipeLine));
+    if (debug) console.log("spendingGrouped " + groupField + " pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = Spending.aggregate(

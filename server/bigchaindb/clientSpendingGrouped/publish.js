@@ -35,6 +35,10 @@ Meteor.publish(collectionName, function (filters, options) {
 
     removeEmptyFilters(filters);
 
+    // Don't allow querying for completely unfiltered data (prevent useless heavy queries).
+    if (!filters || filters.length <= 1)
+        return;
+
     if (filters) {
         pipeLine.push({ $match: filters });
     }
