@@ -19,8 +19,9 @@
             <span ng-if="filterPeriodName">Filter Applied: {{filterPeriodName}}</span>
             <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
                 rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
-                valueAxis: chartOptions.valueAxis, pointSelectionMode: chartOptions.pointSelectionMode, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size',
-                customizePoint: 'chartOptions.customizePoint', onPointClick: 'chartOptions.onPointClick'} }"></div>
+                valueAxis: chartOptions.valueAxis, pointSelectionMode: chartOptions.pointSelectionMode, customizePoint: chartOptions.customizePoint,
+                onPointClick: chartOptions.onPointClick,
+                bindingOptions: {dataSource: 'chartOptionsDynamic.dataSource', series: 'chartSeries', size: 'chartOptionsDynamic.size' } }"></div>
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
                 <span ng-show="!detailsVisible">Show details</span>
                 <span ng-show="detailsVisible">Hide details</span>

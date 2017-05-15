@@ -217,10 +217,134 @@ class SpendingGroupedChart {
                 return this.spendingGrouped();
             },
             chartData: () => {
-                let dataSeries = [];
-                
                 $scope.dataSource = [];
 
+                this.spendingGrouped().forEach((spendThisGroup) => {
+                    let clientValue;
+                    let publicGroupValue = spendThisGroup._group[spendThisGroup.groupField];
+                    this.clientSpendingGrouped().forEach((clientData) => {
+                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
+                            && publicGroupValue == clientData._group[clientData.groupField]) {
+                            clientValue = clientData.totalAmount;
+                        }
+                    });
+
+                    let tempObj = {
+                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + publicGroupValue,
+                        publicValue: spendThisGroup.totalAmount,
+                        clientValue: clientValue,
+                        organisationName: spendThisGroup.organisation_name
+                    };
+                    $scope.dataSource.push(tempObj);
+                });
+
+                $scope.dataSource.sort(function (a, b) {
+                    return a.publicValue - b.publicValue;
+                });
+
+                // Resize the chart according to the number of bars.
+                // In current setup, the number of bars is always higher than the threshold.
+                // let numBars = $scope.dataSource.length * this.getReactively("dataSeries").length;
+                let numBars = $scope.dataSource.length * 2;
+
+                if (numBars > 10) {
+                    $scope.chartSize = {
+                        height: 700
+                    }
+                } else {
+                    $scope.chartSize = {
+                        height: 500
+                    }
+                }
+
+                $scope.chartOptionsDynamic = {
+                    dataSource: $scope.dataSource.map(function (i) {
+                        i.zero = 0;
+                        return i;
+                    }),
+                    size: $scope.chartSize,
+                };
+                markSelectedSubFilter();
+            },
+            /**
+             * Chart options that don't need to be reloaded when data changes.
+             */
+            chartOptions: () => {
+                return {
+                    commonSeriesSettings: {
+                        argumentField: "organisationAndGroup",
+                        type: "bar"
+                    },
+                    argumentAxis: {
+                        label: {
+                            visible: false,
+                            format: "largeNumber"
+                        }
+                    },
+                    rotated: true,
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    },
+                    title: "",
+                    export: {
+                        enabled: true
+                    },
+                    tooltip: {
+                        enabled: true,
+                        shared: true,
+                        format: {
+                            type: "largeNumber",
+                            precision: 1
+                        },
+                        customizeTooltip: function (arg) {
+                            let newValue = abbreviateNumber(arg.value, 0);
+                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
+                            let tempItem = '';
+                            tempItem += items;
+                            $.each(items, function (index, item) {
+                                items[index] = $("<b>")
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
+                            });
+                            return { text: items.join("\n") };
+                        }
+                    },
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
+                        }
+                    }],
+                    customizePoint: function () {
+                        if (this.series.name == "Public spending") {
+                            let sourcePoint = $scope.dataSource[this.index];
+                            return {
+                                color: getColour(sourcePoint.organisationName)
+                            };
+                        }
+                    },                    
+                    pointSelectionMode: 'multiple',
+                    onPointClick: function (e) {
+                        let target = e.target;
+                        let selectedArgument = target.originalArgument;
+                        let selectedService = getSelectedService(selectedArgument);
+
+                        if (!target.isSelected()) {
+                            target.select();
+                            addSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
+                        } else {
+                            target.clearSelection();
+                            removeSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
+                        }
+                    },
+                };
+            },
+            chartSeries: () => {
+                let dataSeries = [];
+                
                 if (this.getReactively("filters.client")) {
                     dataSeries.push({
                         name: this.getReactively("filters.client.name"),
@@ -269,121 +393,8 @@ class SpendingGroupedChart {
                     });
                 });
 
-                this.spendingGrouped().forEach((spendThisGroup) => {
-                    let clientValue;
-                    let publicGroupValue = spendThisGroup._group[spendThisGroup.groupField];
-                    this.clientSpendingGrouped().forEach((clientData) => {
-                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
-                            && publicGroupValue == clientData._group[clientData.groupField]) {
-                            clientValue = clientData.totalAmount;
-                        }
-                    });
-
-                    let tempObj = {
-                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + publicGroupValue,
-                        publicValue: spendThisGroup.totalAmount,
-                        clientValue: clientValue,
-                        organisationName: spendThisGroup.organisation_name
-                    };
-                    $scope.dataSource.push(tempObj);
-                });
-
-                $scope.dataSource.sort(function (a, b) {
-                    return a.publicValue - b.publicValue;
-                });
-
-                let numBars = $scope.dataSource.length * dataSeries.length;
-
-                if (numBars > 10) {
-                    $scope.chartSize = {
-                        height: 700
-                    }
-                } else {
-                    $scope.chartSize = {
-                        height: 500
-                    }
-                }
-
-                $scope.chartOptions = {
-                    dataSource: $scope.dataSource.map(function (i) {
-                        i.zero = 0;
-                        return i;
-                    }),
-                    commonSeriesSettings: {
-                        argumentField: "organisationAndGroup",
-                        type: "bar"
-                    },
-                    argumentAxis: {
-                        label: {
-                            visible: false,
-                            format: "largeNumber"
-                        }
-                    },
-                    rotated: true,
-                    series: dataSeries,
-                    legend: {
-                        verticalAlignment: "bottom",
-                        horizontalAlignment: "center"
-                    },
-                    title: "",
-                    export: {
-                        enabled: true
-                    },
-                    tooltip: {
-                        enabled: true,
-                        shared: true,
-                        format: {
-                            type: "largeNumber",
-                            precision: 1
-                        },
-                        customizeTooltip: function (arg) {
-                            let newValue = abbreviateNumber(arg.value, 0);
-                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
-                            let tempItem = '';
-                            tempItem += items;
-                            $.each(items, function (index, item) {
-                                items[index] = $("<b>")
-                                    .text(tempItem)
-                                    .css("color", color)
-                                    .prop("outerHTML");
-                            });
-                            return { text: items.join("\n") };
-                        }
-                    },
-                    valueAxis: [{
-                        label: {
-                            format: "largeNumber"
-                        }
-                    }],
-                    size: $scope.chartSize,
-                    customizePoint: function () {
-                        if (this.series.name == "Public spending") {
-                            let sourcePoint = $scope.dataSource[this.index];
-                            return {
-                                color: getColour(sourcePoint.organisationName)
-                            };
-                        }
-                    },
-                    pointSelectionMode: 'multiple',
-                    onPointClick: function (e) {
-                        let target = e.target;
-                        let selectedArgument = target.originalArgument;
-                        let selectedService = getSelectedService(selectedArgument);
-
-                        if (!target.isSelected()) {
-                            target.select();
-                            addSelectedFilter(selectedService);
-                            Session.setPersistent('selectionfilter', self.selectionFilter);
-                        } else {
-                            target.clearSelection();
-                            removeSelectedFilter(selectedService);
-                            Session.setPersistent('selectionfilter', self.selectionFilter);
-                        }
-                    },
-                };
-                markSelectedSubFilter();
                 return dataSeries;
-            },
+            },            
             filterPeriodName: () => {
                 let filterName = this.getReactively("filterName");
                 if (filterName)
