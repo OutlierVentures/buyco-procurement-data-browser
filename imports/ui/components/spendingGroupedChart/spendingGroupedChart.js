@@ -9,29 +9,8 @@ import { SpendingGrouped } from '/imports/api/spendingGrouped';
 import { Predictions } from '/imports/api/predictions';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
-import { getColour, abbreviateNumber } from '../../../utils';
+import { getColour, abbreviateNumber, combineInFilters } from '../../../utils';
 import { Session } from 'meteor/session';
-
-/**
- * Combine two filter objects of the type { $in: [value1, value2, ...]}.
- * TODO: move to utils.
- */
-function combineInFilters(filterSet1, filterSet2) {
-    let inClause1 = [];
-    let inClause2 = [];
-
-    if (filterSet1 && filterSet1.$in)
-        inClause1 = filterSet1.$in;
-    if (filterSet2 && filterSet2.$in)
-        inClause2 = filterSet2.$in;
-    
-    let combined = inClause1.concat(inClause2);
-
-    if (!combined.length)
-        return null;
-
-    return { $in: combined };
-}
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {

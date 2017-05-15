@@ -31,17 +31,14 @@ Meteor.publish(collectionName, function (filters, options) {
     removeEmptyFilters(filters);
 
     // Don't allow querying for completely unfiltered data (prevent useless heavy queries).
-    if (!filters || !Object.keys(filters).length)
-    {
+    if (!filters || !Object.keys(filters).length) {
         if (debug) {
             console.log("spendingGrouped " + groupField + ": no filters, returning");
         }
         return;
     }
 
-    if (filters) {
-        pipeLine.push({ $match: filters });
-    }
+    pipeLine.push({ $match: filters });
 
     let groupClause = {
         $group: {

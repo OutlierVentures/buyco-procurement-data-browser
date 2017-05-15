@@ -17,7 +17,7 @@ import { Session } from 'meteor/session';
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
-import { getColour, abbreviateNumber } from '../../../utils';
+import { getColour, abbreviateNumber, combineInFilters } from '../../../utils';
 
 import template from './spendingPerTimePage.html';
 
@@ -884,13 +884,49 @@ class SpendingPerTimePage {
             }
 
             $scope.getCollectionReactively("filteredOrganisations");
+
+            // Selection filters
+
+            // The code to get the selection filters and combine them with global filters is duplicated with
+            // spendingGroupChart.
+            // TODO: deduplicate, refactor this code into a module
+            let categorySelection = '';
+            let categorySelectionCol = this.getCollectionReactively('selectionFilter.category');
+            if (categorySelectionCol && categorySelectionCol.length) {
+                categorySelection = { $in: categorySelectionCol };
+            } else {
+                categorySelection = '';
+            }
+
+            let serviceSelection = '';
+            let serviceSelectionCol = this.getCollectionReactively('selectionFilter.service');
+            if (serviceSelectionCol && serviceSelectionCol.length) {
+                serviceSelection = { $in: serviceSelectionCol };
+            } else {
+                serviceSelection = '';
+            }
+
+            let supplierSelection = '';
+            let supplierSelectionCol = this.getCollectionReactively('selectionFilter.supplier');
+            if (supplierSelectionCol && supplierSelectionCol.length) {
+                supplierSelection = { $in: supplierSelectionCol };
+            } else {
+                supplierSelection = '';
+            }
+
+            if(supplierSelection && supplierSelection.$in.length)
+                supplierFilterToUse = supplierSelection;
+            else
+                // The global filter is either empty or a regex clause. No further check necessary.
+                supplierFilterToUse = supplier;
+
             saveFilters();
 
             return [{
                 organisation_name: organisations,
-                procurement_classification_1: category,
-                sercop_service: service,
-                supplier_name: supplier,
+                procurement_classification_1: combineInFilters(category, categorySelection),
+                sercop_service: combineInFilters(service, serviceSelection),
+                supplier_name: supplierFilterToUse,
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.

@@ -15,7 +15,9 @@ Meteor.publish(collectionName, function (filters, options) {
     var self = this;
     let groupField;
 
-    if (!filters.client_id)
+    let debug = false;
+
+    if (!filters || filters.client_id)
         return;
 
     // Only users with viewer/admin role for this org are allowed to access.
@@ -36,12 +38,14 @@ Meteor.publish(collectionName, function (filters, options) {
     removeEmptyFilters(filters);
 
     // Don't allow querying for completely unfiltered data (prevent useless heavy queries).
-    if (!filters || filters.length <= 1)
+    if (Object.keys(filters).length <= 1) {
+        if (debug) {
+            console.log("spendingGrouped " + groupField + ": no filters, returning");
+        }
         return;
-
-    if (filters) {
-        pipeLine.push({ $match: filters });
     }
+
+    pipeLine.push({ $match: filters });
 
     let groupClause = {
         $group: {
@@ -79,7 +83,7 @@ Meteor.publish(collectionName, function (filters, options) {
     }
     pipeLine.push(limitClause);
 
-    // console.log("clientSpendingGrouped " + groupField + " pipeLine", JSON.stringify(pipeLine));
+    if (debug) console.log("clientSpendingGrouped " + groupField + " pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = ClientSpending.aggregate(

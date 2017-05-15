@@ -34,6 +34,29 @@ export const removeEmptyFiltersFromArray = (filters) => {
 };
 
 /**
+ * Combine two filter objects of the type { $in: [value1, value2, ...]}.
+ * TODO: move to utils.
+ */
+export function combineInFilters(filterSet1, filterSet2) {
+    let inClause1 = [];
+    let inClause2 = [];
+
+    if (filterSet1 && filterSet1.$in)
+        inClause1 = filterSet1.$in;
+    if (filterSet2 && filterSet2.$in)
+        inClause2 = filterSet2.$in;
+    
+    let combined = inClause1.concat(inClause2);
+
+    if (!combined.length)
+        return null;
+
+    return { $in: combined };
+}
+
+
+
+/**
  * Return the color for an organisation series
  */
 export const getColour = (organisationName) => {
