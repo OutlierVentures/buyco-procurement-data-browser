@@ -138,13 +138,25 @@ class SpendingGroupedChart {
                 // For suppliers the filters work slighly different. On the global level there is a regex filter,
                 // not an $in filter. The selection filter is an $in filter like the others. We can't combine
                 // the regex with an $in filter, so we choose the one or the other.
-                let supplierFilterToUse = "";
+                let supplierFilterToUse;
 
                 if(supplierSelection && supplierSelection.$in.length)
                     supplierFilterToUse = supplierSelection;
                 else
                     // The global filter is either empty or a regex clause. No further check necessary.
                     supplierFilterToUse = supplierContainsGlobal;
+
+                let categoryFilterToUse;
+                if(categorySelection && categorySelection.$in.length)
+                    categoryFilterToUse = categorySelection;
+                else                    
+                    categoryFilterToUse = categoryGlobal;
+
+                let serviceFilterToUse;
+                if(serviceSelection && serviceSelection.$in.length)
+                    serviceFilterToUse = serviceSelection;
+                else                    
+                    serviceFilterToUse = serviceGlobal;
 
                 // We now have variables for both global and selection filters for all fields, of the form { $in: [value1, value2, ...]}.
                 // Depending on the group field we're showing, apply those filters in fetching the data. Selection filters
@@ -154,23 +166,23 @@ class SpendingGroupedChart {
                 switch(this.groupDisplayName) {
                     case 'category':
                         filterOptions.procurement_classification_1 = categoryGlobal;
-                        filterOptions.sercop_service = combineInFilters(serviceGlobal, serviceSelection);
+                        filterOptions.sercop_service = serviceFilterToUse;
                         filterOptions.supplier_name = supplierFilterToUse;
                         break;
                     case 'service':
                         filterOptions.sercop_service = serviceGlobal;
-                        filterOptions.procurement_classification_1 = combineInFilters(categoryGlobal, categorySelection);
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
                         filterOptions.supplier_name = supplierFilterToUse;
                         break;
                     case 'supplier':
                         filterOptions.supplier_name = supplierContainsGlobal;
-                        filterOptions.sercop_service = combineInFilters(serviceGlobal, serviceSelection);
-                        filterOptions.procurement_classification_1 = combineInFilters(categoryGlobal, categorySelection);
+                        filterOptions.sercop_service = serviceFilterToUse;
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
                         break;
                     default:
-                        filterOptions.sercop_service = combineInFilters(serviceGlobal, serviceSelection);
+                        filterOptions.sercop_service = serviceFilterToUse;
                         filterOptions.supplier_name = supplierFilterToUse;
-                        filterOptions.procurement_classification_1 = combineInFilters(categoryGlobal, categorySelection);
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
                 }
 
                 // We use $gte and $lte to include the start and end dates. For example, when start date is "2016-11-01T00:00"
@@ -328,7 +340,7 @@ class SpendingGroupedChart {
                     onPointClick: function (e) {
                         let target = e.target;
                         let selectedArgument = target.originalArgument;
-                        let selectedService = getSelectedService(selectedArgument);
+                        let selectedService = getGroupValue(selectedArgument);
 
                         if (!target.isSelected()) {
                             target.select();
@@ -409,14 +421,13 @@ class SpendingGroupedChart {
                 if (category || hasCategorySelection) {
                     filterName += 'Category: ';
 
-                    if (category) {
-                        category.$in.forEach((filter) => {
+                    if (hasCategorySelection) {
+                        categorySelection.forEach((filter) => {
                             filterName += filter + ', ';
                         });
                     }
-
-                    if (hasCategorySelection) {
-                        categorySelection.forEach((filter) => {
+                    else if (category) {
+                        category.$in.forEach((filter) => {
                             filterName += filter + ', ';
                         });
                     }
@@ -428,14 +439,14 @@ class SpendingGroupedChart {
 
                 if (service || hasServiceSelection) {
                     filterName += 'Service: ';
-                    if (service) {
-                        service.$in.forEach((filter) => {
+ 
+                    if (hasServiceSelection) {
+                        serviceSelection.forEach((filter) => {
                             filterName += filter + ', ';
                         });
                     }
-
-                    if (hasServiceSelection) {
-                        serviceSelection.forEach((filter) => {
+                    else if (service) {
+                        service.$in.forEach((filter) => {
                             filterName += filter + ', ';
                         });
                     }
@@ -450,12 +461,12 @@ class SpendingGroupedChart {
                     supplierSelection.forEach((filter) => {
                         filterName += filter + ', ';
                     });
-                }
-
-                let supplier = this.getReactively("filters.supplier_contains");
-                if (supplier) {
-                    filterName += 'Supplier contains: ';
-                    filterName += supplier.$regex + ", ";
+                } else {
+                    let supplier = this.getReactively("filters.supplier_contains");
+                    if (supplier) {
+                        filterName += 'Supplier contains: ';
+                        filterName += supplier.$regex + ", ";
+                    }
                 }
 
                 filterName = filterName.substring(0, filterName.length - 2);
@@ -594,20 +605,24 @@ class SpendingGroupedChart {
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
-                            let serviceName = point.initialArgument;
+                            // Points have a text like "[Organisation name] - [Group value]". Get the group value to match.
+                            let groupValue = getGroupValue(point.initialArgument);
+
+                            // Mark global filters
                             if (self.subfilter && self.subfilter.length) {
-                                self.subfilter.forEach((subfilter) => {
-                                    if (getSelectedService(serviceName) == subfilter) {
+                                self.subfilter.forEach((subfilterValue) => {
+                                    if (groupValue == subfilterValue) {
                                         series.selectPoint(point);
                                     }
                                 });
                             }
 
-                            let selFilterName = getSelectionFilterByGroupName();
+                            // Mark selection filters
+                            let selectionFilter = getSelectionFilterByGroupName();
 
-                            if (selFilterName && selFilterName.length) {
-                                selFilterName.forEach((filter) => {
-                                    if (getSelectedService(serviceName) == filter) {
+                            if (selectionFilter && selectionFilter.length) {
+                                selectionFilter.forEach((filterValue) => {
+                                    if (groupValue == filterValue) {
                                         series.selectPoint(point);
                                     }
                                 });
@@ -632,7 +647,7 @@ class SpendingGroupedChart {
             }, 100);
         });
 
-        function getSelectedService(selectedArgument) {
+        function getGroupValue(selectedArgument) {
             index = selectedArgument.search('-');
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;

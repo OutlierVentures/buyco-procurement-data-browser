@@ -844,9 +844,9 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
-            let category = '';
-            let service = '';
-            let supplier = '';
+            let categoryGlobal = '';
+            let serviceGlobal = '';
+            let supplierContainsGlobal = '';
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
@@ -858,15 +858,15 @@ class SpendingPerTimePage {
             }
 
             if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
-                category = { $in: $scope.getCollectionReactively("category") };
+                categoryGlobal = { $in: $scope.getCollectionReactively("category") };
             } else {
-                category = '';
+                categoryGlobal = '';
             }
 
             if ($scope.getCollectionReactively('service') && $scope.getCollectionReactively('service').length) {
-                service = { $in: $scope.getCollectionReactively("service") };
+                serviceGlobal = { $in: $scope.getCollectionReactively("service") };
             } else {
-                service = '';
+                serviceGlobal = '';
             }
 
             // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
@@ -876,11 +876,10 @@ class SpendingPerTimePage {
             // }
 
             // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
-            let supplierContains = '';
             if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
-                supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+                supplierContainsGlobal = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
             } else {
-                supplier = '';
+                supplierContainsGlobal = '';
             }
 
             $scope.getCollectionReactively("filteredOrganisations");
@@ -914,18 +913,35 @@ class SpendingPerTimePage {
                 supplierSelection = '';
             }
 
+            // For suppliers the filters work slighly different. On the global level there is a regex filter,
+            // not an $in filter. The selection filter is an $in filter like the others. We can't combine
+            // the regex with an $in filter, so we choose the one or the other.
+            let supplierFilterToUse;
+
             if(supplierSelection && supplierSelection.$in.length)
                 supplierFilterToUse = supplierSelection;
             else
                 // The global filter is either empty or a regex clause. No further check necessary.
-                supplierFilterToUse = supplier;
+                supplierFilterToUse = supplierContainsGlobal;
+
+            let categoryFilterToUse;
+            if(categorySelection && categorySelection.$in.length)
+                categoryFilterToUse = categorySelection;
+            else                    
+                categoryFilterToUse = categoryGlobal;
+
+            let serviceFilterToUse;
+            if(serviceSelection && serviceSelection.$in.length)
+                serviceFilterToUse = serviceSelection;
+            else                    
+                serviceFilterToUse = serviceGlobal;
 
             saveFilters();
 
             return [{
                 organisation_name: organisations,
-                procurement_classification_1: combineInFilters(category, categorySelection),
-                sercop_service: combineInFilters(service, serviceSelection),
+                procurement_classification_1: categoryFilterToUse,
+                sercop_service: serviceFilterToUse,
                 supplier_name: supplierFilterToUse,
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
