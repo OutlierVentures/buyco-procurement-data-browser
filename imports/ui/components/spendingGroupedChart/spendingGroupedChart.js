@@ -163,6 +163,10 @@ class SpendingGroupedChart {
                 // for field X are not applied when showing group field X, instead we mark the chart bar
                 // as selected.
 
+                // If group X has an active selection filter and we're showing group Y, apply only the selection filter.
+                // In other words: clicking on a bar or multiple bars, should /only/ show data from those bars in all the 
+                // other charts.
+
                 switch(this.groupDisplayName) {
                     case 'category':
                         filterOptions.procurement_classification_1 = categoryGlobal;
@@ -407,7 +411,7 @@ class SpendingGroupedChart {
 
                 return dataSeries;
             },            
-            filterPeriodName: () => {
+            filterDescription: () => {
                 let filterName = this.getReactively("filterName");
                 if (filterName)
                     filterName = 'Filter: ' + filterName + ', ';

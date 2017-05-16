@@ -16,7 +16,7 @@
                 <i class="fa fa-expand" ng-if="!fullScreenMode"></i>
                 <i class="fa fa-compress" ng-if="fullScreenMode"></i>            
             </button>
-            <span ng-if="filterPeriodName">Filter Applied: {{filterPeriodName}}</span>
+            <span ng-if="filterDescription">Filter Applied: {{filterDescription}}</span>
             <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
                 rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
                 valueAxis: chartOptions.valueAxis, pointSelectionMode: chartOptions.pointSelectionMode, customizePoint: chartOptions.customizePoint,
