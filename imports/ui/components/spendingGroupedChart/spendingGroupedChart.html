@@ -34,7 +34,7 @@
                         <th>Total</th>
                     </tr>
                     <tr ng-repeat="spendGroup in spendingGrouped">
-                        <td>{{spendGroup._group}}</td>
+                        <td>{{spendGroup._group.organisation_name}} - {{spendGroup._group[spendGroup.groupField]}}</td>
                         <td>£{{spendGroup.totalAmount | number: 2}} </td>
                     </tr>
                 </table>
