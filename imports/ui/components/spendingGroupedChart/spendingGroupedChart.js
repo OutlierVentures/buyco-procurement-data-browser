@@ -613,14 +613,14 @@ class SpendingGroupedChart {
                             // Points have a text like "[Organisation name] - [Group value]". Get the group value to match.
                             let groupValue = getGroupValue(point.initialArgument);
 
-                            // Mark global filters
-                            if (self.subfilter && self.subfilter.length) {
-                                self.subfilter.forEach((subfilterValue) => {
-                                    if (groupValue == subfilterValue) {
-                                        series.selectPoint(point);
-                                    }
-                                });
-                            }
+                            // Mark global filters - we don't want these marked
+                            // if (self.subfilter && self.subfilter.length) {
+                            //     self.subfilter.forEach((subfilterValue) => {
+                            //         if (groupValue == subfilterValue) {
+                            //             series.selectPoint(point);
+                            //         }
+                            //     });
+                            // }
 
                             // Mark selection filters
                             let selectionFilter = getSelectionFilterByGroupName();
