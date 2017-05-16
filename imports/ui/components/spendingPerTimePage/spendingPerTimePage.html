@@ -90,6 +90,7 @@
                             </div>
                         </div>
                     </div>
+                    <div ng-show="selectionFilterDescription"><p>Additional filter applied: {{selectionFilterDescription}}</div>
 
                     <div id="timeChart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
                                     bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource', tooltip: 'chartData.tooltip' } }"

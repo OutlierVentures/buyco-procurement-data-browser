@@ -473,6 +473,7 @@ class SpendingGroupedChart {
                     }
                 }
 
+                // Remove last comma
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
             },

@@ -653,7 +653,55 @@ class SpendingPerTimePage {
                 organisations.forEach((organisation) => {
                     $scope.filteredOrganisations.push(organisation.id);
                 });
-            }
+            },
+            selectionFilterDescription: () => {
+                // This code is duplicated and adapted from spendingGroupedChart
+                // TODO: move to a module, e.g. getFilterDescription(globalFilters, selectionFilters, ignoreGroupField)
+
+                let filterName = '';
+
+                // In the time chart we only show a note about selection filters when applied.
+                let categorySelection = $scope.getCollectionReactively('selectionFilter.category');
+                let hasCategorySelection = categorySelection && categorySelection.length;
+                
+                if (hasCategorySelection) {
+                    filterName += 'Category: ';
+
+                    if (hasCategorySelection) {
+                        categorySelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
+
+                let serviceSelection = $scope.getCollectionReactively('selectionFilter.service');            
+                let hasServiceSelection = serviceSelection && serviceSelection.length;
+
+                if (hasServiceSelection) {
+                    filterName += 'Service: ';
+ 
+                    if (hasServiceSelection) {
+                        serviceSelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
+
+                let supplierSelection = $scope.getCollectionReactively('selectionFilter.supplier');
+                let hasSupplierSelection = supplierSelection && supplierSelection.length;
+
+                if (hasSupplierSelection) {
+                    filterName += 'Supplier: ';
+                    
+                    supplierSelection.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
+
+                // Remove last comma
+                filterName = filterName.substring(0, filterName.length - 2);
+                return filterName;
+            },
         });
 
         // UX defaults on component open
@@ -844,9 +892,6 @@ class SpendingPerTimePage {
 
         $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
-            let categoryGlobal = '';
-            let serviceGlobal = '';
-            let supplierContainsGlobal = '';
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
@@ -856,6 +901,10 @@ class SpendingPerTimePage {
             } else {
                 organisations = { $in: $scope.getCollectionReactively("filteredOrganisations") };
             }
+
+            let categoryGlobal = '';
+            let serviceGlobal = '';
+            let supplierContainsGlobal = '';
 
             if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
                 categoryGlobal = { $in: $scope.getCollectionReactively("category") };
@@ -956,9 +1005,6 @@ class SpendingPerTimePage {
 
         $scope.subscribe('clientSpendingPerTime', function () {
             let organisations = '';
-            let category = '';
-            let service = '';
-            let supplier = '';
 
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
 
@@ -970,31 +1016,36 @@ class SpendingPerTimePage {
                 organisations = { $in: $scope.getReactively("filteredOrganisations") };
             }
 
-            if ($scope.getReactively('category') && $scope.getReactively('category').length) {
-                category = { $in: $scope.getReactively("category") };
+            let categoryGlobal = '';
+            let serviceGlobal = '';
+            let supplierContainsGlobal = '';
+
+            if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
+                categoryGlobal = { $in: $scope.getCollectionReactively("category") };
             } else {
-                category = '';
+                categoryGlobal = '';
             }
 
-            if ($scope.getReactively('service') && $scope.getReactively('service').length) {
-                service = { $in: $scope.getReactively("service") };
+            if ($scope.getCollectionReactively('service') && $scope.getCollectionReactively('service').length) {
+                serviceGlobal = { $in: $scope.getCollectionReactively("service") };
             } else {
-                service = '';
+                serviceGlobal = '';
             }
 
-            // if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
-            //     supplier = { $in: $scope.getReactively("supplier") };
+            // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
+            //     supplier = { $in: $scope.getCollectionReactively("supplier") };
             // } else {
             //     supplier = '';
             // }
 
             // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
-            let supplierContains = '';
             if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
-                supplier = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+                supplierContainsGlobal = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
             } else {
-                supplier = '';
+                supplierContainsGlobal = '';
             }
+
+            $scope.getCollectionReactively("filteredOrganisations");
 
             // Selection filters
 
@@ -1025,19 +1076,34 @@ class SpendingPerTimePage {
                 supplierSelection = '';
             }
 
+            // For suppliers the filters work slighly different. On the global level there is a regex filter,
+            // not an $in filter. The selection filter is an $in filter like the others. We can't combine
+            // the regex with an $in filter, so we choose the one or the other.
+            let supplierFilterToUse;
+
             if(supplierSelection && supplierSelection.$in.length)
                 supplierFilterToUse = supplierSelection;
             else
                 // The global filter is either empty or a regex clause. No further check necessary.
-                supplierFilterToUse = supplier;
+                supplierFilterToUse = supplierContainsGlobal;
 
-            $scope.getReactively("filteredOrganisations");
+            let categoryFilterToUse;
+            if(categorySelection && categorySelection.$in.length)
+                categoryFilterToUse = categorySelection;
+            else                    
+                categoryFilterToUse = categoryGlobal;
+
+            let serviceFilterToUse;
+            if(serviceSelection && serviceSelection.$in.length)
+                serviceFilterToUse = serviceSelection;
+            else                    
+                serviceFilterToUse = serviceGlobal;
 
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: organisations,
-                procurement_classification_1: combineInFilters(category, categorySelection),
-                sercop_service: combineInFilters(service, serviceSelection),
+                procurement_classification_1: categoryFilterToUse,
+                sercop_service: serviceFilterToUse,
                 supplier_name: supplierFilterToUse,
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
