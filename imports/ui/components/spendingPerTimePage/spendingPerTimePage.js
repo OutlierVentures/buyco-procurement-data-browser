@@ -890,7 +890,7 @@ class SpendingPerTimePage {
         this.subManager.subscribe('spendingCategories');
         // this.subManager.subscribe('spendingSuppliers');
 
-        $scope.subscribe('spendingPerTime', function () {
+        $scope.spendingPerTimeSub = $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"

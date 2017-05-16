@@ -30,7 +30,7 @@ class SpendingGroupedChart {
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
-        $scope.subscribe('spendingGrouped', () => {
+        $scope.spendingGroupedSub = $scope.subscribe('spendingGrouped', () => {
             let filterOptions = $scope.getReactively("filterOptions", true);
 
             let publishParams = [
