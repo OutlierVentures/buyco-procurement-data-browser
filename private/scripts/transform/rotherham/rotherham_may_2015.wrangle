@@ -1,0 +1,18 @@
+splitrows col: column1 on: '\r\n' quote: '\"'
+split col: column1 on: ',' limit: 206 quote: '\"'
+header
+drop col: column9~column208
+rename col: BODY to: 'organisation_name'
+set col: organisation_name value: 'Rotherham Council'
+rename col: DATE to: 'payment_date'
+derive value: payment_date as: 'effective_date'
+drop col: TRAN_NUMBER
+derive value: '' as: 'organisation_code'
+rename col: LINE_VALUE to: 'amount_net'
+rename col: SUPPLIER to: 'supplier_name'
+rename col: EXPENSE_AREA to: 'sercop_service'
+rename col: EXPENSE_TYPE to: 'procurement_classification_1'
+derive value: '' as: 'purpose_of_spend_1'
+replace col: supplier_name with: '' on: '\"' global: true
+replace col: sercop_service with: '' on: '\"' global: true
+replace col: procurement_classification_1 with: '' on: '\"' global: true
