@@ -502,7 +502,7 @@ class SpendingGroupedChart {
                     () => {
                         return [insightItem.organisation_name,
                             insightItem.groupField,
-                            insightItem._group]
+                            insightItem._group[insightItem.groupField]]
                     },
                     {
                         onError: () => {
@@ -513,7 +513,7 @@ class SpendingGroupedChart {
                             let predictionValues = Predictions.find(
                                 { "_group.quarter": 2, "_group.year": 2018,
                                 "groupField": insightItem.groupField,
-                                "_group.group_value": insightItem._group,
+                                "_group.group_value": insightItem._group[insightItem.groupField],
                                 "_group.organisation_name": insightItem.organisation_name }
                             ).fetch();
 
@@ -562,10 +562,10 @@ class SpendingGroupedChart {
                             let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + year + "-Q" + quarter;
 
                             $scope.insight = {
-                                id: insightItem._group,
+                                id: insightItem._group[insightItem.groupField],
                                 type: this.groupDisplayName,                    
                                 organisation_name: insightItem.organisation_name,
-                                description: insightItem.organisation_name + " - " + insightItem._group,
+                                groupValue: insightItem._group[insightItem.groupField],
                                 percentage: percentage,
                                 amountText: amountText,
                                 color: getColour(insightItem.organisation_name)
