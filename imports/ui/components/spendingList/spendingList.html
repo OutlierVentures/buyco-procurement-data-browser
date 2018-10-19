@@ -21,14 +21,16 @@
                             <th>TX number</th>
                             <th>Organisation</th>
                             <th>Category</th>
-                            <th>Purpose</th>
+                            <th>Supplier</th>
+                            <th>Service</th>
                             <th>Amount</th>
                         </tr>
                         <tr dir-paginate="tx in spending | itemsPerPage: perPage" total-items="spendingTransactionsCount" current-page='page'>
                             <td>{{tx.transaction_number}}</td>
                             <td>{{tx.organisation_name}}</td>
                             <td>{{tx.procurement_classification_1}}</td>
-                            <td>{{tx.purpose}}</td>
+                            <td>{{tx.supplier_name}}</td>
+                            <td>{{tx.sercop_service}}</td>
                             <td>£{{tx.amount_net | number: 2}}</td>
                         </tr>
                     </table>

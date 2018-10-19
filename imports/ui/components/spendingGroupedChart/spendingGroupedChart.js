@@ -6,16 +6,18 @@ import template from './spendingGroupedChart.html';
 import { removeEmptyFilters, MetaDataHelper } from "/imports/utils";
 
 import { SpendingGrouped } from '/imports/api/spendingGrouped';
-import { ClientSpendingPerTime } from '/imports/api/clientSpendingPerTime';
+import { Predictions } from '/imports/api/predictions';
 import { ClientSpendingGrouped } from '/imports/api/clientSpendingGrouped';
 import { CHART_FONT } from '../../stylesheet/config';
+import { getColour, abbreviateNumber, combineInFilters } from '../../../utils';
+import { Session } from 'meteor/session';
 
 class SpendingGroupedChart {
     constructor($scope, $reactive, $element, $rootScope) {
         'ngInject';
         $reactive(this).attach($scope);
 
-        var self = this;
+        let self = this;
         $rootScope.$on('resizeRequested', function (e) {
             resizeChart();
         });
@@ -23,90 +25,27 @@ class SpendingGroupedChart {
         $scope.dataSource = [];
         $scope.organisation_names = [];
         $scope.fullScreenMode = false;
+   
 
         // The subscribe triggers calls to the spendingGroup collection when any of the bound values
         // change. On initialisation, the values are empty and a call is executed anyway. This is handled
         // on the server: if groupField is empty, no data will be returned.
-        $scope.subscribe('spendingGrouped', () => {
-            let filterOptions = {
-                organisation_name: this.getReactively("filters.organisation_name")
-            };
+        $scope.spendingGroupedSub = $scope.subscribe('spendingGrouped', () => {
+            let filterOptions = $scope.getReactively("filterOptions", true);
 
-            switch(this.groupDisplayName) {
-                case 'category':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
-                default:
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            }
-
-            // We use $gte and $lte to include the start and end dates. For example, when start date is "2016-11-01T00:00"
-            //  records on the 1st of November itself are included. If using $gt, they would be excluded.
-            if (this.getReactively('filterDate')) {
-                filterOptions.payment_date = { $gte: this.getReactively("filterDate").startDate.toDate(), $lte: this.getReactively("filterDate").endDate.toDate() };
-            }
-
-            if (this.getReactively('selDate')) {
-                filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
-            }
-
-            removeEmptyFilters(filterOptions);
-
-            var publishParams = [
+            let publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
                 }];
 
-            return publishParams;                
+            return publishParams;
         });
+
         $scope.subscribe('clientSpendingGrouped', () => {
-            let filterOptions = {
-                organisation_name: this.getReactively("filters.organisation_name"),
-                client_id: this.getReactively("filters.client.client_id")
-            };
+            let filterOptions = $scope.getReactively("clientFilterOptions", true);
 
-            switch(this.groupDisplayName) {
-                case 'category':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
-                default:
-                    filterOptions.sercop_service = this.getReactively("filters.sercop_service");
-                    filterOptions.supplier_name = this.getReactively("filters.supplier_name");
-                    filterOptions.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            }
-
-            if (this.getReactively('filterDate')) {
-                filterOptions.payment_date = { $gte: this.getReactively("filterDate").startDate.toDate(), $lte: this.getReactively("filterDate").endDate.toDate() };
-            }
-
-            if (this.getReactively('selDate')) {
-                filterOptions.payment_date = { $gte: this.getReactively("selDate").startDate.toDate(), $lte: this.getReactively("selDate").endDate.toDate() };
-            }
-
-            removeEmptyFilters(filterOptions);
-
-            var publishParams = [
+            let publishParams = [
                 filterOptions,
                 {
                     groupField: this.getReactively("groupField")
@@ -120,99 +59,308 @@ class SpendingGroupedChart {
         // with a different group field and filters, which leads to different results.
         // The client is supplied with the complete result set and therefore must filter these
         // results through minimongo.
-        // The filter fields are largely duplicated from the call to subscribe() above. De-duplicating
-        // is left as an exercise to the reader; I couldn't get it to work reactively correctly when 
-        // using a single filters object.
         this.spendingGrouped = () => {
-            let filters = {
-                organisation_name: this.getReactively("filters.organisation_name"),
-                groupField: this.getReactively("groupField")
-            };
+            let filterOptions = $scope.getReactively("filterOptions", true);
 
-            if (filters.organisation_name) {
-                $scope.organisation_names = filters.organisation_name.$in;
-            }
+            // AvA: Why is this here? To trigger a reload when the period changes? I think it can be removed.
+            this.getReactively("filters.period");
 
-            switch(this.groupDisplayName) {
-                case 'category':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
-                default:
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            }
-
-            let temp = this.getReactively("filters.period");
-
-            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
-            // while all rows should be shown. Hence we only add them if they have a non-empty value.
-            removeEmptyFilters (filters);
-
-            var data = SpendingGrouped.find(filters, { sort: { "_group.totalAmount": -1} }).fetch();
-
+            let data = SpendingGrouped.find( { $and: [ filterOptions, { "groupField": this.getReactively("groupField") } ] }, { sort: { "_group.totalAmount": -1} }).fetch();
             return data;
         };
 
         this.clientSpendingGrouped = () => {
-            let filters = {
-                organisation_name: this.getReactively("filters.organisation_name"),
-                groupField: this.getReactively("groupField")
-            };
+            let filterOptions = $scope.getReactively("clientFilterOptions", true);
 
-            filters.client_id = this.getReactively("filters.client.client_id");
-
-            switch(this.groupDisplayName) {
-                case 'category':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'service':
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    break;
-                case 'supplier':
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-                    break;
-                default:
-                    filters.sercop_service = this.getReactively("filters.sercop_service");
-                    filters.supplier_name = this.getReactively("filters.supplier_name");
-                    filters.procurement_classification_1 = this.getReactively("filters.procurement_classification_1");
-            }
-
-            // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
-            // while all rows should be shown. Hence we only add them if they have a non-empty value.
-            removeEmptyFilters (filters);
-
+            // AvA: Why is this here? To trigger a reload when the period changes? I think it can be removed.
             this.getReactively("filters.period");
-            return ClientSpendingGrouped.find(filters).fetch();
+
+            return ClientSpendingGrouped.find( { $and: [ filterOptions, { "groupField": this.getReactively("groupField") } ] } ).fetch();
         };
 
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
             },
+            /**
+             * The filters applied to fetch data. This object is used in both the subscriptions and the
+             * local collection.find() calls. 
+             * 
+             * All filter variables within this helper are called with getReactively, causing this helper
+             * to be re-evaluated when any of them changes.
+             * 
+             * Calls to this helper with getReactively should set the objectEquals argument 
+             * to true (e.g. this.getReactively('filterOptions', true)) in order to watch for nested changes.
+             */
+            filterOptions: () => {
+                let organisations = this.getReactively("filters.organisation_name");
+
+                // Always requiring filtering by some or all organisations. If not set, we return null,
+                // which causes the publish not to execute and prevent a heavy query.
+                if (!organisations || !organisations.$in.length)
+                    return {};
+
+                // Save the organisation names to a scope variable for (a.o.) configuring the data series.
+                $scope.organisation_names = organisations.$in;
+
+                let filterOptions = {
+                    organisation_name: organisations
+                };
+
+                let categorySelection = '';
+                let categorySelectionCol = this.getCollectionReactively('selectionFilter.category');
+                if (categorySelectionCol && categorySelectionCol.length) {
+                    categorySelection = { $in: categorySelectionCol };
+                } else {
+                    categorySelection = '';
+                }
+
+                let serviceSelection = '';
+                let serviceSelectionCol = this.getCollectionReactively('selectionFilter.service');
+                if (serviceSelectionCol && serviceSelectionCol.length) {
+                    serviceSelection = { $in: serviceSelectionCol };
+                } else {
+                    serviceSelection = '';
+                }
+
+                let supplierSelection = '';
+                let supplierSelectionCol = this.getCollectionReactively('selectionFilter.supplier');
+                if (supplierSelectionCol && supplierSelectionCol.length) {
+                    supplierSelection = { $in: supplierSelectionCol };
+                } else {
+                    supplierSelection = '';
+                }
+
+                let categoryGlobal = this.getCollectionReactively("filters.procurement_classification_1");
+                let serviceGlobal = this.getCollectionReactively("filters.sercop_service");
+                let supplierContainsGlobal = this.getCollectionReactively("filters.supplier_contains");
+
+                // For suppliers the filters work slighly different. On the global level there is a regex filter,
+                // not an $in filter. The selection filter is an $in filter like the others. We can't combine
+                // the regex with an $in filter, so we choose the one or the other.
+                let supplierFilterToUse;
+
+                if(supplierSelection && supplierSelection.$in.length)
+                    supplierFilterToUse = supplierSelection;
+                else
+                    // The global filter is either empty or a regex clause. No further check necessary.
+                    supplierFilterToUse = supplierContainsGlobal;
+
+                let categoryFilterToUse;
+                if(categorySelection && categorySelection.$in.length)
+                    categoryFilterToUse = categorySelection;
+                else                    
+                    categoryFilterToUse = categoryGlobal;
+
+                let serviceFilterToUse;
+                if(serviceSelection && serviceSelection.$in.length)
+                    serviceFilterToUse = serviceSelection;
+                else                    
+                    serviceFilterToUse = serviceGlobal;
+
+                // We now have variables for both global and selection filters for all fields, of the form { $in: [value1, value2, ...]}.
+                // Depending on the group field we're showing, apply those filters in fetching the data. Selection filters
+                // for field X are not applied when showing group field X, instead we mark the chart bar
+                // as selected.
+
+                // If group X has an active selection filter and we're showing group Y, apply only the selection filter.
+                // In other words: clicking on a bar or multiple bars, should /only/ show data from those bars in all the 
+                // other charts.
+
+                switch(this.groupDisplayName) {
+                    case 'category':
+                        filterOptions.procurement_classification_1 = categoryGlobal;
+                        filterOptions.sercop_service = serviceFilterToUse;
+                        filterOptions.supplier_name = supplierFilterToUse;
+                        break;
+                    case 'service':
+                        filterOptions.sercop_service = serviceGlobal;
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
+                        filterOptions.supplier_name = supplierFilterToUse;
+                        break;
+                    case 'supplier':
+                        filterOptions.supplier_name = supplierContainsGlobal;
+                        filterOptions.sercop_service = serviceFilterToUse;
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
+                        break;
+                    default:
+                        filterOptions.sercop_service = serviceFilterToUse;
+                        filterOptions.supplier_name = supplierFilterToUse;
+                        filterOptions.procurement_classification_1 = categoryFilterToUse;
+                }
+
+                // We use $gte and $lte to include the start and end dates. For example, when start date is "2016-11-01T00:00"
+                //  records on the 1st of November itself are included. If using $gt, they would be excluded.
+                let filterDate = this.getReactively('filterDate', true);
+                if (filterDate) {
+                    filterOptions.payment_date = { $gte: filterDate.startDate.toDate(), $lte: filterDate.endDate.toDate() };
+                }
+
+                let selDate = this.getReactively('selDate', true);
+                if (selDate) {
+                    filterOptions.payment_date = { $gte: selDate.startDate.toDate(), $lte: selDate.endDate.toDate() };
+                }
+
+                // The filter values can be "" when the empty item is selected. If we apply that, no rows will be shown,
+                // while all rows should be shown. Hence we only add them if they have a non-empty value.
+                removeEmptyFilters(filterOptions);
+
+                return filterOptions;
+            },
+            clientFilterOptions: () => {
+                let filterOptions = $scope.getReactively("filterOptions", true);
+
+                // Create a deep copy to add the client_id filter
+                let clientFilterOptions = JSON.parse(JSON.stringify(filterOptions));
+                clientFilterOptions.client_id = this.getReactively("filters.client.client_id");
+
+                return clientFilterOptions;
+            },
             groupDisplayName: () => {
                 this.groupDisplayName = MetaDataHelper.getFieldDisplayName("public_spending", this.getReactively("groupField"));
+                let subFilterName = 'subfilter' + this.groupDisplayName;
+
+                if (Session.get(subFilterName)) {
+                    self.subfilter = Session.get(subFilterName);
+                }
+
+                if (Session.get('selectionfilter')) {
+                    self.selectionFilter = Session.get('selectionfilter');
+                }
                 return this.groupDisplayName;
             },
             spendingGrouped: () => {
                 return this.spendingGrouped();
             },
             chartData: () => {
-                let dataSeries = [];
                 $scope.dataSource = [];
 
+                this.spendingGrouped().forEach((spendThisGroup) => {
+                    let clientValue;
+                    let publicGroupValue = spendThisGroup._group[spendThisGroup.groupField];
+                    this.clientSpendingGrouped().forEach((clientData) => {
+                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
+                            && publicGroupValue == clientData._group[clientData.groupField]) {
+                            clientValue = clientData.totalAmount;
+                        }
+                    });
+
+                    let tempObj = {
+                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + publicGroupValue,
+                        publicValue: spendThisGroup.totalAmount,
+                        clientValue: clientValue,
+                        organisationName: spendThisGroup.organisation_name
+                    };
+                    $scope.dataSource.push(tempObj);
+                });
+
+                $scope.dataSource.sort(function (a, b) {
+                    return a.publicValue - b.publicValue;
+                });
+
+                // Resize the chart according to the number of bars.
+                // In current setup, the number of bars is always higher than the threshold.
+                // let numBars = $scope.dataSource.length * this.getReactively("dataSeries").length;
+                let numBars = $scope.dataSource.length * 2;
+
+                if (numBars > 10) {
+                    $scope.chartSize = {
+                        height: 700
+                    }
+                } else {
+                    $scope.chartSize = {
+                        height: 500
+                    }
+                }
+
+                $scope.chartOptionsDynamic = {
+                    dataSource: $scope.dataSource.map(function (i) {
+                        i.zero = 0;
+                        return i;
+                    }),
+                    size: $scope.chartSize,
+                };
+                markSelectedSubFilter();
+            },
+            /**
+             * Chart options that don't need to be reloaded when data changes.
+             */
+            chartOptions: () => {
+                return {
+                    commonSeriesSettings: {
+                        argumentField: "organisationAndGroup",
+                        type: "bar"
+                    },
+                    argumentAxis: {
+                        label: {
+                            visible: false,
+                            format: "largeNumber"
+                        }
+                    },
+                    rotated: true,
+                    legend: {
+                        verticalAlignment: "bottom",
+                        horizontalAlignment: "center"
+                    },
+                    title: "",
+                    export: {
+                        enabled: true
+                    },
+                    tooltip: {
+                        enabled: true,
+                        shared: true,
+                        format: {
+                            type: "largeNumber",
+                            precision: 1
+                        },
+                        customizeTooltip: function (arg) {
+                            let newValue = abbreviateNumber(arg.value, 0);
+                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
+                            let tempItem = '';
+                            tempItem += items;
+                            $.each(items, function (index, item) {
+                                items[index] = $("<b>")
+                                    .text(tempItem)
+                                    .css("color", color)
+                                    .prop("outerHTML");
+                            });
+                            return { text: items.join("\n") };
+                        }
+                    },
+                    valueAxis: [{
+                        label: {
+                            format: "largeNumber"
+                        }
+                    }],
+                    customizePoint: function () {
+                        if (this.series.name == "Public spending") {
+                            let sourcePoint = $scope.dataSource[this.index];
+                            return {
+                                color: getColour(sourcePoint.organisationName)
+                            };
+                        }
+                    },                    
+                    pointSelectionMode: 'multiple',
+                    onPointClick: function (e) {
+                        let target = e.target;
+                        let selectedArgument = target.originalArgument;
+                        let selectedService = getGroupValue(selectedArgument);
+
+                        if (!target.isSelected()) {
+                            target.select();
+                            addSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
+                        } else {
+                            target.clearSelection();
+                            removeSelectedFilter(selectedService);
+                            Session.setPersistent('selectionfilter', self.selectionFilter);
+                        }
+                    },
+                };
+            },
+            chartSeries: () => {
+                let dataSeries = [];
+                
                 if (this.getReactively("filters.client")) {
                     dataSeries.push({
                         name: this.getReactively("filters.client.name"),
@@ -248,12 +396,12 @@ class SpendingGroupedChart {
                     }
                 });
 
-                $scope.organisation_names.forEach((organisation_name) => {
+                $scope.getCollectionReactively("organisation_names").forEach((organisation_name) => {
                     dataSeries.push({
                         valueField: 'zero',
                         type: 'scatter',
                         name: organisation_name,
-                        color: getColor(organisation_name),
+                        color: getColour(organisation_name),
                         showInLegend: true,
                         point: {
                             color: 'none'
@@ -261,118 +409,9 @@ class SpendingGroupedChart {
                     });
                 });
 
-                this.spendingGrouped().forEach((spendThisGroup) => {
-                    let clientValue;
-                    this.clientSpendingGrouped().forEach((clientData) => {
-                        if (spendThisGroup.organisation_name == clientData.organisation_name && spendThisGroup.groupField == clientData.groupField
-                            && spendThisGroup._group == clientData._group) {
-                            clientValue = clientData.totalAmount;
-                        }
-                    });
-
-                    let tempObj = {
-                        organisationAndGroup: spendThisGroup.organisation_name + ' - ' + spendThisGroup._group,
-                        publicValue: spendThisGroup.totalAmount,
-                        clientValue: clientValue,
-                        organisationName: spendThisGroup.organisation_name
-                    };
-                    $scope.dataSource.push(tempObj);
-                });
-
-                $scope.dataSource.sort(function (a, b) {
-                    return a.publicValue - b.publicValue;
-                });
-
-                let numBars = $scope.dataSource.length * dataSeries.length;
-
-                if (numBars > 10) {
-                    $scope.chartSize = {
-                        height: 700
-                    }
-                } else {
-                    $scope.chartSize = {
-                        height: 500
-                    }
-                }
-
-                $scope.chartOptions = {
-                    dataSource: $scope.dataSource.map(function (i) {
-                        i.zero = 0;
-                        return i;
-                    }),
-                    commonSeriesSettings: {
-                        argumentField: "organisationAndGroup",
-                        type: "bar"
-                    },
-                    argumentAxis: {
-                        label: {
-                            visible: false,
-                            format: "largeNumber"
-                        }
-                    },
-                    rotated: true,
-                    series: dataSeries,
-                    legend: {
-                        verticalAlignment: "bottom",
-                        horizontalAlignment: "center"
-                    },
-                    title: "",
-                    export: {
-                        enabled: true
-                    },
-                    tooltip: {
-                        enabled: true,
-                        shared: true,
-                        format: {
-                            type: "largeNumber",
-                            precision: 1
-                        },
-                        customizeTooltip: function (arg) {
-                            let newValue = abbreviate_number(arg.value, 0);
-                            let items = (arg.argumentText + " - " + arg.seriesName + " - " + newValue).split("\n"), color = arg.point.getColor();
-                            let tempItem = '';
-                            tempItem += items;
-                            $.each(items, function (index, item) {
-                                items[index] = $("<b>")
-                                    .text(tempItem)
-                                    .css("color", color)
-                                    .prop("outerHTML");
-                            });
-                            return { text: items.join("\n") };
-                        }
-                    },
-                    valueAxis: [{
-                        label: {
-                            format: "largeNumber"
-                        }
-                    }],
-                    size: $scope.chartSize,
-                    customizePoint: function () {
-                        if (this.series.name == "Public spending") {
-                            let sourcePoint = $scope.dataSource[this.index];
-                            return {
-                                color: getColor(sourcePoint.organisationName)
-                            };
-                        }
-                    },
-                    onPointClick: function (e) {
-                        var target = e.target;
-                        if (!target.isSelected()) {
-                            target.select();
-                            selectedArgument = target.originalArgument;
-                            let selectedService = getSelectedService(selectedArgument);
-                            self.subfilter = selectedService;
-                        } else {
-                            target.clearSelection();
-                            let selectedService = getSelectedService(selectedArgument);
-                            self.subfilter = null;
-                        }
-                    },
-                };
-                markSelectedSubFilter();
                 return dataSeries;
-            },
-            filterPeriodName: () => {
+            },            
+            filterDescription: () => {
                 let filterName = this.getReactively("filterName");
                 if (filterName)
                     filterName = 'Filter: ' + filterName + ', ';
@@ -380,58 +419,159 @@ class SpendingGroupedChart {
                     filterName = '';
 
                 let category = this.getReactively("filters.procurement_classification_1");
-                if (category)
-                    filterName += 'Category: ' + category + ', ';
+                let categorySelection = this.getCollectionReactively('selectionFilter.category');
+                let hasCategorySelection = categorySelection && categorySelection.length && this.groupDisplayName != "category";
+                
+                if (category || hasCategorySelection) {
+                    filterName += 'Category: ';
+
+                    if (hasCategorySelection) {
+                        categorySelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                    else if (category) {
+                        category.$in.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
 
                 let service = this.getReactively("filters.sercop_service");
-                if (service)
-                    filterName += 'Service: ' + service + ', ';
+                let serviceSelection = this.getCollectionReactively('selectionFilter.service');            
+                let hasServiceSelection = serviceSelection && serviceSelection.length && this.groupDisplayName != "service";
 
-                let supplier = this.getReactively("filters.supplier_name");
-                if (supplier)
-                    filterName += 'Supplier: ' + supplier + ', ';
+                if (service || hasServiceSelection) {
+                    filterName += 'Service: ';
+ 
+                    if (hasServiceSelection) {
+                        serviceSelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                    else if (service) {
+                        service.$in.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
 
+                let supplierSelection = this.getCollectionReactively('selectionFilter.supplier');
+                let hasSupplierSelection = supplierSelection && supplierSelection.length && this.groupDisplayName != "supplier";
+
+                if (hasSupplierSelection) {
+                    filterName += 'Supplier: ';
+                    
+                    supplierSelection.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                } else {
+                    let supplier = this.getReactively("filters.supplier_contains");
+                    if (supplier) {
+                        filterName += 'Supplier contains: ';
+                        filterName += supplier.$regex + ", ";
+                    }
+                }
+
+                // Remove last comma
                 filterName = filterName.substring(0, filterName.length - 2);
                 return filterName;
             },
-            insight: () => {
+            getInsight: () => {
                 // Show insights only to logged on users
                 if(!Meteor.userId())
                     return null;
 
-                // Stub function: show a random value for a random item from the list.
-                // TODO: implement real value from prediction data.
+                // (Re-)set insight to empty until we have found one
+                $scope.insight = undefined;
+
+                // Get a random item from the list. See if there is a prediction. If yes, show insight.
+                // if not, no insight.
                 let items = this.getReactively("spendingGrouped")();
 
                 if(!items || !items.length)
                     return null;
                 
-                let insightItem = items[Math.round(Math.random() * items.length)];
+                let insightItem = items[Math.floor(Math.random() * items.length)];
+
+                // Don't show for empty categories
+                if(!insightItem._group)
+                    return;
+
+                let predictionSub = this.subscribe('predictions', 
+                    () => {
+                        return [insightItem.organisation_name,
+                            insightItem.groupField,
+                            insightItem._group[insightItem.groupField]]
+                    },
+                    {
+                        onError: () => {
+
+                        },
+                        onReady: (err, res) => {
+                            // The Predictions collection contains the aggregated items
+                            let predictionValues = Predictions.find(
+                                { "_group.quarter": 2, "_group.year": 2018,
+                                "groupField": insightItem.groupField,
+                                "_group.group_value": insightItem._group[insightItem.groupField],
+                                "_group.organisation_name": insightItem.organisation_name }
+                            ).fetch();
+
+                            // predictionSub.stop();
+
+                            if(predictionValues.length == 0)
+                                return;
+
+                            let predictionPoint = predictionValues[0];                
+                            
+                            let year =  predictionPoint._group.year;
+                            let quarter = predictionPoint._group.quarter;
+                            let predictionValue = predictionPoint.totalAmount;
+
+                            // Get value for last full quarter
+                            // Stub: take the average of what we have
+                            let startDate, endDate;
+
+                            let filterDate = this.getReactively('filterDate');
                 
-                let date = new Date();
-                date.setYear(date.getFullYear() + 1);
+                            if (filterDate) {
+                                startDate = filterDate.startDate.toDate();
+                                endDate = filterDate.endDate.toDate();
+                            }
 
-                // Quarter: deterministic value 1-4 for each item 
-                let quarter = insightItem.count % 4 + 1;
+                            let selDate = this.getReactively('selDate');                
 
-                // Percentage: deterministic value -30 - +30
-                let percentage = insightItem.count % 80 - 40;
+                            if (selDate) {
+                                startDate = selDate.startDate.toDate();
+                                endDate = selDate.endDate.toDate();
+                            }
 
-                // Only show insights with a significant percentage.
-                if (Math.abs(percentage) < 10)
-                    return 0;
+                            let diff = endDate - startDate;
+                            
+                            let quartersShown = Math.ceil(diff/1000/3600/24/90);
 
-                let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + date.getFullYear() + "-Q" + quarter;
+                            let averageValue = insightItem.totalAmount / quartersShown;
 
-                return {
-                    id: insightItem._group,
-                    type: this.groupDisplayName,                    
-                    organisation_name: insightItem.organisation_name,
-                    description: insightItem.organisation_name + " - " + insightItem._group,
-                    percentage: percentage,
-                    amountText: amountText,
-                    color: getColor(insightItem.organisation_name)
-                }
+                            // Percentage: deterministic value -30 - +30
+                            let percentage = Math.round((predictionValue / averageValue - 1) * 100);
+
+                            // Only show insights with a significant percentage.
+                            if (Math.abs(percentage) < 10)
+                                return 0;
+
+                            let amountText = (percentage > 0 ? "+" : "") + percentage + "% by " + year + "-Q" + quarter;
+
+                            $scope.insight = {
+                                id: insightItem._group[insightItem.groupField],
+                                type: this.groupDisplayName,                    
+                                organisation_name: insightItem.organisation_name,
+                                groupValue: insightItem._group[insightItem.groupField],
+                                percentage: percentage,
+                                amountText: amountText,
+                                color: getColour(insightItem.organisation_name)
+                            }
+                        }
+                    });
             }
         });
 
@@ -446,26 +586,63 @@ class SpendingGroupedChart {
             return timechart;
         }
 
+        /**
+         * Mark the selected sub filter ("click filter") in the chart after a reload.
+         */
         function markSelectedSubFilter() {
             setTimeout(function () {
-                var chartHandle = getChartHandle();
-                if(chartHandle) {
-                    let series = chartHandle.getSeriesByPos(1);
+                let chartHandle = getChartHandle();
+                
+                if(!chartHandle)
+                    return;
+
+                // Series index 0 should always be marked
+                let seriesToMarkByPos = [0];
+                
+                // If showing client data, series 0 is the client data and series 1 is the public
+                // spending data. Mark them both.
+                if(self.getReactively("filters.client.client_id")){
+                    seriesToMarkByPos.push(1);
+                }
+
+                for(let i = 0; i< seriesToMarkByPos.length; i++){
+                    let series = chartHandle.getSeriesByPos(seriesToMarkByPos[i]);
                     if(series && series.getAllPoints().length) {
                         let allPoints = series.getAllPoints();
                         allPoints.forEach((point) => {
-                            let serviceName = point.initialArgument;
-                            if (getSelectedService(serviceName) == self.subfilter) {
-                                series.selectPoint(point);
+                            // Points have a text like "[Organisation name] - [Group value]". Get the group value to match.
+                            let groupValue = getGroupValue(point.initialArgument);
+
+                            // Mark global filters - we don't want these marked
+                            // if (self.subfilter && self.subfilter.length) {
+                            //     self.subfilter.forEach((subfilterValue) => {
+                            //         if (groupValue == subfilterValue) {
+                            //             series.selectPoint(point);
+                            //         }
+                            //     });
+                            // }
+
+                            // Mark selection filters
+                            let selectionFilter = getSelectionFilterByGroupName();
+
+                            if (selectionFilter && selectionFilter.length) {
+                                selectionFilter.forEach((filterValue) => {
+                                    if (groupValue == filterValue) {
+                                        series.selectPoint(point);
+                                    }
+                                });
                             }
                         });
                     }
-                }
+                }                
             }, 800);
         }
 
         function resizeChart() {
-            var chartHandle = getChartHandle();
+            let chartHandle = getChartHandle();
+            if(!chartHandle)
+                return;
+            
             chartHandle.render();
         }
 
@@ -475,41 +652,74 @@ class SpendingGroupedChart {
             }, 100);
         });
 
-        function getSelectedService(selectedArgument) {
+        function getGroupValue(selectedArgument) {
             index = selectedArgument.search('-');
             selectedService = selectedArgument.substring(index + 2);
             return selectedService;
         }
 
-        let stringToColour = function (str) {
-            var hash = 0;
-            for (var i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        function addSelectedFilter(selectedFilter) {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    addFilterToSelectionFilterArray(self.selectionFilter.category, selectedFilter);
+                    break;
+                case 'service':
+                    addFilterToSelectionFilterArray(self.selectionFilter.service, selectedFilter);
+                    break;
+                case 'supplier':
+                    addFilterToSelectionFilterArray(self.selectionFilter.supplier, selectedFilter);
+                    break;
+                default:
+                    break;
             }
-            var colour = '#';
-            for (var i = 0; i < 3; i++) {
-                var value = (hash >> (i * 8)) & 0xFF;
-                colour += ('00' + value.toString(16)).substr(-2);
-            }
-            return colour;
         }
-        /**
-         * Return the color for an organisation series
-         */
-        let getColor = (organisationName) => {
-            return stringToColour(organisationName);
-        };
 
-        let abbreviate_number = function (num, fixed) {
-            if (num === null) { return null; } // terminate early
-            if (num === 0) { return '0'; } // terminate early
-            fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
-            var b = (num).toPrecision(2).split("e"), // get power
-                k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
-                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
-                d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
-                e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
-            return e;
+        function removeSelectedFilter(selectedFilter) {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.category, selectedFilter);
+                    break;
+                case 'service':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.service, selectedFilter);
+                    break;
+                case 'supplier':
+                    removeFilterFromSelectionFilterArray(self.selectionFilter.supplier, selectedFilter);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function addFilterToSelectionFilterArray(filterArray, filter) {
+            if (filterArray) {
+                let index = filterArray.indexOf(filter);
+
+                if (index > -1)
+                    filterArray.splice(index, 1);
+                else
+                    filterArray.push(filter);
+            } else {
+                filterArray = [];
+            }
+        }
+
+        function removeFilterFromSelectionFilterArray(filterArray, filter) {
+            let index = filterArray.indexOf(filter);
+            if (index > -1)
+                filterArray.splice(index, 1);
+        }
+
+        function  getSelectionFilterByGroupName() {
+            switch(self.groupDisplayName) {
+                case 'category':
+                    return self.selectionFilter.category;
+                case 'service':
+                    return self.selectionFilter.service;
+                case 'supplier':
+                    return self.selectionFilter.supplier;
+                default:
+                    return self.selectionFilter.category;
+            }
         }
     }
 
@@ -526,14 +736,15 @@ export default angular.module(name, [
     template,
     controllerAs: name,
     bindings: {
-        subfilter: '=',
+        subfilter: '<',
         // Filters should contain field names to match as equal.
         filters: '=',
         // The field to group by. Valid values: procurement_classification_1, supplier_name, sercop_service.
         groupField: '<',
         filterDate: '<',
         selDate: '<',
-        filterName: '<'
+        filterName: '<',
+        selectionFilter: '='
     },
     controller: SpendingGroupedChart
 });

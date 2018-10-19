@@ -3,7 +3,7 @@
         <div class="ribbon-design purple-skin">INSIGHT</div>
     </div> <span class="sky-skin" style="background-color: {{insight.color}}; border-color: {{insight.color}} !important;"><i class="fa fa-gbp"></i></span>
     <p><i class="fa fa-arrow-down down" ng-show="insight.percentage < 0">
-        </i><i class="fa fa-arrow-up up" ng-show="insight.percentage > 0"></i> {{insight.description}}</p>
+        </i><i class="fa fa-arrow-up up" ng-show="insight.percentage > 0"></i> {{insight.organisation_name}} - {{insight.groupValue}}</p>
     <a href="/spending/insight/{{insight.organisation_name}}/{{insight.type}}/{{insight.id}}">
         <h3>{{insight.amountText}}</h3>
     </a>
@@ -16,11 +16,15 @@
                 <i class="fa fa-expand" ng-if="!fullScreenMode"></i>
                 <i class="fa fa-compress" ng-if="fullScreenMode"></i>            
             </button>
-            <span ng-if="filterPeriodName">Filter Applied: {{filterPeriodName}}</span>
+            <span ng-if="filterDescription">Filter Applied: {{filterDescription}}</span>
+            <span ng-hide="spendingGroupedSub.ready()" ng-model-options="{ debounce: 500 }">
+                <p>Refreshing data... <svg style="margin-bottom: -5px;" width='24px' height='24px' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="uil-default"><rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(0 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-1s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(30 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.9166666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(60 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.8333333333333334s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(90 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.75s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(120 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.6666666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(150 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.5833333333333334s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(180 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.5s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(210 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.4166666666666667s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(240 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.3333333333333333s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(270 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.25s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(300 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.16666666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(330 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.08333333333333333s' repeatCount='indefinite'/></rect></svg></p>
+            </span>
             <div id="chart" dx-chart="{ commonSeriesSettings: chartOptions.commonSeriesSettings, argumentField: chartOptions.argumentField, argumentAxis: chartOptions.argumentAxis, 
                 rotated: chartOptions.rotated, legend: chartOptions.legend, export: chartOptions.export, title: chartOptions.title, tooltip: chartOptions.tooltip, 
-                valueAxis: chartOptions.valueAxis, bindingOptions: {dataSource: 'chartOptions.dataSource', series: 'chartOptions.series', size: 'chartOptions.size', 
-                customizePoint: 'chartOptions.customizePoint', onPointClick: 'chartOptions.onPointClick'} }"></div>
+                valueAxis: chartOptions.valueAxis, pointSelectionMode: chartOptions.pointSelectionMode, customizePoint: chartOptions.customizePoint,
+                onPointClick: chartOptions.onPointClick,
+                bindingOptions: {dataSource: 'chartOptionsDynamic.dataSource', series: 'chartSeries', size: 'chartOptionsDynamic.size' } }"></div>
             <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
                 <span ng-show="!detailsVisible">Show details</span>
                 <span ng-show="detailsVisible">Hide details</span>
@@ -33,7 +37,7 @@
                         <th>Total</th>
                     </tr>
                     <tr ng-repeat="spendGroup in spendingGrouped">
-                        <td>{{spendGroup._group}}</td>
+                        <td>{{spendGroup._group.organisation_name}} - {{spendGroup._group[spendGroup.groupField]}}</td>
                         <td>£{{spendGroup.totalAmount | number: 2}} </td>
                     </tr>
                 </table>

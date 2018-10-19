@@ -10,12 +10,14 @@ import { ClientSpendingPerTime } from '../../../api/clientSpendingPerTime';
 import { SpendingOrganisations } from '../../../api/spendingOrganisations';
 import { SpendingServices } from '../../../api/spendingServices';
 import { SpendingCategories } from '../../../api/spendingCategories';
+// import { SpendingSuppliers } from '../../../api/spendingSuppliers';
 import { Clients } from '../../../api/clients';
+import { Session } from 'meteor/session';
 
 import { name as SpendingGroupedChart } from '../spendingGroupedChart/spendingGroupedChart';
 import { name as SpendingPerformance } from '../spendingPerformance/spendingPerformance';
 
-import { CHART_FONT } from '../../stylesheet/config';
+import { getColour, abbreviateNumber, combineInFilters } from '../../../utils';
 
 import template from './spendingPerTimePage.html';
 
@@ -30,14 +32,23 @@ class SpendingPerTimePage {
         $reactive(this).attach($scope);
 
         let that = this;
+        let lastYear = moment().subtract(1, 'year');
+        let twoYearsAgo = moment().subtract(2, 'year');
+        let startTwoYearsAgo = twoYearsAgo.clone().startOf('year');
+        let endTwoYearsAgo = twoYearsAgo.clone().endOf('year');
+        let startLastYear = lastYear.startOf('year');
+        let endLastYear = lastYear.clone().endOf('year');
 
-        let start = moment().subtract(1, 'year').startOf('year');
-        let end = moment();
-        lastYearLabel = 'Last Year (' + moment().subtract(1, 'year').startOf('year').year() + ')';
-        lastTwoYearsLabel = 'Last Two Years (' + moment().subtract(2, 'year').startOf('year').year() + '-' + moment().subtract(1, 'year').startOf('year').year() + ')';
-        yearBeforeLabel = 'Year Before Last (' + moment().subtract(2, 'year').startOf('year').year() + ')';
+        // By default, show data for the last full year
+        let defaultStart = startLastYear;
+        let defaultEnd = endLastYear;
+
+        lastYearLabel = 'Last Year (' + startLastYear.year() + ')';
+        lastTwoYearsLabel = 'Last Two Years (' + startTwoYearsAgo.year() + '-' + lastYear.year() + ')';
+        yearBeforeLabel = 'Year Before Last (' + startTwoYearsAgo.year() + ')';
 
         $scope.selectedOrganisation = [];
+
         let allOrgs = {
             label: "All organisations",
             id: 'All organisations'
@@ -46,18 +57,10 @@ class SpendingPerTimePage {
         $scope.allOrganisations = [];
         $scope.viewOrganisations = [];
         $scope.filteredOrganisations = [];
-        $scope.organisationCount = 0;
-        $scope.organisationSettings = {
-            scrollableHeight: '200px',
-            scrollable: true,
-            enableSearch: false,
-            externalIdProp: "id",
-            showUncheckAll: false,
-            selectionLimit: $scope.organisationCount
-        };
-        $scope.organisationEventSetting = {
-            onSelectAll: selectAllOrganisation,
-            onMaxSelectionReached: reachedMaxSelection
+        $scope.selectionFilter = {
+            category: [],
+            supplier: [],
+            service: []
         };
 
         $scope.ranges = {
@@ -65,21 +68,24 @@ class SpendingPerTimePage {
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-            [lastYearLabel]: [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-            [lastTwoYearsLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-            [yearBeforeLabel]: [moment().subtract(2, 'year').startOf('year'), moment().subtract(2, 'year').endOf('year')],
-            'This Year': [moment().startOf('year'), moment().endOf('year')]
+            [lastYearLabel]: [startLastYear, endLastYear],
+            [lastTwoYearsLabel]: [startTwoYearsAgo, endLastYear],
+            [yearBeforeLabel]: [startTwoYearsAgo, endTwoYearsAgo],
+            'This Year': [moment().startOf('year'), moment().endOf('year')],
+            ['All available data']: [moment("2010-01-01"), moment()]
         };
 
+        $scope.filtersVisible = false;
+        $scope.detailsVisible = false;
+        $scope.period = "quarter";
         $scope.filterDate = {
-            startDate: start,
-            endDate: end
+            startDate: defaultStart,
+            endDate: defaultEnd
         };
 
-        $scope.selectedPeriod = {
-            startDate: start,
-            endDate: end
-        };
+        // Initially the selected point/period is empty. It can be set by clicking, or be reloaded 
+        // from the session.
+        $scope.selectedPeriod = null;
 
         $scope.filterName = '';
         $scope.selectedPoint = {
@@ -87,12 +93,70 @@ class SpendingPerTimePage {
             pointName: ''
         };
 
+        function applyFilters() {
+            if (Session.get('category')) {
+                $scope.category = Session.get('category');
+            }
+
+            if (Session.get('service')) {
+                $scope.service = Session.get('service');
+            }
+
+            if (Session.get('supplier')) {
+                $scope.supplier = Session.get('supplier');
+            }
+
+            if (Session.get('supplier_contains')) {
+                $scope.supplier_contains = Session.get('supplier_contains');
+            }
+
+            if (Session.get('filterStartDate')) {
+                let dateObj = new Date(Session.get('filterStartDate'));
+                $scope.filterDate.startDate = moment(dateObj);
+            }
+
+            if (Session.get('filterEndDate')) {
+                let dateObj = new Date(Session.get('filterEndDate'));
+                $scope.filterDate.endDate = moment(dateObj);
+            }
+
+            if (Session.get('period')) {
+                $scope.period = Session.get('period');
+            }
+
+            if (Session.get('filterVisible')) {
+                $scope.filtersVisible = Session.get('filterVisible');
+            }
+
+            if (Session.get('detailsVisible')) {
+                $scope.detailsVisible = Session.get('detailsVisible');
+            }
+
+            if (Session.get('selectedPoint')) {
+                $scope.selectedPoint = Session.get('selectedPoint');
+            }
+
+            if (Session.get('selectedStartDate')) {
+                let dateObj = new Date(Session.get('selectedStartDate'));
+                $scope.selectedPeriod = $scope.selectedPeriod || {};
+                $scope.selectedPeriod.startDate = moment(dateObj);
+            }
+
+            if (Session.get('selectedEndDate')) {
+                let dateObj = new Date(Session.get('selectedEndDate'));
+                $scope.selectedPeriod = $scope.selectedPeriod || {};
+                $scope.selectedPeriod.endDate = moment(dateObj);
+            }
+        }
+
+        applyFilters();
+
         $scope.helpers({
             isLoggedIn: function () {
                 return Meteor.userId() != null;
             },
             spendingPerTime: function () {
-                return SpendingPerTime.find({}).fetch();
+                return SpendingPerTime.find({}, { sort: { "_group.year": 1, ["_group." + $scope.period]: 1, "_group.organisation_name": 1 }}).fetch();
             },
             clientSpendingPerTime: function () {
                 return ClientSpendingPerTime.find({}).fetch();
@@ -101,7 +165,7 @@ class SpendingPerTimePage {
                 // Prepare a joined collection with the percentage of client trade.
                 // TODO: this is business logic, move it to an API function.
                 // Sort the data by organisation name to ensure precondition for sub total comparison.
-                let ps = SpendingPerTime.find({}, { sort: { "_group.organisation_name": 1, "_group.year": 1, ["_group." + $scope.period]: 1 } });
+                let ps = SpendingPerTime.find({}, { sort: { "_group.year": 1, ["_group." + $scope.period]: 1, "_group.organisation_name": 1 } });
                 let cs = ClientSpendingPerTime.find({});
 
                 let totalValues = {
@@ -235,7 +299,6 @@ class SpendingPerTimePage {
                 $scope.allOrganisations = [];
 
                 let organisations = SpendingOrganisations.find({}, { sort: { "organisation_name": 1 }}).fetch();
-
                 organisationsBuffer.push(allOrgs);
                 organisations.forEach((organisation) => {
                     organisationsBuffer.push({
@@ -250,40 +313,93 @@ class SpendingPerTimePage {
                 });
 
                 if ( organisationsBuffer.length ) {
-                    $scope.viewOrganisations[0] = organisationsBuffer[0];
+                    if (Session.get('organisation') && organisationsBuffer.length > 1) {
+                        $scope.viewOrganisations = [];
+                        let session_organisations = Session.get('organisation');
 
-                    // When the special "All organisations" item is selected, use the collection with all organisations as 
+                        session_organisations.forEach((org) => {
+                            organisationsBuffer.forEach((orgBuffer) => {
+                                if (org.label === orgBuffer.label) {
+                                    $scope.viewOrganisations.push(orgBuffer);
+                                }
+                            })
+                        });
+
+                        if ($scope.viewOrganisations.length) {
+                            if ($scope.viewOrganisations[0].id == "All organisations") {
+                                $scope.selectedOrganisation = $scope.allOrganisations;
+                                isAllClient = true;
+                            } else {
+                                $scope.selectedOrganisation = $scope.viewOrganisations;
+                                isAllClient = false;
+                            }
+                        } else {
+                            $scope.selectedOrganisation = [];
+                        }
+                    }
+
+                    if ($scope.viewOrganisations.length == 0) {
+                        $scope.viewOrganisations[0] = organisationsBuffer[0];
+                    }
+
+                    // When the special "All organisations" item is selected, use the collection with all organisations as
                     // the selection filter. Effectively this causes a filter like:
                     // "{ organisation_name: { $in : [ every, single, organisation, ...] } }"
                     // It's more efficient to just leave out the organisation filter in that case.
                     if ($scope.viewOrganisations[0].id == 'All organisations') {
                         $scope.selectedOrganisation = $scope.allOrganisations;
                     }
+
                     $scope.previousSelection = $scope.viewOrganisations;
                 }
 
-                $scope.organisationCount = organisationsBuffer.length;
                 return organisationsBuffer;
             },
             spendingServices: function () {
+                if(that.subManager && !that.subManager.ready()) {
+                    return [];
+                }
                 let services = SpendingServices.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }, { sort: { "name": 1 } }
                 ).fetch();
 
-                return services;
+                let spendingServices = [];
+                services.forEach((service) => {
+                    spendingServices.push(service.name);
+                });
+                return spendingServices;
             },
             spendingCategories: function () {
+                if(that.subManager && !that.subManager.ready()) {
+                    return [];
+                }
                 let categories = SpendingCategories.find({
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
                 }, { sort: { "name": 1 } }
                 ).fetch();
 
-                return categories;
+                let spendingCategories = [];
+                categories.forEach((category) => {
+                    spendingCategories.push(category.name);
+                });
+                return spendingCategories;
             },
-            selectedPeriod: function () {
-                return $scope.getReactively("filterDate");
-            },
+            // spendingSuppliers: function () {
+            //     if(that.subManager && !that.subManager.ready()) {
+            //         return [];
+            //     }
+            //     let suppliers = SpendingSuppliers.find({
+            //             organisation_name: { $in: $scope.getReactively("filteredOrganisations") }
+            //         }, { sort: { "name": 1 } }
+            //     ).fetch();
+
+            //     let spendingSuppliers = [];
+            //     suppliers.forEach((supplier) => {
+            //         spendingSuppliers.push(supplier.name);
+            //     });
+            //     return spendingSuppliers;
+            // },
             filterPeriodName: function () {
                 return $scope.getReactively("filterName");
             },
@@ -356,8 +472,9 @@ class SpendingPerTimePage {
                     }
 
                     // Fill tabular data.
-                    if ($scope.selectedOrganisation.length == 1)
-                        publicValues.push({ x: i, label: xLabel, y: amount, source: spendThisPeriod });
+                    if ($scope.selectedOrganisation.length == 1) {
+                        publicValues.push({x: i, label: xLabel, y: amount, source: spendThisPeriod});
+                    }
 
                     i++;
                 });
@@ -384,7 +501,7 @@ class SpendingPerTimePage {
                         valueField: "All",
                         name: "All",
                         type: "bar",
-                        color: getColor("All")
+                        color: getColour("All")
                     });
 
                     // Add client series if we have data for it
@@ -404,7 +521,7 @@ class SpendingPerTimePage {
                             valueField: org.id,
                             name: org.id,
                             type: "bar",
-                            color: getColor(org.id)
+                            color: getColour(org.id)
                         });
 
                         // Add client series if we have data for it
@@ -441,11 +558,13 @@ class SpendingPerTimePage {
                             selectedArgument = target.originalArgument;
                             $scope.selectedPoint.seriesName = target.series.name;
                             $scope.selectedPoint.pointName = selectedArgument;
+                            Session.setPersistent('selectedPoint', $scope.selectedPoint);
                             filterPeriod(selectedArgument);
                         } else {
                             target.clearSelection();
                             $scope.selectedPoint.seriesName = '';
                             $scope.selectedPoint.pointName = '';
+                            Session.setPersistent('selectedPoint', $scope.selectedPoint);
                             filterPeriod(null);
                         }
                     },
@@ -457,7 +576,7 @@ class SpendingPerTimePage {
                             precision: 1
                         },
                         customizeTooltip: function (arg) {
-                            let newValue = abbreviate_number(arg.value, 0);
+                            let newValue = abbreviateNumber(arg.value, 0);
                             let items = (arg.seriesName + " - " + arg.argumentText + " - " + newValue).split("\n"), color = arg.point.getColor();
                             let tempItem = '';
                             tempItem += items;
@@ -482,15 +601,51 @@ class SpendingPerTimePage {
              * component in the template.
              */
             subChartFilters: () => {
-                $scope.selectedPeriod = '';
+                let category = '';
+                if ($scope.getReactively('category') && $scope.getReactively('category').length) {
+                    category = { $in: $scope.getReactively("category") };
+                } else {
+                    category = '';
+                }
+
+                let service = '';
+                if ($scope.getReactively('service') && $scope.getReactively('service').length) {
+                    service = { $in: $scope.getReactively("service") };
+                } else {
+                    service = '';
+                }
+
+                // let supplier = '';
+                // if ($scope.getReactively('supplier') && $scope.getReactively('supplier').length) {
+                //     supplier = { $in: $scope.getReactively("supplier") };
+                // } else {
+                //     supplier = '';
+                // }
+
+                // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+                let supplierContains = '';
+                if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                    supplierContains = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+                } else {
+                    supplierContains = '';
+                }
+
                 return {
                     organisation_name: { $in: $scope.getReactively("filteredOrganisations") },
-                    procurement_classification_1: $scope.getReactively("category"),
-                    sercop_service: $scope.getReactively("service"),
+                    procurement_classification_1: category,
+                    sercop_service: service,
                     period: $scope.getReactively("period"),
                     client: $scope.getReactively("selectedClient"),
-                    supplier_name: $scope.getReactively('supplier_name')
+                    // supplier_name: supplier,
+                    supplier_contains: supplierContains
                 };
+            },
+            selectionFilter: function () {
+                return {
+                    category: $scope.getCollectionReactively('selectionFilter.category'),
+                    supplier: $scope.getCollectionReactively('selectionFilter.supplier'),
+                    service: $scope.getCollectionReactively('selectionFilter.service'),
+                }
             },
             filterSelectedOrganisation: function () {
                 let organisations = $scope.getCollectionReactively("selectedOrganisation");
@@ -498,14 +653,61 @@ class SpendingPerTimePage {
                 organisations.forEach((organisation) => {
                     $scope.filteredOrganisations.push(organisation.id);
                 });
-            }
+            },
+            selectionFilterDescription: () => {
+                // This code is duplicated and adapted from spendingGroupedChart
+                // TODO: move to a module, e.g. getFilterDescription(globalFilters, selectionFilters, ignoreGroupField)
+
+                let filterName = '';
+
+                // In the time chart we only show a note about selection filters when applied.
+                let categorySelection = $scope.getCollectionReactively('selectionFilter.category');
+                let hasCategorySelection = categorySelection && categorySelection.length;
+                
+                if (hasCategorySelection) {
+                    filterName += 'Category: ';
+
+                    if (hasCategorySelection) {
+                        categorySelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
+
+                let serviceSelection = $scope.getCollectionReactively('selectionFilter.service');            
+                let hasServiceSelection = serviceSelection && serviceSelection.length;
+
+                if (hasServiceSelection) {
+                    filterName += 'Service: ';
+ 
+                    if (hasServiceSelection) {
+                        serviceSelection.forEach((filter) => {
+                            filterName += filter + ', ';
+                        });
+                    }
+                }
+
+                let supplierSelection = $scope.getCollectionReactively('selectionFilter.supplier');
+                let hasSupplierSelection = supplierSelection && supplierSelection.length;
+
+                if (hasSupplierSelection) {
+                    filterName += 'Supplier: ';
+                    
+                    supplierSelection.forEach((filter) => {
+                        filterName += filter + ', ';
+                    });
+                }
+
+                // Remove last comma
+                filterName = filterName.substring(0, filterName.length - 2);
+                return filterName;
+            },
         });
 
         // UX defaults on component open
-        $scope.detailsVisible = true;
+        // $scope.detailsVisible = true;
         $scope.drillDownVisible = true;
         $scope.performanceIndicatorsVisible = true;
-        $scope.period = "quarter";
 
         function getChartHandle() {
             let chartDiv = angular.element($element).find("#timeChart");
@@ -581,6 +783,18 @@ class SpendingPerTimePage {
             } else {
                 $scope.selectedOrganisation = [];
             }
+
+            Session.setPersistent('organisation', $scope.viewOrganisations);
+        };
+
+        $scope.onClickFilterVisible = function () {
+            $scope.filtersVisible = !$scope.filtersVisible;
+            Session.setPersistent('filterVisible', $scope.filtersVisible);
+        };
+
+        $scope.onClickDetailsVisible = function () {
+            $scope.detailsVisible = !$scope.detailsVisible;
+            Session.setPersistent('detailsVisible', $scope.detailsVisible);
         };
 
         function filterPeriod(period) {
@@ -593,6 +807,8 @@ class SpendingPerTimePage {
             // Clear filter
             if (period == null) {
                 $scope.selectedPeriod = null;
+                Session.setPersistent('selectedStartDate', null);
+                Session.setPersistent('selectedEndDate', null);
                 return;
             }
 
@@ -629,6 +845,9 @@ class SpendingPerTimePage {
                 startDate: moment(startDate),
                 endDate: moment(endDate)
             };
+
+            Session.setPersistent('selectedStartDate', $scope.selectedPeriod.startDate.toDate());
+            Session.setPersistent('selectedEndDate', $scope.selectedPeriod.endDate.toDate());
         }
 
         function resizeTimeChart() {
@@ -646,50 +865,133 @@ class SpendingPerTimePage {
             timeChart.render();
         }
 
-        function selectAllOrganisation() {
-            console.log('selected All');
+        function saveFilters () {
+            let category = $scope.getReactively("category");
+            let service = $scope.getReactively("service");
+            let supplier = $scope.getReactively("supplier");
+            let supplier_contains = $scope.getReactively("supplier_contains");
+            let startDate = $scope.getReactively("filterDate").startDate.toDate();
+            let endDate = $scope.getReactively("filterDate").endDate.toDate();
+            let period = $scope.getReactively("period");
+
+            Session.setPersistent('category', category);
+            Session.setPersistent('service', service);
+            Session.setPersistent('supplier', supplier);
+            Session.setPersistent('supplier_contains', supplier_contains);
+            Session.setPersistent('filterStartDate', startDate);
+            Session.setPersistent('filterEndDate', endDate);
+            Session.setPersistent('period', period);
         }
 
-        function reachedMaxSelection() {
-            console.log('reached Max Selection');
-        }
-
-        let abbreviate_number = function (num, fixed) {
-            if (num === null) { return null; } // terminate early
-            if (num === 0) { return '0'; } // terminate early
-            fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
-            let b = (num).toPrecision(2).split("e"), // get power
-                k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
-                c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3)).toFixed(1 + fixed), // divide by power
-                d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
-                e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
-            return e;
-        };
-
+        this.subManager = new SubsManager();
         let clientSub = $scope.subscribe('clients');
         $scope.subscribe('spendingOrganisations');
-        $scope.subscribe('spendingServices');
-        $scope.subscribe('spendingCategories');
+        this.subManager.subscribe('spendingServices');
+        this.subManager.subscribe('spendingCategories');
+        // this.subManager.subscribe('spendingSuppliers');
 
-        $scope.subscribe('spendingPerTime', function () {
+        $scope.spendingPerTimeSub = $scope.subscribe('spendingPerTime', function () {
             let organisations = '';
-
             // TODO: refactor this expression to a function on the constructor class, call that in all places
             // where we want to check "should we show all clients?"
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
-            
+
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
-                organisations = { $in: $scope.getReactively("filteredOrganisations") };
+                organisations = { $in: $scope.getCollectionReactively("filteredOrganisations") };
             }
 
-            $scope.getReactively("filteredOrganisations");
+            let categoryGlobal = '';
+            let serviceGlobal = '';
+            let supplierContainsGlobal = '';
+
+            if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
+                categoryGlobal = { $in: $scope.getCollectionReactively("category") };
+            } else {
+                categoryGlobal = '';
+            }
+
+            if ($scope.getCollectionReactively('service') && $scope.getCollectionReactively('service').length) {
+                serviceGlobal = { $in: $scope.getCollectionReactively("service") };
+            } else {
+                serviceGlobal = '';
+            }
+
+            // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
+            //     supplier = { $in: $scope.getCollectionReactively("supplier") };
+            // } else {
+            //     supplier = '';
+            // }
+
+            // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+            if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                supplierContainsGlobal = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+            } else {
+                supplierContainsGlobal = '';
+            }
+
+            $scope.getCollectionReactively("filteredOrganisations");
+
+            // Selection filters
+
+            // The code to get the selection filters and combine them with global filters is duplicated with
+            // spendingGroupChart.
+            // TODO: deduplicate, refactor this code into a module
+            let categorySelection = '';
+            let categorySelectionCol = this.getCollectionReactively('selectionFilter.category');
+            if (categorySelectionCol && categorySelectionCol.length) {
+                categorySelection = { $in: categorySelectionCol };
+            } else {
+                categorySelection = '';
+            }
+
+            let serviceSelection = '';
+            let serviceSelectionCol = this.getCollectionReactively('selectionFilter.service');
+            if (serviceSelectionCol && serviceSelectionCol.length) {
+                serviceSelection = { $in: serviceSelectionCol };
+            } else {
+                serviceSelection = '';
+            }
+
+            let supplierSelection = '';
+            let supplierSelectionCol = this.getCollectionReactively('selectionFilter.supplier');
+            if (supplierSelectionCol && supplierSelectionCol.length) {
+                supplierSelection = { $in: supplierSelectionCol };
+            } else {
+                supplierSelection = '';
+            }
+
+            // For suppliers the filters work slighly different. On the global level there is a regex filter,
+            // not an $in filter. The selection filter is an $in filter like the others. We can't combine
+            // the regex with an $in filter, so we choose the one or the other.
+            let supplierFilterToUse;
+
+            if(supplierSelection && supplierSelection.$in.length)
+                supplierFilterToUse = supplierSelection;
+            else
+                // The global filter is either empty or a regex clause. No further check necessary.
+                supplierFilterToUse = supplierContainsGlobal;
+
+            let categoryFilterToUse;
+            if(categorySelection && categorySelection.$in.length)
+                categoryFilterToUse = categorySelection;
+            else                    
+                categoryFilterToUse = categoryGlobal;
+
+            let serviceFilterToUse;
+            if(serviceSelection && serviceSelection.$in.length)
+                serviceFilterToUse = serviceSelection;
+            else                    
+                serviceFilterToUse = serviceGlobal;
+
+            saveFilters();
+
             return [{
                 organisation_name: organisations,
-                procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service"),
-                supplier_name: $scope.getReactively('supplier_name'),
+                procurement_classification_1: categoryFilterToUse,
+                sercop_service: serviceFilterToUse,
+                supplier_name: supplierFilterToUse,
                 // Use  `payment_date` for filter and group rather than `effective_date` even though
                 // the latter might be the correct one.
                 // TODO: do more data analysis/wrangling to get `effective_date` right and start using that.
@@ -705,21 +1007,104 @@ class SpendingPerTimePage {
             let organisations = '';
 
             let isAllClient = $scope.viewOrganisations.length && $scope.viewOrganisations[0].id == 'All organisations';
-            
+
+            // This code is duplicated with the subscribe for `spendingPerTime`.
+            // TODO: deduplicate, move to a helper, similar to `spendingGroupedChart`.
             if (isAllClient) {// for subscribe one time
                 organisations = '';
             } else {
                 organisations = { $in: $scope.getReactively("filteredOrganisations") };
             }
 
-            $scope.getReactively("filteredOrganisations");
+            let categoryGlobal = '';
+            let serviceGlobal = '';
+            let supplierContainsGlobal = '';
+
+            if ($scope.getCollectionReactively('category') && $scope.getCollectionReactively('category').length) {
+                categoryGlobal = { $in: $scope.getCollectionReactively("category") };
+            } else {
+                categoryGlobal = '';
+            }
+
+            if ($scope.getCollectionReactively('service') && $scope.getCollectionReactively('service').length) {
+                serviceGlobal = { $in: $scope.getCollectionReactively("service") };
+            } else {
+                serviceGlobal = '';
+            }
+
+            // if ($scope.getCollectionReactively('supplier') && $scope.getCollectionReactively('supplier').length) {
+            //     supplier = { $in: $scope.getCollectionReactively("supplier") };
+            // } else {
+            //     supplier = '';
+            // }
+
+            // For supplier we use a "contains" regex because selecting from a list causes a critical performance issue.
+            if ($scope.getReactively('supplier_contains') && $scope.getReactively('supplier_contains').length) {
+                supplierContainsGlobal = { $regex: $scope.getReactively('supplier_contains'), $options: "i" };
+            } else {
+                supplierContainsGlobal = '';
+            }
+
+            $scope.getCollectionReactively("filteredOrganisations");
+
+            // Selection filters
+
+            // The code to get the selection filters and combine them with global filters is duplicated with
+            // spendingGroupChart.
+            // TODO: deduplicate, refactor this code into a module
+            let categorySelection = '';
+            let categorySelectionCol = this.getCollectionReactively('selectionFilter.category');
+            if (categorySelectionCol && categorySelectionCol.length) {
+                categorySelection = { $in: categorySelectionCol };
+            } else {
+                categorySelection = '';
+            }
+
+            let serviceSelection = '';
+            let serviceSelectionCol = this.getCollectionReactively('selectionFilter.service');
+            if (serviceSelectionCol && serviceSelectionCol.length) {
+                serviceSelection = { $in: serviceSelectionCol };
+            } else {
+                serviceSelection = '';
+            }
+
+            let supplierSelection = '';
+            let supplierSelectionCol = this.getCollectionReactively('selectionFilter.supplier');
+            if (supplierSelectionCol && supplierSelectionCol.length) {
+                supplierSelection = { $in: supplierSelectionCol };
+            } else {
+                supplierSelection = '';
+            }
+
+            // For suppliers the filters work slighly different. On the global level there is a regex filter,
+            // not an $in filter. The selection filter is an $in filter like the others. We can't combine
+            // the regex with an $in filter, so we choose the one or the other.
+            let supplierFilterToUse;
+
+            if(supplierSelection && supplierSelection.$in.length)
+                supplierFilterToUse = supplierSelection;
+            else
+                // The global filter is either empty or a regex clause. No further check necessary.
+                supplierFilterToUse = supplierContainsGlobal;
+
+            let categoryFilterToUse;
+            if(categorySelection && categorySelection.$in.length)
+                categoryFilterToUse = categorySelection;
+            else                    
+                categoryFilterToUse = categoryGlobal;
+
+            let serviceFilterToUse;
+            if(serviceSelection && serviceSelection.$in.length)
+                serviceFilterToUse = serviceSelection;
+            else                    
+                serviceFilterToUse = serviceGlobal;
 
             return [{
                 client_id: $scope.getReactively("selectedClient.client_id"),
                 organisation_name: organisations,
-                procurement_classification_1: $scope.getReactively("category"),
-                sercop_service: $scope.getReactively("service"),
-                supplier_name: $scope.getReactively('supplier_name'),
+                procurement_classification_1: categoryFilterToUse,
+                sercop_service: serviceFilterToUse,
+                supplier_name: supplierFilterToUse,
                 payment_date: { $gt: $scope.getReactively("filterDate").startDate.toDate(), $lt: $scope.getReactively("filterDate").endDate.toDate() }
             },
             {
@@ -734,25 +1119,6 @@ class SpendingPerTimePage {
                 $scope.selectedClient = $scope.getReactively("firstClient");
             }
         });
-
-        function stringToColour (str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            let colour = '#';
-            for (let i = 0; i < 3; i++) {
-                let value = (hash >> (i * 8)) & 0xFF;
-                colour += ('00' + value.toString(16)).substr(-2);
-            }
-            return colour;
-        }
-        /**
-         * Return the color for an organisation series
-         */
-        function getColor (organisationName) {
-            return stringToColour(organisationName);
-        }
     }
 }
 

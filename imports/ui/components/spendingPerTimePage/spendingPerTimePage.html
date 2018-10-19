@@ -11,14 +11,14 @@
                             <div class="form-group">
                                 <label for="viewOrganisations">Organisation</label>
                                 <select class="form-control" name="organisation" multiple chosen ng-model="viewOrganisations"
-                                        placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()" 
-                                        ng-options="t.label for t in spendingOrganisations">
+                                        placeholder-text-multiple="'Select organisations'" ng-change="checkSelection()"
+                                        ng-options="organisation.label for organisation in spendingOrganisations">
                                     <option value=""></option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-4 pull-right">
-                            <button type="button" ng-click="filtersVisible = !filtersVisible" class="btn btn-default pull-right">
+                            <button type="button" ng-click="onClickFilterVisible()" class="btn btn-default pull-right">
                                 <span ng-show="!filtersVisible">Filter</span>
                                 <span ng-show="filtersVisible">Hide filter</span>
                             </button>
@@ -27,19 +27,43 @@
                     <div class="row" ng-show="filtersVisible">
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
+                                <button ng-click="category=null" class="btn btn-default btn-xs pull-right" ng-show="category.length"><i class="fa fa-remove"></i></button> 
                                 <label for="category">Category</label>
-                                <select class="form-control" name="category" ng-model="category">
-                                    <option default value="">-- select --</option>
-                                    <option ng-repeat="cat in spendingCategories" value="{{cat.name}}">{{cat.name}}</option>
+                                <select class="form-control" name="category" multiple chosen ng-model="category"
+                                        placeholder-text-multiple="'Select Categories'"
+                                        ng-options="cat for cat in spendingCategories">
+                                    <option value=""></option>
+                                </select>                                
+                            </div>
+                        </div>
+                        <!-- Supplier selection disabled because it causes critical performance issues. -->
+                        <!--<div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <button ng-click="supplier=null" class="btn btn-default btn-xs pull-right" ng-show="supplier"><i class="fa fa-remove"></i></button>                             
+                                <label for="supplier">Supplier</label>
+                                <select class="form-control" name="supplier" multiple chosen ng-model="supplier"
+                                        placeholder-text-multiple="'Select Supplier'"
+                                        ng-options="supplier for supplier in spendingSuppliers">
+                                    <option value=""></option>
                                 </select>
+                            </div>
+                        </div>-->
+                        <!-- Supplier selection disabled because it causes critical performance issues. -->
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group">
+                                <button ng-click="supplier_contains=null" class="btn btn-default btn-xs pull-right" ng-show="supplier_contains"><i class="fa fa-remove"></i></button>                             
+                                <label for="supplier">Supplier</label>
+                                <input class="form-control" id="supplier_contains" name="supplier_contains" ng-model="supplier_contains" ng-model-options="{ debounce: 1000 }" placeholder="Type a supplier's name">
                             </div>
                         </div>
                         <div class="col-md-4 col-xs-12">
                             <div class="form-group">
+                                <button ng-click="service=null" class="btn btn-default btn-xs pull-right" ng-show="service.length"><i class="fa fa-remove"></i></button>                             
                                 <label for="service">Service</label>
-                                <select class="form-control" name="service" ng-model="service">
-                                    <option default value="">-- select --</option>
-                                    <option ng-repeat="service in spendingServices" value="{{service.name}}">{{service.name}}</option>
+                                <select class="form-control" name="service" multiple chosen ng-model="service"
+                                        placeholder-text-multiple="'Select Services'"
+                                        ng-options="service for service in spendingServices">
+                                    <option value=""></option>
                                 </select>
                             </div>
                         </div>
@@ -66,15 +90,20 @@
                             </div>
                         </div>
                     </div>
+                    <div ng-show="selectionFilterDescription"><p>Additional filter applied: {{selectionFilterDescription}}</div>
+                    <div ng-hide="spendingPerTimeSub.ready()" ng-model-options="{ debounce: 500 }">
+                        <!-- TODO: move waiting spinner SVG to a central location. Use a directive? -->
+                        <p>Refreshing data... <svg style="margin-bottom: -5px;" width='24px' height='24px' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="uil-default"><rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(0 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-1s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(30 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.9166666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(60 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.8333333333333334s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(90 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.75s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(120 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.6666666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(150 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.5833333333333334s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(180 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.5s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(210 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.4166666666666667s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(240 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.3333333333333333s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(270 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.25s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(300 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.16666666666666666s' repeatCount='indefinite'/></rect><rect  x='46.5' y='40' width='7' height='20' rx='5' ry='5' fill='#ec8e2b' transform='rotate(330 50 50) translate(0 -30)'>  <animate attributeName='opacity' from='1' to='0' dur='1s' begin='-0.08333333333333333s' repeatCount='indefinite'/></rect></svg></p>
+                    </div>
+                    <div ng-show="spendingPerTime.length === 0 && spendingPerTimeSub.ready()">
+                        <p>No results. Try removing some filters.</p>
+                    </div>
 
                     <div id="timeChart" dx-chart="{  valueAxis: chartData.valueAxis, legend: chartData.legend, onPointClick: chartData.onPointClick,
                                     bindingOptions: { series: 'chartData.series', dataSource: 'chartData.dataSource', tooltip: 'chartData.tooltip' } }"
                         ng-show="spendingPerTime.length"></div>
 
-                    <div ng-show="spendingPerTime.length === 0">
-                        <p>Loading...</p>
-                    </div>
-                    <button type="button" ng-click="detailsVisible = !detailsVisible" class="btn btn-default pull-right">
+                    <button type="button" ng-click="onClickDetailsVisible()" class="btn btn-default pull-right">
                         <span ng-show="!detailsVisible">Show details</span>
                         <span ng-show="detailsVisible">Hide details</span>
                     </button>
@@ -119,13 +148,13 @@
 </div>
 <div class="row relative">
     <div class="init col-lg-4 col-md-6">
-        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="category" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName" full-screen-mode="fullScreenMode"></spending-grouped>
+        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="category" filters="subChartFilters" group-field="'procurement_classification_1'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName" full-screen-mode="fullScreenMode" selection-filter="selectionFilter"></spending-grouped>
     </div>
     <div class="init col-lg-4 col-md-6">
-        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="supplier_name" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
+        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="supplier" filters="subChartFilters" group-field="'supplier_name'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName" selection-filter="selectionFilter"></spending-grouped>
     </div>
     <div class="init col-lg-4 col-md-6">
-        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="service" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName"></spending-grouped>
+        <spending-grouped class="init" ng-show="drillDownVisible" subfilter="service" filters="subChartFilters" group-field="'sercop_service'" filter-date="filterDate" sel-date="selectedPeriod" filter-name="filterPeriodName" selection-filter="selectionFilter"></spending-grouped>
     </div>
 </div>
 <div class="row">

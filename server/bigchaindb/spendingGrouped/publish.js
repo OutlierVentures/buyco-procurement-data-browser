@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Spending } from '../spending';
 import { removeEmptyFilters } from '/imports/utils';
+import { computePrediction } from '../../predictions';
 
 // console.log("spendingGrouped publish.js");
 
@@ -15,6 +16,8 @@ Meteor.publish(collectionName, function (filters, options) {
     var self = this;
     let groupField;
 
+    let debug = false;
+
     // We allow grouping by these fields
     if (options.groupField == "procurement_classification_1"
         || options.groupField == "supplier_name"
@@ -27,11 +30,28 @@ Meteor.publish(collectionName, function (filters, options) {
 
     removeEmptyFilters(filters);
 
-    if (filters) {
-        pipeLine.push({ $match: filters });
+    // Don't allow querying for completely unfiltered data (prevent useless heavy queries).
+    if (!filters || !Object.keys(filters).length) {
+        if (debug) {
+            console.log("spendingGrouped " + groupField + ": no filters, returning");
+        }
+        return;
     }
 
-    let groupClause = { $group: { _id: '$' + groupField, totalAmount: { $sum: "$amount_net" }, count: { $sum: 1 } } };
+    pipeLine.push({ $match: filters });
+
+    let groupClause = {
+        $group: {
+            _id: {
+                // Group by organisation and the chosen group field
+                organisation_name: "$organisation_name",
+                [groupField]: '$' + groupField
+            },
+            // Get aggregated amounts and counts
+            totalAmount: { $sum: "$amount_net" },
+            count: { $sum: 1 }
+        }
+    };
 
     // Include the filtered fields in the result documents so the client can filter
     // them too.
@@ -41,8 +61,6 @@ Meteor.publish(collectionName, function (filters, options) {
                 groupClause.$group[k] = { $first: '$' + k };
         }
     }
-    
-    groupClause.$group._id.organisation_name = "$organisation_name";
 
     pipeLine.push(groupClause);
 
@@ -58,7 +76,7 @@ Meteor.publish(collectionName, function (filters, options) {
     }
     pipeLine.push(limitClause);
 
-    // console.log("spendingGrouped pipeLine", JSON.stringify(pipeLine));
+    if (debug) console.log("spendingGrouped " + groupField + " pipeLine", JSON.stringify(pipeLine));
 
     // Call the aggregate
     let cursor = Spending.aggregate(
